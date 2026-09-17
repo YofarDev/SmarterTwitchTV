@@ -23,6 +23,7 @@ package com.fgl27.twitch.DataSource;
 import android.net.Uri;
 import android.util.Log;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -74,7 +75,7 @@ public final class AdPlaylistFilter {
      * Reads the whole response and, when filtering applies, returns the scrubbed bytes. Returns
      * null when the response must not be buffered (the caller then reads the stream normally).
      */
-    public static byte[] readAndFilter(Uri uri, InputStream inputStream) throws Exception {
+    public static byte[] readAndFilter(Uri uri, InputStream inputStream) throws IOException {
         if (!enabled || !shouldFilter(uri)) return null;
 
         byte[] original = ByteStreams.toByteArray(inputStream);

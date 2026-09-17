@@ -533,7 +533,7 @@ public class DefaultHttpDataSource extends BaseDataSource implements HttpDataSou
             if (AdPlaylistFilter.shouldFilter(dataSpec.uri) && AdPlaylistFilter.enabled) {
                 try {
                     filteredPlaylist = AdPlaylistFilter.readAndFilter(dataSpec.uri, inputStream);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     closeConnectionQuietly();
                     throw new HttpDataSourceException(e, dataSpec, PlaybackException.ERROR_CODE_IO_UNSPECIFIED, HttpDataSourceException.TYPE_OPEN);
                 }
