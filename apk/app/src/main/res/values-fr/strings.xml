@@ -21,8 +21,8 @@
  */
 -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="app_name">SmartTV Client for Twitch</string>
-    <string name="short_app_name">STTV</string>
+    <string name="app_name">Smarter Purple TV</string>
+    <string name="short_app_name">SPTV</string>
     <!--Notification-->
     <string name="notification_service">Service de notifications en cours d\'exécution</string>
     <string name="notification_live_game">Le jeu est en live</string>

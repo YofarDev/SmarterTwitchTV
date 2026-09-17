@@ -73,7 +73,7 @@ import androidx.media3.extractor.text.SubtitleParser;
 import androidx.webkit.WebViewCompat;
 import com.fgl27.twitch.DataSource.DefaultHttpDataSource;
 import com.fgl27.twitch.notification.NotificationService;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
+//import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.ByteArrayOutputStream;
@@ -909,17 +909,17 @@ public final class Tools {
 
     public static void recordException(String TAG, String message, Throwable e) {
         try {
-            FirebaseCrashlytics.getInstance().log(TAG + " " + message);
+            //FirebaseCrashlytics.getInstance().log(TAG + " " + message);
 
             if (e != null) {
-                FirebaseCrashlytics.getInstance().recordException(e);
+                //FirebaseCrashlytics.getInstance().recordException(e);
                 Log.w(TAG, message, e);
             } else {
-                FirebaseCrashlytics.getInstance().recordException(new RuntimeException(TAG + " e " + message));
+                //FirebaseCrashlytics.getInstance().recordException(new RuntimeException(TAG + " e " + message));
                 Log.w(TAG, message);
             }
 
-            FirebaseCrashlytics.getInstance().sendUnsentReports();
+            //FirebaseCrashlytics.getInstance().sendUnsentReports();
         } catch (Exception ignore) { //Just in case prevent a crash sending a crash
         }
     }

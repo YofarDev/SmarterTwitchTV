@@ -495,6 +495,7 @@ function Chat_loadChatSuccess(responseObj, id) {
         atuser,
         fromstreamer,
         mod,
+        verified,
         hasbits,
         message_text,
         badges,
@@ -540,6 +541,7 @@ function Chat_loadChatSuccess(responseObj, id) {
         atuser = false;
         fromstreamer = false;
         mod = false;
+        verified = false;
         hasbits = false;
         message_text = '';
 
@@ -576,6 +578,10 @@ function Chat_loadChatSuccess(responseObj, id) {
 
                 if (ChatLive_Highlight_Mod && Main_A_includes_B(badges.setID, 'mod')) {
                     mod = true;
+                }
+
+                if (ChatLive_Highlight_Verified && Main_A_equals_B(badges.setID, 'verified')) {
+                    verified = true;
                 }
             }
         }
@@ -621,6 +627,8 @@ function Chat_loadChatSuccess(responseObj, id) {
             nickColor = chat_Line_highlight_green;
         } else if (atuser) {
             nickColor = chat_Line_highlight_blue;
+        } else if (verified) {
+            nickColor = chat_Line_highlight_purple;
         } else {
             if (!ChatLive_Custom_Nick_Color && mmessage.userColor) {
                 nickColor = 'style="color: ' + mmessage.userColor + ';"';
@@ -649,6 +657,7 @@ function Chat_loadChatSuccess(responseObj, id) {
             atstreamer: atstreamer,
             atuser: atuser,
             mod: mod,
+            verified: verified,
             fromstreamer: fromstreamer,
             hasbits: hasbits && ChatLive_Highlight_Bits
         };
@@ -885,6 +894,7 @@ highlightsClasses += '.chat_highlighted_first {background: rgba(208, 113, 0, %x)
 highlightsClasses += '.chat_atstreamer {background: rgba(150, 0, 0, %x);}';
 highlightsClasses += '.chat_fromstreamer {background: rgba(182, 0, 143, %x);}';
 highlightsClasses += '.chat_mod {background: rgba(0, 139, 156, %x);}';
+highlightsClasses += '.chat_verified {background: rgba(118, 53, 252, %x);}';
 highlightsClasses += '.chat_atuser {background: rgba(0, 120, 0, %x);}';
 highlightsClasses += '.chat_bits {background: rgba(125, 100, 0, %x);}';
 highlightsClasses += '.chat_purged {background: rgba(39, 63, 115, %x) !important;}';

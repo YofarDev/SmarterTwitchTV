@@ -146,7 +146,7 @@ function uk_UALang() {
     STR_MS = 'мс';
     STR_HR = 'год';
     STR_SOURCE = 'Джерело';
-    STR_TWITCH_TV = 'SmartTV Client для Twitch';
+    STR_TWITCH_TV = 'Smarter Purple TV';
     STR_CLOSE_THIS = 'Натисніть ОК або назад, щоб закрити';
     STR_CLOSE_THIS2 = 'Натисніть назад, щоб закрити';
     STR_CLOSE_THIS3 = 'Натисніть назад, щоб показати вікно оновлення або ОК, щоб закрити';

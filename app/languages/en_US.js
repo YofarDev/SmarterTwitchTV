@@ -89,7 +89,7 @@ function en_USLang() {
     STR_EXIT_AGAIN = 'Click again to exit';
     STR_EXIT_AGAIN_PICTURE = 'Click again to exit picture-in-picture mode';
     STR_EXIT_AGAIN_MULTI = 'Click again to exit multistream mode';
-    STR_EXIT_MESSAGE = 'Are you sure you want to exit the SmartTV Client for Twitch?';
+    STR_EXIT_MESSAGE = 'Are you sure you want to exit Smarter Purple TV?';
     STR_EXIT = 'Exit';
     STR_CHANGELOG = 'Changelog';
     STR_FULL_CHANGELOG = 'Full changelog';
@@ -147,7 +147,7 @@ function en_USLang() {
     STR_MS = 'Ms';
     STR_HR = 'Hr';
     STR_SOURCE = 'Source';
-    STR_TWITCH_TV = 'SmartTV Client for Twitch';
+    STR_TWITCH_TV = 'Smarter Purple TV';
     STR_CLOSE_THIS = 'Press return or enter to close this';
     STR_CLOSE_THIS2 = 'Press return to close this';
     STR_CLOSE_THIS3 = 'Press return to show the update dialog or enter to close this';
@@ -625,6 +625,9 @@ function en_USLang() {
     STR_SOURCE_CHECK = 'Automatically change player quality from Source to Auto when the player lags';
     STR_SOURCE_CHECK_SUMMARY =
         'When enabled, and not using auto quality, the player will switch to auto quality and warn about it if the player is lagging. A Player lag is when the player is unable to play for a few seconds (the algorithm is more complex than just time), if you play something else it will go back to the original quality.';
+    STR_AD_FILTER = 'Block ads';
+    STR_AD_FILTER_SUMMARY =
+        "When enabled, ads stitched into the stream are removed from the playback playlists. During a blocked ad the stream pauses briefly and resumes where the ad ended. This works directly with Twitch's servers, no proxy is involved.";
     STR_PLAYER_LAG = "Player is lagging, quality changed to 'Auto mode'";
     STR_PLAYER_SOURCE = 'Player is lagging, quality was lowered';
     STR_TOO_ERRORS = 'or too many errors';
@@ -677,6 +680,7 @@ function en_USLang() {
     STR_CHAT_OPTIONS = 'Chat options';
     STR_CHAT_HIGHLIGHT_STREAMER_MSG = 'Highlight messages from the streamer (Dark pink background)';
     STR_CHAT_HIGHLIGHT_MOD_MSG = 'Highlight messages from moderators (Dark cyan background)';
+    STR_CHAT_HIGHLIGHT_VERIFIED = 'Highlight messages from verified users (Purple background)';
     STR_CHAT_HIGHLIGHT_REDEEMED = 'Highlight reward messages (Purple background message only)';
     STR_CHAT_HIGHLIGHT_FIRST = 'Highlight First-Time Chatter (Dark pink background)';
     STR_CHAT_HIGHLIGHT_STREAMER = "Highlight @streamer messages (Dark red background, the '@' is blue)";

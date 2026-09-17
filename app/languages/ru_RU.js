@@ -88,7 +88,7 @@ function ru_RULang() {
     STR_EXIT_AGAIN = 'Нажмите еще раз для выхода!';
     STR_EXIT_AGAIN_PICTURE = 'Нажмите еще раз для выхода из Картинка в Картинке';
     STR_EXIT_AGAIN_MULTI = 'Нажмите еще раз для выхода из мультистрима!';
-    STR_EXIT_MESSAGE = 'Вы хотите выйти из SmartTV Client для Twitch?';
+    STR_EXIT_MESSAGE = 'Вы хотите выйти из Smarter Purple TV?';
     STR_EXIT = 'Выход';
     STR_CHANGELOG = 'Изменения';
     STR_FULL_CHANGELOG = 'Изменения';
@@ -147,7 +147,7 @@ function ru_RULang() {
     STR_MS = 'Мс';
     STR_HR = 'Ч';
     STR_SOURCE = 'Источник';
-    STR_TWITCH_TV = 'SmartTV Client для Twitch';
+    STR_TWITCH_TV = 'Smarter Purple TV';
     STR_CLOSE_THIS = 'Нажмите ОК или назад, чтобы закрыть это.';
     STR_CLOSE_THIS2 = 'Нажмите назад, чтобы закрыть это.';
     STR_CLOSE_THIS3 = 'Нажмите назад, чтобы открыть окно обновления, или ОК, чтобы закрыть это..';

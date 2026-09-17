@@ -3216,7 +3216,7 @@ function Screens_ThumbOption_UpdateFollow(key, FollowState) {
     Main_textContent(Screens_ThumbFollowCheckName, name);
 
     if (FollowState) {
-        Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart', STR_FOLLOWING, '#6441a4');
+        Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart', STR_FOLLOWING, '#7635fc');
     } else {
         Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart-o', STR_FOLLOW);
     }
@@ -4220,7 +4220,7 @@ function AGame_setFollow() {
     if (AGame_following) {
         Main_innerHTML(
             ScreenObj[Main_aGame].ids[2] + '-1_2',
-            '<i class="icon-heart" style="color: #6441a4; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE + STR_FOLLOWING
+            '<i class="icon-heart" style="color: #7635fc; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE + STR_FOLLOWING
         );
     } else {
         Main_innerHTML(

@@ -88,7 +88,7 @@ function tr_TRLang() {
     STR_EXIT_AGAIN = 'Çıkmak için tekrar tıklayın';
     STR_EXIT_AGAIN_PICTURE = 'Resim içinde resim modundan çıkmak için tekrar tıklayın';
     STR_EXIT_AGAIN_MULTI = 'Çoklu yayın modundan çıkmak için tekrar tıklayın';
-    STR_EXIT_MESSAGE = 'Twitch için SmartTV İstemcisinden çıkmak istediğinizden emin misiniz?';
+    STR_EXIT_MESSAGE = 'Smarter Purple TV uygulamasından çıkmak istediğinizden emin misiniz?';
     STR_EXIT = 'Çıkış';
     STR_CHANGELOG = 'Değişiklik Günlüğü';
     STR_FULL_CHANGELOG = 'Tüm Değişiklik Günlüğü';
@@ -146,7 +146,7 @@ function tr_TRLang() {
     STR_MS = 'Ms';
     STR_HR = 'Sa';
     STR_SOURCE = 'Kaynak';
-    STR_TWITCH_TV = 'Twitch için SmartTV İstemcisi';
+    STR_TWITCH_TV = 'Smarter Purple TV';
     STR_CLOSE_THIS = 'Kapatmak için geri veya enter tuşuna basın';
     STR_CLOSE_THIS2 = 'Kapatmak için geri tuşuna basın';
     STR_CLOSE_THIS3 = 'Güncelleme penceresini göstermek için geri tuşuna veya kapatmak için enter tuşuna basın';

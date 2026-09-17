@@ -182,6 +182,7 @@ var ChatLive_User_Set;
 var chat_lineChatLive_Individual_Lines;
 var chat_Line_highlight_green = ' style="color: #4eff42;" ';
 var chat_Line_highlight_blue = ' style="color: #4AA4FD;" ';
+var chat_Line_highlight_purple = ' style="color: #7635FC;" ';
 var ChatLive_User_Regex_Search;
 var ChatLive_User_Regex_Replace;
 var ChatLive_Channel_Regex_Search = [];
@@ -193,6 +194,7 @@ var ChatLive_HideBots;
 var ChatLive_ShowBadges;
 var ChatLive_ShowBadgesMod;
 var ChatLive_ShowBadgesVIP;
+var ChatLive_Highlight_Verified;
 
 function ChatLive_SetOptions(chat_number, Channel_id, selectedChannel) {
     extraEmotes[chat_number] = {};
@@ -213,6 +215,7 @@ function ChatLive_SetOptions(chat_number, Channel_id, selectedChannel) {
     ChatLive_Highlight_AtStreamer = Settings_value.highlight_atstreamer.defaultValue;
     ChatLive_Highlight_FromStreamer = Settings_value.highlight_streamer.defaultValue;
     ChatLive_Highlight_Mod = Settings_value.highlight_mod.defaultValue;
+    ChatLive_Highlight_Verified = Settings_value.highlight_verified.defaultValue;
     ChatLive_Highlight_AtUser = ChatLive_User_Set && Settings_value.highlight_atuser.defaultValue;
     ChatLive_Highlight_User_send = ChatLive_User_Set && Settings_value.highlight_user_send.defaultValue;
     ChatLive_Highlight_Actions = Settings_value.show_actions.defaultValue;
@@ -1740,6 +1743,7 @@ function ChatLive_loadChatSuccess(message, chat_number, addToStart) {
         hasbits = false,
         fromstreamer = false,
         mod = false,
+        verified = false,
         action;
 
     if (
@@ -1805,6 +1809,8 @@ function ChatLive_loadChatSuccess(message, chat_number, addToStart) {
         fromstreamer = true;
     } else if (ChatLive_Highlight_Mod && tags.mod && tags.mod !== '0') {
         mod = true;
+    } else if (ChatLive_Highlight_Verified && ChatLive_HasBadge(tags, 'verified', chat_number)) {
+        verified = true;
     } else if (ChatLive_Highlight_AtUser && ChatLive_User_Regex_Search.test(mmessage)) {
         atuser = true;
     } else if (
@@ -1822,6 +1828,8 @@ function ChatLive_loadChatSuccess(message, chat_number, addToStart) {
         nickColor = chat_Line_highlight_green;
     } else if (atuser) {
         nickColor = chat_Line_highlight_blue;
+    } else if (verified) {
+        nickColor = chat_Line_highlight_purple;
     } else {
         if (!ChatLive_Custom_Nick_Color && typeof tags.color !== 'boolean') {
             nickColor = 'style="color: ' + tags.color + ';"';
@@ -1850,6 +1858,7 @@ function ChatLive_loadChatSuccess(message, chat_number, addToStart) {
         atuser: atuser,
         fromstreamer: fromstreamer,
         mod: mod,
+        verified: verified,
         firstTimer: firstTimer,
         hasbits: hasbits && ChatLive_Highlight_Bits,
         extraMessage: extraMessage,
@@ -1904,6 +1913,14 @@ function ChatLive_GetBadges(tags, chat_number) {
     }
 
     return ret;
+}
+
+function ChatLive_HasBadge(tags, badgeName, chat_number) {
+    var isShared = ChatLive_isShared[chat_number] && tags['source-room-id'],
+        badgeTag = isShared && tags['source-badges'] ? 'source-badges' : 'badges'; //shared support
+
+    //Badge entries have the form name/version, the trailing slash prevents partial name matches
+    return typeof tags[badgeTag] === 'string' && Main_A_includes_B(tags[badgeTag], badgeName + '/');
 }
 
 function ChatLive_ShouldShowBadge(badge_name) {
@@ -2017,6 +2034,8 @@ function ChatLive_ElementAdd(messageObj) {
         classname += ' chat_fromstreamer';
     } else if (messageObj.mod) {
         classname += ' chat_mod';
+    } else if (messageObj.verified) {
+        classname += ' chat_verified';
     } else if (messageObj.atuser) {
         classname += ' chat_atuser';
 

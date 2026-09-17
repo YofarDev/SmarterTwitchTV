@@ -494,6 +494,7 @@
         STR_CHAT_LOGGING_SUMMARY,
         STR_CHAT_HIGHLIGHT_STREAMER_MSG,
         STR_CHAT_HIGHLIGHT_MOD_MSG,
+        STR_CHAT_HIGHLIGHT_VERIFIED,
         STR_CHAT_HIGHLIGHT_FIRST,
         STR_CHAT_FIRST_MESSAGE_HIGH,
         STR_CHAT_HIGHLIGHT_REDEEMED,
@@ -594,6 +595,8 @@
         STR_WAITING,
         STR_SOURCE_CHECK,
         STR_SOURCE_CHECK_SUMMARY,
+        STR_AD_FILTER,
+        STR_AD_FILTER_SUMMARY,
         STR_AUTO_REFRESH_BACKGROUND,
         STR_AUTO_REFRESH_BACKGROUND_SUMMARY,
         STR_LOWLATENCY_ARRAY,
@@ -1467,7 +1470,7 @@
         STR_EXIT_AGAIN = 'Click again to exit';
         STR_EXIT_AGAIN_PICTURE = 'Click again to exit picture-in-picture mode';
         STR_EXIT_AGAIN_MULTI = 'Click again to exit multistream mode';
-        STR_EXIT_MESSAGE = 'Are you sure you want to exit the SmartTV Client for Twitch?';
+        STR_EXIT_MESSAGE = 'Are you sure you want to exit Smarter Purple TV?';
         STR_EXIT = 'Exit';
         STR_CHANGELOG = 'Changelog';
         STR_FULL_CHANGELOG = 'Full changelog';
@@ -1525,7 +1528,7 @@
         STR_MS = 'Ms';
         STR_HR = 'Hr';
         STR_SOURCE = 'Source';
-        STR_TWITCH_TV = 'SmartTV Client for Twitch';
+        STR_TWITCH_TV = 'Smarter Purple TV';
         STR_CLOSE_THIS = 'Press return or enter to close this';
         STR_CLOSE_THIS2 = 'Press return to close this';
         STR_CLOSE_THIS3 = 'Press return to show the update dialog or enter to close this';
@@ -2005,6 +2008,9 @@
         STR_SOURCE_CHECK = 'Automatically change player quality from Source to Auto when the player lags';
         STR_SOURCE_CHECK_SUMMARY =
             'When enabled, and not using auto quality, the player will switch to auto quality and warn about it if the player is lagging. A Player lag is when the player is unable to play for a few seconds (the algorithm is more complex than just time), if you play something else it will go back to the original quality.';
+        STR_AD_FILTER = 'Block ads';
+        STR_AD_FILTER_SUMMARY =
+            "When enabled, ads stitched into the stream are removed from the playback playlists. During a blocked ad the stream pauses briefly and resumes where the ad ended. This works directly with Twitch's servers, no proxy is involved.";
         STR_PLAYER_LAG = "Player is lagging, quality changed to 'Auto mode'";
         STR_PLAYER_SOURCE = 'Player is lagging, quality was lowered';
         STR_TOO_ERRORS = 'or too many errors';
@@ -2057,6 +2063,7 @@
         STR_CHAT_OPTIONS = 'Chat options';
         STR_CHAT_HIGHLIGHT_STREAMER_MSG = 'Highlight messages from the streamer (Dark pink background)';
         STR_CHAT_HIGHLIGHT_MOD_MSG = 'Highlight messages from moderators (Dark cyan background)';
+        STR_CHAT_HIGHLIGHT_VERIFIED = 'Highlight messages from verified users (Purple background)';
         STR_CHAT_HIGHLIGHT_REDEEMED = 'Highlight reward messages (Purple background message only)';
         STR_CHAT_HIGHLIGHT_FIRST = 'Highlight First-Time Chatter (Dark pink background)';
         STR_CHAT_HIGHLIGHT_STREAMER = "Highlight @streamer messages (Dark red background, the '@' is blue)";
@@ -2433,7 +2440,7 @@
         STR_EXIT_AGAIN = 'Haga clic de nuevo para salir!';
         STR_EXIT_AGAIN_PICTURE = 'Pulse de nuevo para salir de Imagen en Imagen!';
         STR_EXIT_AGAIN_MULTI = 'Pulse de nuevo para salir de MultiStream!';
-        STR_EXIT_MESSAGE = '¿Quieres salir del Cliente SmartTV para Twitch?';
+        STR_EXIT_MESSAGE = '¿Quieres salir de Smarter Purple TV?';
         STR_EXIT = 'Salir';
         STR_CHANGELOG = 'Cambios';
         STR_FULL_CHANGELOG = 'Registro de cambios completo';
@@ -2490,7 +2497,7 @@
         STR_MS = 'Ms';
         STR_HR = 'Hr';
         STR_SOURCE = 'Fuente';
-        STR_TWITCH_TV = 'Cliente SmartTV para Twitch';
+        STR_TWITCH_TV = 'Smarter Purple TV';
         STR_CLOSE_THIS = 'Presione Regresar o Enter para cerrar este.';
         STR_CLOSE_THIS2 = 'Presione regresar para cerrar esto.';
         STR_CLOSE_THIS3 = 'Presione volver para mostrar el cuadro de diálogo de actualización o enter para cerrar este.';
@@ -3089,7 +3096,7 @@
         STR_EXIT_AGAIN = 'Appuyez à nouveau pour quitter';
         STR_EXIT_AGAIN_PICTURE = 'Appuyez à nouveau pour quitter le mode picture-in-picture';
         STR_EXIT_AGAIN_MULTI = 'Appuyez à nouveau pour quitter le mode multistream';
-        STR_EXIT_MESSAGE = 'Voulez-vous vraiment quitter SmartTV Client for Twitch ?';
+        STR_EXIT_MESSAGE = 'Voulez-vous vraiment quitter Smarter Purple TV ?';
         STR_EXIT = 'Quitter';
         STR_CHANGELOG = 'Journal des modifications';
         STR_FULL_CHANGELOG = 'Journal complet des modifications';
@@ -4070,7 +4077,7 @@
         STR_EXIT_AGAIN = 'Clique novamente para sair!';
         STR_EXIT_AGAIN_PICTURE = 'Clique novamente para sair do Picture in Picture!';
         STR_EXIT_AGAIN_MULTI = 'Clique novamente para sair do MultiStream!';
-        STR_EXIT_MESSAGE = 'Deseja sair do Cliente SmartTV para Twitch?';
+        STR_EXIT_MESSAGE = 'Deseja sair do Smarter Purple TV?';
         STR_EXIT = 'Sair';
         STR_CHANGELOG = 'Changelog';
         STR_FULL_CHANGELOG = 'Todas Alterações';
@@ -4126,7 +4133,7 @@
         STR_MS = 'Ms';
         STR_HR = 'Hr';
         STR_SOURCE = 'Original';
-        STR_TWITCH_TV = 'Cliente SmartTV para Twitch';
+        STR_TWITCH_TV = 'Smarter Purple TV';
         STR_CLOSE_THIS = 'Pressione Retornar ou Enter para fechar isto.';
         STR_CLOSE_THIS2 = 'Pressione Retornar para fechar isso.';
         STR_CLOSE_THIS3 = 'Pressione Retornar para mostrar a caixa de diálogo de atualização ou Enter para fechá-la.';
@@ -5029,7 +5036,7 @@
         STR_EXIT_AGAIN = 'Нажмите еще раз для выхода!';
         STR_EXIT_AGAIN_PICTURE = 'Нажмите еще раз для выхода из Картинка в Картинке';
         STR_EXIT_AGAIN_MULTI = 'Нажмите еще раз для выхода из мультистрима!';
-        STR_EXIT_MESSAGE = 'Вы хотите выйти из SmartTV Client для Twitch?';
+        STR_EXIT_MESSAGE = 'Вы хотите выйти из Smarter Purple TV?';
         STR_EXIT = 'Выход';
         STR_CHANGELOG = 'Изменения';
         STR_FULL_CHANGELOG = 'Изменения';
@@ -5088,7 +5095,7 @@
         STR_MS = 'Мс';
         STR_HR = 'Ч';
         STR_SOURCE = 'Источник';
-        STR_TWITCH_TV = 'SmartTV Client для Twitch';
+        STR_TWITCH_TV = 'Smarter Purple TV';
         STR_CLOSE_THIS = 'Нажмите ОК или назад, чтобы закрыть это.';
         STR_CLOSE_THIS2 = 'Нажмите назад, чтобы закрыть это.';
         STR_CLOSE_THIS3 = 'Нажмите назад, чтобы открыть окно обновления, или ОК, чтобы закрыть это..';
@@ -6018,7 +6025,7 @@
         STR_EXIT_AGAIN = 'Çıkmak için tekrar tıklayın';
         STR_EXIT_AGAIN_PICTURE = 'Resim içinde resim modundan çıkmak için tekrar tıklayın';
         STR_EXIT_AGAIN_MULTI = 'Çoklu yayın modundan çıkmak için tekrar tıklayın';
-        STR_EXIT_MESSAGE = 'Twitch için SmartTV İstemcisinden çıkmak istediğinizden emin misiniz?';
+        STR_EXIT_MESSAGE = 'Smarter Purple TV uygulamasından çıkmak istediğinizden emin misiniz?';
         STR_EXIT = 'Çıkış';
         STR_CHANGELOG = 'Değişiklik Günlüğü';
         STR_FULL_CHANGELOG = 'Tüm Değişiklik Günlüğü';
@@ -6076,7 +6083,7 @@
         STR_MS = 'Ms';
         STR_HR = 'Sa';
         STR_SOURCE = 'Kaynak';
-        STR_TWITCH_TV = 'Twitch için SmartTV İstemcisi';
+        STR_TWITCH_TV = 'Smarter Purple TV';
         STR_CLOSE_THIS = 'Kapatmak için geri veya enter tuşuna basın';
         STR_CLOSE_THIS2 = 'Kapatmak için geri tuşuna basın';
         STR_CLOSE_THIS3 = 'Güncelleme penceresini göstermek için geri tuşuna veya kapatmak için enter tuşuna basın';
@@ -7065,7 +7072,7 @@
         STR_MS = 'мс';
         STR_HR = 'год';
         STR_SOURCE = 'Джерело';
-        STR_TWITCH_TV = 'SmartTV Client для Twitch';
+        STR_TWITCH_TV = 'Smarter Purple TV';
         STR_CLOSE_THIS = 'Натисніть ОК або назад, щоб закрити';
         STR_CLOSE_THIS2 = 'Натисніть назад, щоб закрити';
         STR_CLOSE_THIS3 = 'Натисніть назад, щоб показати вікно оновлення або ОК, щоб закрити';
@@ -7906,6 +7913,84 @@
      *
      */
 
+    //https://developer.android.com/reference/android/view/KeyEvent
+    //overwrite from java dispatchKeyEvent()
+    var KEY_PAUSE = 83; //overwrite key S = stop because p = play
+    var KEY_PLAY = 80; //overwrite key P = play
+
+    var KEY_STOP = 178;
+    var KEY_PLAYPAUSE = 179;
+
+    var KEY_LEFT = 37;
+    var KEY_UP = 38;
+    var KEY_RIGHT = 39;
+    var KEY_DOWN = 40;
+    var KEY_ENTER = 13;
+
+    var KEY_PG_DOWN = 34;
+    var KEY_PG_UP = 33;
+
+    var KEY_RETURN = 113; //key #F2
+
+    var KEY_KEYBOARD_BACKSPACE = 8; // http://developer.samsung.com/tv/develop/guides/user-interaction/keyboardime
+    var KEY_KEYBOARD_DONE = 13;
+    var KEY_KEYBOARD_SPACE = 32;
+
+    var KEY_MEDIA_NEXT = 176;
+    var KEY_MEDIA_PREVIOUS = 177;
+
+    var KEY_MEDIA_FAST_FORWARD = 228;
+    var KEY_MEDIA_REWIND = 227;
+
+    var KEY_0 = 48;
+    var KEY_1 = 49;
+    var KEY_2 = 50;
+    var KEY_3 = 51;
+    var KEY_4 = 52;
+    var KEY_5 = 53;
+    var KEY_6 = 54;
+    var KEY_7 = 55;
+    var KEY_8 = 56;
+    var KEY_9 = 57;
+
+    var KEY_NUMPAD_0 = 96;
+    var KEY_NUMPAD_1 = 97;
+    var KEY_NUMPAD_2 = 98;
+    var KEY_NUMPAD_3 = 99;
+    var KEY_NUMPAD_4 = 100;
+    var KEY_NUMPAD_5 = 101;
+    var KEY_NUMPAD_6 = 102;
+    var KEY_NUMPAD_7 = 103;
+    var KEY_NUMPAD_8 = 104;
+    var KEY_NUMPAD_9 = 105;
+
+    var KEY_A = 65;
+    var KEY_C = 67;
+    var KEY_E = 69;
+    var KEY_J = 74;
+    var KEY_K = 75;
+    var KEY_T = 84;
+    var KEY_U = 85;
+    /*
+     * Copyright (c) 2017–present Felipe de Leon <fglfgl27@gmail.com>
+     *
+     * This file is part of SmartTwitchTV <https://github.com/fgl27/SmartTwitchTV>
+     *
+     * SmartTwitchTV is free software: you can redistribute it and/or modify
+     * it under the terms of the GNU General Public License as published by
+     * the Free Software Foundation, either version 3 of the License, or
+     * (at your option) any later version.
+     *
+     * SmartTwitchTV is distributed in the hope that it will be useful,
+     * but WITHOUT ANY WARRANTY; without even the implied warranty of
+     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     * GNU General Public License for more details.
+     *
+     * You should have received a copy of the GNU General Public License
+     * along with SmartTwitchTV.  If not, see <https://github.com/fgl27/SmartTwitchTV/blob/master/LICENSE>.
+     *
+     */
+
     //Used as based https://kevinfaguiar.github.io/vue-twemoji-picker/docs/emoji-datasets/
     //https://github.com/kevinfaguiar/vue-twemoji-picker/tree/master/emoji-data/en
     //https://emojipedia.org/
@@ -8068,84 +8153,6 @@
         if (!Main_IsOn_OSInterface) calculateFontSize();
     }
     /*
-     * Copyright (c) 2017–present Felipe de Leon <fglfgl27@gmail.com>
-     *
-     * This file is part of SmartTwitchTV <https://github.com/fgl27/SmartTwitchTV>
-     *
-     * SmartTwitchTV is free software: you can redistribute it and/or modify
-     * it under the terms of the GNU General Public License as published by
-     * the Free Software Foundation, either version 3 of the License, or
-     * (at your option) any later version.
-     *
-     * SmartTwitchTV is distributed in the hope that it will be useful,
-     * but WITHOUT ANY WARRANTY; without even the implied warranty of
-     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     * GNU General Public License for more details.
-     *
-     * You should have received a copy of the GNU General Public License
-     * along with SmartTwitchTV.  If not, see <https://github.com/fgl27/SmartTwitchTV/blob/master/LICENSE>.
-     *
-     */
-
-    //https://developer.android.com/reference/android/view/KeyEvent
-    //overwrite from java dispatchKeyEvent()
-    var KEY_PAUSE = 83; //overwrite key S = stop because p = play
-    var KEY_PLAY = 80; //overwrite key P = play
-
-    var KEY_STOP = 178;
-    var KEY_PLAYPAUSE = 179;
-
-    var KEY_LEFT = 37;
-    var KEY_UP = 38;
-    var KEY_RIGHT = 39;
-    var KEY_DOWN = 40;
-    var KEY_ENTER = 13;
-
-    var KEY_PG_DOWN = 34;
-    var KEY_PG_UP = 33;
-
-    var KEY_RETURN = 113; //key #F2
-
-    var KEY_KEYBOARD_BACKSPACE = 8; // http://developer.samsung.com/tv/develop/guides/user-interaction/keyboardime
-    var KEY_KEYBOARD_DONE = 13;
-    var KEY_KEYBOARD_SPACE = 32;
-
-    var KEY_MEDIA_NEXT = 176;
-    var KEY_MEDIA_PREVIOUS = 177;
-
-    var KEY_MEDIA_FAST_FORWARD = 228;
-    var KEY_MEDIA_REWIND = 227;
-
-    var KEY_0 = 48;
-    var KEY_1 = 49;
-    var KEY_2 = 50;
-    var KEY_3 = 51;
-    var KEY_4 = 52;
-    var KEY_5 = 53;
-    var KEY_6 = 54;
-    var KEY_7 = 55;
-    var KEY_8 = 56;
-    var KEY_9 = 57;
-
-    var KEY_NUMPAD_0 = 96;
-    var KEY_NUMPAD_1 = 97;
-    var KEY_NUMPAD_2 = 98;
-    var KEY_NUMPAD_3 = 99;
-    var KEY_NUMPAD_4 = 100;
-    var KEY_NUMPAD_5 = 101;
-    var KEY_NUMPAD_6 = 102;
-    var KEY_NUMPAD_7 = 103;
-    var KEY_NUMPAD_8 = 104;
-    var KEY_NUMPAD_9 = 105;
-
-    var KEY_A = 65;
-    var KEY_C = 67;
-    var KEY_E = 69;
-    var KEY_J = 74;
-    var KEY_K = 75;
-    var KEY_T = 84;
-    var KEY_U = 85;
-    /*
      * Copyright (c) 2017-∞ Felipe de Leon <fglfgl27@gmail.com>
      *
      * This file is part of SmartTwitchTV <https://github.com/fgl27/SmartTwitchTV>
@@ -8170,9 +8177,20 @@
         VersionBase: '3.0',
         publishVersionCode: 379, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/fgl27/SmartTwitchTV/releases/download/379/SmartTV_twitch_3_0_379.apk',
-        WebVersion: 'March 17 2026',
-        WebTag: 727, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebVersion: 'September 17 2026',
+        WebTag: 728, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'September 17 2026',
+                changes: [
+                    'Player: Added a new ad blocking option, ads stitched into the stream are removed directly from the playback playlists using only Twitch servers, no proxy involved. During a blocked ad the stream pauses briefly and resumes where the ad ends. The option can be disabled in Settings',
+                    'New default look: focused items are highlighted with a purple outline and glow, and the Following hearts are purple',
+                    'The application is now named Smarter Purple TV',
+                    'New application icon',
+                    'Chat: messages from verified users are highlighted with a purple background, option available in the chat settings',
+                    'Note: the ad blocking runs on the app (APK) side of the application, it only takes effect after updating to a newly built app version'
+                ]
+            },
             {
                 title: 'March 17 2026',
                 changes: [
@@ -12010,7 +12028,7 @@
         if (AddCode_IsFollowing) {
             Main_innerHTML(
                 'channel_content_titley_2',
-                '<i class="icon-heart" style="color: #6441a4; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOWING
+                '<i class="icon-heart" style="color: #7635fc; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOWING
             );
         } else {
             Main_innerHTML(
@@ -12761,6 +12779,7 @@
     var chat_lineChatLive_Individual_Lines;
     var chat_Line_highlight_green = ' style="color: #4eff42;" ';
     var chat_Line_highlight_blue = ' style="color: #4AA4FD;" ';
+    var chat_Line_highlight_purple = ' style="color: #7635FC;" ';
     var ChatLive_User_Regex_Search;
     var ChatLive_User_Regex_Replace;
     var ChatLive_Channel_Regex_Search = [];
@@ -12772,6 +12791,7 @@
     var ChatLive_ShowBadges;
     var ChatLive_ShowBadgesMod;
     var ChatLive_ShowBadgesVIP;
+    var ChatLive_Highlight_Verified;
 
     function ChatLive_SetOptions(chat_number, Channel_id, selectedChannel) {
         extraEmotes[chat_number] = {};
@@ -12792,6 +12812,7 @@
         ChatLive_Highlight_AtStreamer = Settings_value.highlight_atstreamer.defaultValue;
         ChatLive_Highlight_FromStreamer = Settings_value.highlight_streamer.defaultValue;
         ChatLive_Highlight_Mod = Settings_value.highlight_mod.defaultValue;
+        ChatLive_Highlight_Verified = Settings_value.highlight_verified.defaultValue;
         ChatLive_Highlight_AtUser = ChatLive_User_Set && Settings_value.highlight_atuser.defaultValue;
         ChatLive_Highlight_User_send = ChatLive_User_Set && Settings_value.highlight_user_send.defaultValue;
         ChatLive_Highlight_Actions = Settings_value.show_actions.defaultValue;
@@ -14331,6 +14352,7 @@
             hasbits = false,
             fromstreamer = false,
             mod = false,
+            verified = false,
             action;
 
         if (
@@ -14396,6 +14418,8 @@
             fromstreamer = true;
         } else if (ChatLive_Highlight_Mod && tags.mod && tags.mod !== '0') {
             mod = true;
+        } else if (ChatLive_Highlight_Verified && ChatLive_HasBadge(tags, 'verified', chat_number)) {
+            verified = true;
         } else if (ChatLive_Highlight_AtUser && ChatLive_User_Regex_Search.test(mmessage)) {
             atuser = true;
         } else if (
@@ -14413,6 +14437,8 @@
             nickColor = chat_Line_highlight_green;
         } else if (atuser) {
             nickColor = chat_Line_highlight_blue;
+        } else if (verified) {
+            nickColor = chat_Line_highlight_purple;
         } else {
             if (!ChatLive_Custom_Nick_Color && typeof tags.color !== 'boolean') {
                 nickColor = 'style="color: ' + tags.color + ';"';
@@ -14441,6 +14467,7 @@
             atuser: atuser,
             fromstreamer: fromstreamer,
             mod: mod,
+            verified: verified,
             firstTimer: firstTimer,
             hasbits: hasbits && ChatLive_Highlight_Bits,
             extraMessage: extraMessage,
@@ -14495,6 +14522,14 @@
         }
 
         return ret;
+    }
+
+    function ChatLive_HasBadge(tags, badgeName, chat_number) {
+        var isShared = ChatLive_isShared[chat_number] && tags['source-room-id'],
+            badgeTag = isShared && tags['source-badges'] ? 'source-badges' : 'badges'; //shared support
+
+        //Badge entries have the form name/version, the trailing slash prevents partial name matches
+        return typeof tags[badgeTag] === 'string' && Main_A_includes_B(tags[badgeTag], badgeName + '/');
     }
 
     function ChatLive_ShouldShowBadge(badge_name) {
@@ -14608,6 +14643,8 @@
             classname += ' chat_fromstreamer';
         } else if (messageObj.mod) {
             classname += ' chat_mod';
+        } else if (messageObj.verified) {
+            classname += ' chat_verified';
         } else if (messageObj.atuser) {
             classname += ' chat_atuser';
 
@@ -16357,6 +16394,7 @@
             atuser,
             fromstreamer,
             mod,
+            verified,
             hasbits,
             message_text,
             badges,
@@ -16402,6 +16440,7 @@
             atuser = false;
             fromstreamer = false;
             mod = false;
+            verified = false;
             hasbits = false;
             message_text = '';
 
@@ -16438,6 +16477,10 @@
 
                     if (ChatLive_Highlight_Mod && Main_A_includes_B(badges.setID, 'mod')) {
                         mod = true;
+                    }
+
+                    if (ChatLive_Highlight_Verified && Main_A_equals_B(badges.setID, 'verified')) {
+                        verified = true;
                     }
                 }
             }
@@ -16483,6 +16526,8 @@
                 nickColor = chat_Line_highlight_green;
             } else if (atuser) {
                 nickColor = chat_Line_highlight_blue;
+            } else if (verified) {
+                nickColor = chat_Line_highlight_purple;
             } else {
                 if (!ChatLive_Custom_Nick_Color && mmessage.userColor) {
                     nickColor = 'style="color: ' + mmessage.userColor + ';"';
@@ -16511,6 +16556,7 @@
                 atstreamer: atstreamer,
                 atuser: atuser,
                 mod: mod,
+                verified: verified,
                 fromstreamer: fromstreamer,
                 hasbits: hasbits && ChatLive_Highlight_Bits
             };
@@ -16747,6 +16793,7 @@
     highlightsClasses += '.chat_atstreamer {background: rgba(150, 0, 0, %x);}';
     highlightsClasses += '.chat_fromstreamer {background: rgba(182, 0, 143, %x);}';
     highlightsClasses += '.chat_mod {background: rgba(0, 139, 156, %x);}';
+    highlightsClasses += '.chat_verified {background: rgba(118, 53, 252, %x);}';
     highlightsClasses += '.chat_atuser {background: rgba(0, 120, 0, %x);}';
     highlightsClasses += '.chat_bits {background: rgba(125, 100, 0, %x);}';
     highlightsClasses += '.chat_purged {background: rgba(39, 63, 115, %x) !important;}';
@@ -21449,6 +21496,14 @@
     //Allows to reset back to auto playback if is with source enable and lagging
     function OSInterface_SetCheckSource(mCheckSource) {
         if (Main_IsOn_OSInterface) Android.SetCheckSource(mCheckSource);
+    }
+
+    //public void SetAdFilter(boolean enable)
+    //enable enable disable
+    //Android specific: true
+    //Allows to enable disable the removal of ads stitched into the stream playlists
+    function OSInterface_SetAdFilter(enable) {
+        if (Main_IsOn_OSInterface) Android.SetAdFilter(enable);
     }
 
     //public void showToast(String toast)
@@ -27553,7 +27608,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                         '" class="pause_button3d icon-' +
                         (AddCode_IsFollowing ? 'heart' : 'heart-o') +
                         '" style="color: #' +
-                        (AddCode_IsFollowing ? '6441a4' : 'FFFFFF') +
+                        (AddCode_IsFollowing ? '7635fc' : 'FFFFFF') +
                         ';" ></i>'
                 );
             }
@@ -34165,7 +34220,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             var response_rows = Math.ceil(response_items / ScreenObj[key].ColumnsCount),
                 max_row = ScreenObj[key].row_id + response_rows;
 
-            for (ScreenObj[key].row_id; ScreenObj[key].row_id < max_row; ) {
+            for (ScreenObj[key].row_id; ScreenObj[key].row_id < max_row;) {
                 if (ScreenObj[key].column_id === ScreenObj[key].ColumnsCount) {
                     ScreenObj[key].column_id = 0;
                 }
@@ -36849,7 +36904,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_textContent(Screens_ThumbFollowCheckName, name);
 
         if (FollowState) {
-            Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart', STR_FOLLOWING, '#6441a4');
+            Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart', STR_FOLLOWING, '#7635fc');
         } else {
             Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart-o', STR_FOLLOW);
         }
@@ -37865,7 +37920,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (AGame_following) {
             Main_innerHTML(
                 ScreenObj[Main_aGame].ids[2] + '-1_2',
-                '<i class="icon-heart" style="color: #6441a4; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE + STR_FOLLOWING
+                '<i class="icon-heart" style="color: #7635fc; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE + STR_FOLLOWING
             );
         } else {
             Main_innerHTML(
@@ -42104,6 +42159,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             values: ['no', 'yes'],
             defaultValue: 2
         },
+        ad_filter: {
+            values: ['no', 'yes'],
+            defaultValue: 2
+        },
         enable_mature: {
             values: ['no', 'yes'],
             defaultValue: 2
@@ -42279,6 +42338,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             //Migrated to dialog
             values: ['no', 'yes'],
             defaultValue: 1
+        },
+        highlight_verified: {
+            //Migrated to dialog
+            values: ['no', 'yes'],
+            defaultValue: 2
         },
         highlight_atstreamer: {
             //Migrated to dialog
@@ -42657,6 +42721,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         div += Settings_Content('check_source', array_no_yes, STR_SOURCE_CHECK, STR_SOURCE_CHECK_SUMMARY);
 
+        div += Settings_Content('ad_filter', array_no_yes, STR_AD_FILTER, STR_AD_FILTER_SUMMARY);
+
         div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
 
         key = 'default_quality';
@@ -42833,6 +42899,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         OSInterface_SetPreviewAudio(Settings_Obj_default('preview_volume_new'));
         OSInterface_SetPreviewSize(Settings_Obj_default('preview_sizes'));
         OSInterface_SetCheckSource(Settings_Obj_default('check_source') === 1);
+        OSInterface_SetAdFilter(Settings_Obj_default('ad_filter') === 1);
         Settings_SetPingWarning();
         SettingsColor_SetAnimationStyleRestore();
         //Settings_proxy_set_start();
@@ -43078,6 +43145,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         else if (position === 'speed_adjust') Settings_SetSpeed_adjust();
         else if (position === 'seek_preview') PlayVod_SetPreviewType();
         else if (position === 'check_source') OSInterface_SetCheckSource(Settings_Obj_default('check_source') === 1);
+        else if (position === 'ad_filter') OSInterface_SetAdFilter(Settings_Obj_default('ad_filter') === 1);
         else if (position === 'thumb_quality') Main_SetThumb();
         else if (position === 'preview_others_volume_new') OSInterface_SetPreviewOthersAudio(Settings_Obj_default('preview_others_volume_new'));
         else if (position === 'preview_volume_new') OSInterface_SetPreviewAudio(Settings_Obj_default('preview_volume_new'));
@@ -45034,6 +45102,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Settings_value.highlight_atstreamer.values = yes_no;
         Settings_value.highlight_streamer.values = yes_no;
         Settings_value.highlight_mod.values = yes_no;
+        Settings_value.highlight_verified.values = yes_no;
         Settings_value.highlight_atuser.values = yes_no;
         Settings_value.highlight_user_send.values = yes_no;
         Settings_value.show_sub.values = yes_no;
@@ -45123,6 +45192,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 defaultValue: Settings_value.highlight_mod.defaultValue,
                 values: Settings_value.highlight_mod.values,
                 title: STR_CHAT_HIGHLIGHT_MOD_MSG,
+                summary: null
+            },
+            highlight_verified: {
+                defaultValue: Settings_value.highlight_verified.defaultValue,
+                values: Settings_value.highlight_verified.values,
+                title: STR_CHAT_HIGHLIGHT_VERIFIED,
                 summary: null
             },
             highlight_streamer: {
@@ -45544,8 +45619,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             //Default
             'rgba(0,0,0,1)', //background
             'rgba(255,255,255,1)', //TextColor
-            'rgba(235,235,235,1)', //border
-            'rgba(195,0,0,1)' //progressColor
+            'rgba(118,53,252,1)', //border
+            'rgba(118,53,252,1)' //progressColor
         ],
         [], //Custom
         [
@@ -45940,6 +46015,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             TextColor = SettingsColor_DefaultColors[pos][1],
             border = SettingsColor_DefaultColors[pos][2],
             progressColor = SettingsColor_DefaultColors[pos][3],
+            //Softer alpha of the border color for the focus glow, falls back to the full color
+            glow = border.replace(', 1)', ', 0.45)'),
             cssClass =
                 '.feed_thumbnail_focused_no_ani,.feed_thumbnail_focused,.stream_thumbnail_focused_no_ani,.stream_thumbnail_focused {background-color:' +
                 background +
@@ -45947,11 +46024,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 TextColor +
                 ' !important;border-color:' +
                 border +
+                ' !important;box-shadow:0 0 0.6em 0.1em ' +
+                glow +
                 ' !important;}' +
                 //feed_thumbnail_focused same animation time as user_feed_scroll
-                '.feed_thumbnail_focused {transition:background-color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,border-color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s;}' +
+                '.feed_thumbnail_focused {transition:background-color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,border-color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s;}' +
                 //stream_thumbnail_focused same animation time as animate_height_transition
-                '.stream_thumbnail_focused {transition:background-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,border-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s;}';
+                '.stream_thumbnail_focused {transition:background-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,border-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s;}';
 
         cssClass +=
             '.vod_watched{background:' +
@@ -45973,6 +46052,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             arrayColors[1] +
             ' !important;border-color:' +
             arrayColors[2] +
+            ' !important;box-shadow:0 0 0.6em 0.1em ' +
+            arrayColors[2].replace(', 1)', ', 0.45)') +
             ' !important;}';
 
         cssClass +=
@@ -51804,7 +51885,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             // Main decoding loop: start just after the last delimiter if any basic code
             // points were copied; start at the beginning otherwise.
 
-            for (index = basic > 0 ? basic + 1 : 0; index < inputLength /* no final expression */; ) {
+            for (index = basic > 0 ? basic + 1 : 0; index < inputLength /* no final expression */;) {
                 // `index` is the index of the next character to be consumed.
                 // Decode a generalized variable-length integer into `delta`,
                 // which gets added to `i`. The overflow checking is easier

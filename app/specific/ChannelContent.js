@@ -212,7 +212,7 @@ function ChannelContent_setFollow() {
     if (AddCode_IsFollowing) {
         Main_innerHTML(
             'channel_content_titley_2',
-            '<i class="icon-heart" style="color: #6441a4; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOWING
+            '<i class="icon-heart" style="color: #7635fc; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOWING
         );
     } else {
         Main_innerHTML(

@@ -83,7 +83,7 @@ function pt_BRLang() {
     STR_EXIT_AGAIN = 'Clique novamente para sair!';
     STR_EXIT_AGAIN_PICTURE = 'Clique novamente para sair do Picture in Picture!';
     STR_EXIT_AGAIN_MULTI = 'Clique novamente para sair do MultiStream!';
-    STR_EXIT_MESSAGE = 'Deseja sair do Cliente SmartTV para Twitch?';
+    STR_EXIT_MESSAGE = 'Deseja sair do Smarter Purple TV?';
     STR_EXIT = 'Sair';
     STR_CHANGELOG = 'Changelog';
     STR_FULL_CHANGELOG = 'Todas Alterações';
@@ -139,7 +139,7 @@ function pt_BRLang() {
     STR_MS = 'Ms';
     STR_HR = 'Hr';
     STR_SOURCE = 'Original';
-    STR_TWITCH_TV = 'Cliente SmartTV para Twitch';
+    STR_TWITCH_TV = 'Smarter Purple TV';
     STR_CLOSE_THIS = 'Pressione Retornar ou Enter para fechar isto.';
     STR_CLOSE_THIS2 = 'Pressione Retornar para fechar isso.';
     STR_CLOSE_THIS3 = 'Pressione Retornar para mostrar a caixa de diálogo de atualização ou Enter para fechá-la.';

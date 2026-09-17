@@ -88,7 +88,7 @@ function fr_FRLang() {
     STR_EXIT_AGAIN = 'Appuyez à nouveau pour quitter';
     STR_EXIT_AGAIN_PICTURE = 'Appuyez à nouveau pour quitter le mode picture-in-picture';
     STR_EXIT_AGAIN_MULTI = 'Appuyez à nouveau pour quitter le mode multistream';
-    STR_EXIT_MESSAGE = 'Voulez-vous vraiment quitter SmartTV Client for Twitch ?';
+    STR_EXIT_MESSAGE = 'Voulez-vous vraiment quitter Smarter Purple TV ?';
     STR_EXIT = 'Quitter';
     STR_CHANGELOG = 'Journal des modifications';
     STR_FULL_CHANGELOG = 'Journal complet des modifications';

@@ -320,6 +320,10 @@ public class DefaultHttpDataSource extends BaseDataSource implements HttpDataSou
     private int readPosition;
     private int bytesRemaining;
 
+    //When set the response was read in full (to be ad filtered) and is served from memory
+    @Nullable
+    private byte[] filteredPlaylist;
+
     private DefaultHttpDataSource(
         @Nullable String userAgent,
         int connectTimeoutMillis,
@@ -354,6 +358,7 @@ public class DefaultHttpDataSource extends BaseDataSource implements HttpDataSou
     @Nullable
     public Uri getUri() {
         if (isPlaylist) return uri;
+        if (filteredPlaylist != null) return dataSpec == null ? null : dataSpec.uri;
         return connection == null ? null : Uri.parse(connection.getURL().toString());
     }
 
@@ -406,6 +411,7 @@ public class DefaultHttpDataSource extends BaseDataSource implements HttpDataSou
     @Override
     public long open(DataSpec dataSpec) throws HttpDataSourceException {
         isPlaylist = dataSpec.uri.toString().equals(uri.toString()) && (mainPlaylist.length > 0);
+        filteredPlaylist = null;
 
         this.dataSpec = dataSpec;
         bytesRead = 0;
@@ -522,6 +528,25 @@ public class DefaultHttpDataSource extends BaseDataSource implements HttpDataSou
                 throw new HttpDataSourceException(e, dataSpec, PlaybackException.ERROR_CODE_IO_UNSPECIFIED, HttpDataSourceException.TYPE_OPEN);
             }
 
+            //Media playlists are read in full to have the ads stitched into them removed,
+            //the result is then served from memory just like the main playlist above
+            if (AdPlaylistFilter.shouldFilter(dataSpec.uri) && AdPlaylistFilter.enabled) {
+                try {
+                    filteredPlaylist = AdPlaylistFilter.readAndFilter(dataSpec.uri, inputStream);
+                } catch (Exception e) {
+                    closeConnectionQuietly();
+                    throw new HttpDataSourceException(e, dataSpec, PlaybackException.ERROR_CODE_IO_UNSPECIFIED, HttpDataSourceException.TYPE_OPEN);
+                }
+
+                if (filteredPlaylist != null) {
+                    inputStream = null;
+                    closeConnectionQuietly();
+                    readPosition = 0;
+                    bytesRemaining = filteredPlaylist.length;
+                    bytesToRead = bytesRemaining;
+                }
+            }
+
             return bytesToRead;
         }
     }
@@ -529,7 +554,9 @@ public class DefaultHttpDataSource extends BaseDataSource implements HttpDataSou
     @UnstableApi
     @Override
     public int read(byte[] buffer, int offset, int length) throws HttpDataSourceException {
-        if (isPlaylist) {
+        byte[] inMemoryPlaylist = isPlaylist ? mainPlaylist : filteredPlaylist;
+
+        if (inMemoryPlaylist != null) {
             if (length == 0) {
                 return 0;
             } else if (bytesRemaining == 0) {
@@ -537,7 +564,7 @@ public class DefaultHttpDataSource extends BaseDataSource implements HttpDataSou
             }
 
             length = min(length, bytesRemaining);
-            System.arraycopy(mainPlaylist, readPosition, buffer, offset, length);
+            System.arraycopy(inMemoryPlaylist, readPosition, buffer, offset, length);
             readPosition += length;
             bytesRemaining -= length;
             bytesTransferred(length);
@@ -554,7 +581,8 @@ public class DefaultHttpDataSource extends BaseDataSource implements HttpDataSou
     @UnstableApi
     @Override
     public void close() throws HttpDataSourceException {
-        if (isPlaylist) {
+        if (isPlaylist || filteredPlaylist != null) {
+            filteredPlaylist = null;
             if (opened) {
                 opened = false;
                 transferEnded();

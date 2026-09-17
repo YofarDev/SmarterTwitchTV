@@ -23,9 +23,20 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 379, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/fgl27/SmartTwitchTV/releases/download/379/SmartTV_twitch_3_0_379.apk',
-    WebVersion: 'March 17 2026',
-    WebTag: 727, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'September 17 2026',
+    WebTag: 728, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'September 17 2026',
+            changes: [
+                'Player: Added a new ad blocking option, ads stitched into the stream are removed directly from the playback playlists using only Twitch servers, no proxy involved. During a blocked ad the stream pauses briefly and resumes where the ad ends. The option can be disabled in Settings',
+                'New default look: focused items are highlighted with a purple outline and glow, and the Following hearts are purple',
+                'The application is now named Smarter Purple TV',
+                'New application icon',
+                'Chat: messages from verified users are highlighted with a purple background, option available in the chat settings',
+                'Note: the ad blocking runs on the app (APK) side of the application, it only takes effect after updating to a newly built app version'
+            ]
+        },
         {
             title: 'March 17 2026',
             changes: [

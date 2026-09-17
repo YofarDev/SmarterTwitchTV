@@ -2259,7 +2259,7 @@ function Play_MakeControls() {
                     '" class="pause_button3d icon-' +
                     (AddCode_IsFollowing ? 'heart' : 'heart-o') +
                     '" style="color: #' +
-                    (AddCode_IsFollowing ? '6441a4' : 'FFFFFF') +
+                    (AddCode_IsFollowing ? '7635fc' : 'FFFFFF') +
                     ';" ></i>'
             );
         }

@@ -9,6 +9,16 @@ The App is divided in two part, **Apk** and **Web** you can check it version in 
 
 The app has a building update check function, so whenever there is a update a red text will show up bellow the main pages clock, also a short warning will pop on the screen let you know if is a **Apk** or **Web** update.
 
+September 17 2026
+==============
+
+* Player: Added a new ad blocking option, ads stitched into the stream are removed directly from the playback playlists using only Twitch servers, no proxy involved. During a blocked ad the stream pauses briefly and resumes where the ad ends. The option can be disabled in Settings
+* New default look: focused items are highlighted with a purple outline and glow, and the Following hearts are purple
+* The application is now named Smarter Purple TV
+* New application icon
+* Chat: messages from verified users are highlighted with a purple background, option available in the chat settings
+* Note: the ad blocking runs on the app (APK) side of the application, it only takes effect after updating to a newly built app version
+
 March 17 2026
 ==============
 

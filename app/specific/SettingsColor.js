@@ -25,8 +25,8 @@ var SettingsColor_DefaultColors = [
         //Default
         'rgba(0,0,0,1)', //background
         'rgba(255,255,255,1)', //TextColor
-        'rgba(235,235,235,1)', //border
-        'rgba(195,0,0,1)' //progressColor
+        'rgba(118,53,252,1)', //border
+        'rgba(118,53,252,1)' //progressColor
     ],
     [], //Custom
     [
@@ -421,6 +421,8 @@ function SettingsColor_SetAnimationStyle(pos) {
         TextColor = SettingsColor_DefaultColors[pos][1],
         border = SettingsColor_DefaultColors[pos][2],
         progressColor = SettingsColor_DefaultColors[pos][3],
+        //Softer alpha of the border color for the focus glow, falls back to the full color
+        glow = border.replace(', 1)', ', 0.45)'),
         cssClass =
             '.feed_thumbnail_focused_no_ani,.feed_thumbnail_focused,.stream_thumbnail_focused_no_ani,.stream_thumbnail_focused {background-color:' +
             background +
@@ -428,11 +430,13 @@ function SettingsColor_SetAnimationStyle(pos) {
             TextColor +
             ' !important;border-color:' +
             border +
+            ' !important;box-shadow:0 0 0.6em 0.1em ' +
+            glow +
             ' !important;}' +
             //feed_thumbnail_focused same animation time as user_feed_scroll
-            '.feed_thumbnail_focused {transition:background-color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,border-color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s;}' +
+            '.feed_thumbnail_focused {transition:background-color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,border-color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s;}' +
             //stream_thumbnail_focused same animation time as animate_height_transition
-            '.stream_thumbnail_focused {transition:background-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,border-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s;}';
+            '.stream_thumbnail_focused {transition:background-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,border-color 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s;}';
 
     cssClass +=
         '.vod_watched{background:' +
@@ -454,6 +458,8 @@ function SettingsColor_SetAnimationStyleTest(arrayColors) {
         arrayColors[1] +
         ' !important;border-color:' +
         arrayColors[2] +
+        ' !important;box-shadow:0 0 0.6em 0.1em ' +
+        arrayColors[2].replace(', 1)', ', 0.45)') +
         ' !important;}';
 
     cssClass +=

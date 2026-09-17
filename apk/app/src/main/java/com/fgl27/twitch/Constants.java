@@ -27,10 +27,10 @@ public final class Constants {
 
     static final String PageUrl = LoadFromAssets
         ? "file:///android_asset/app/index.html"
-        : "https://fgl27.github.io/SmartTwitchTV/release/index.html";
+        : "https://yofardev.github.io/SmarterTwitchTV/release/index.html";
     static final String KeyPageUrl = LoadFromAssets
         ? "file:///android_asset/app/Extrapage/index.html"
-        : "https://fgl27.github.io/SmartTwitchTV/release/extrapageindex.html";
+        : "https://yofardev.github.io/SmarterTwitchTV/release/extrapageindex.html";
 
     static final String PageUrlBackup = "https://smarttv-client-for-twitch.web.app/index.html";
     static final String KeyPageUrlBackup = "https://smarttv-client-for-twitch.web.app/extrapageindex.html";
@@ -94,7 +94,7 @@ public final class Constants {
     public static final int DEFAULT_HTTP_TIMEOUT = 60000;
     public static final int DEFAULT_HTTP_EXTRA_TIMEOUT = 10000;
 
-    public static final String VIDEO_404 = "https://fgl27.github.io/SmartTwitchTV/release/githubio/images/404_video.png";
-    public static final String LOGO_404 = "https://fgl27.github.io/SmartTwitchTV/release/githubio/images/404_logo.png";
-    public static final String GAME_404 = "https://fgl27.github.io/SmartTwitchTV/release/githubio/images/404_game.png";
+    public static final String VIDEO_404 = "https://yofardev.github.io/SmarterTwitchTV/release/githubio/images/404_video.png";
+    public static final String LOGO_404 = "https://yofardev.github.io/SmarterTwitchTV/release/githubio/images/404_logo.png";
+    public static final String GAME_404 = "https://yofardev.github.io/SmarterTwitchTV/release/githubio/images/404_game.png";
 }

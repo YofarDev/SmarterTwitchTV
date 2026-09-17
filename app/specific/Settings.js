@@ -425,6 +425,10 @@ var Settings_value = {
         values: ['no', 'yes'],
         defaultValue: 2
     },
+    ad_filter: {
+        values: ['no', 'yes'],
+        defaultValue: 2
+    },
     enable_mature: {
         values: ['no', 'yes'],
         defaultValue: 2
@@ -600,6 +604,11 @@ var Settings_value = {
         //Migrated to dialog
         values: ['no', 'yes'],
         defaultValue: 1
+    },
+    highlight_verified: {
+        //Migrated to dialog
+        values: ['no', 'yes'],
+        defaultValue: 2
     },
     highlight_atstreamer: {
         //Migrated to dialog
@@ -973,6 +982,8 @@ function Settings_SetSettings() {
 
     div += Settings_Content('check_source', array_no_yes, STR_SOURCE_CHECK, STR_SOURCE_CHECK_SUMMARY);
 
+    div += Settings_Content('ad_filter', array_no_yes, STR_AD_FILTER, STR_AD_FILTER_SUMMARY);
+
     div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
 
     key = 'default_quality';
@@ -1149,6 +1160,7 @@ function Settings_SetDefaults() {
     OSInterface_SetPreviewAudio(Settings_Obj_default('preview_volume_new'));
     OSInterface_SetPreviewSize(Settings_Obj_default('preview_sizes'));
     OSInterface_SetCheckSource(Settings_Obj_default('check_source') === 1);
+    OSInterface_SetAdFilter(Settings_Obj_default('ad_filter') === 1);
     Settings_SetPingWarning();
     SettingsColor_SetAnimationStyleRestore();
     //Settings_proxy_set_start();
@@ -1394,6 +1406,7 @@ function Settings_SetDefault(position) {
     else if (position === 'speed_adjust') Settings_SetSpeed_adjust();
     else if (position === 'seek_preview') PlayVod_SetPreviewType();
     else if (position === 'check_source') OSInterface_SetCheckSource(Settings_Obj_default('check_source') === 1);
+    else if (position === 'ad_filter') OSInterface_SetAdFilter(Settings_Obj_default('ad_filter') === 1);
     else if (position === 'thumb_quality') Main_SetThumb();
     else if (position === 'preview_others_volume_new') OSInterface_SetPreviewOthersAudio(Settings_Obj_default('preview_others_volume_new'));
     else if (position === 'preview_volume_new') OSInterface_SetPreviewAudio(Settings_Obj_default('preview_volume_new'));
@@ -3341,6 +3354,7 @@ function Settings_DialogShowChat(click) {
     Settings_value.highlight_atstreamer.values = yes_no;
     Settings_value.highlight_streamer.values = yes_no;
     Settings_value.highlight_mod.values = yes_no;
+    Settings_value.highlight_verified.values = yes_no;
     Settings_value.highlight_atuser.values = yes_no;
     Settings_value.highlight_user_send.values = yes_no;
     Settings_value.show_sub.values = yes_no;
@@ -3430,6 +3444,12 @@ function Settings_DialogShowChat(click) {
             defaultValue: Settings_value.highlight_mod.defaultValue,
             values: Settings_value.highlight_mod.values,
             title: STR_CHAT_HIGHLIGHT_MOD_MSG,
+            summary: null
+        },
+        highlight_verified: {
+            defaultValue: Settings_value.highlight_verified.defaultValue,
+            values: Settings_value.highlight_verified.values,
+            title: STR_CHAT_HIGHLIGHT_VERIFIED,
             summary: null
         },
         highlight_streamer: {

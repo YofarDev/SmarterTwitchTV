@@ -934,6 +934,14 @@ function OSInterface_SetCheckSource(mCheckSource) {
     if (Main_IsOn_OSInterface) Android.SetCheckSource(mCheckSource);
 }
 
+//public void SetAdFilter(boolean enable)
+//enable enable disable
+//Android specific: true
+//Allows to enable disable the removal of ads stitched into the stream playlists
+function OSInterface_SetAdFilter(enable) {
+    if (Main_IsOn_OSInterface) Android.SetAdFilter(enable);
+}
+
 //public void showToast(String toast)
 //toast player toast
 //Android specific: true
