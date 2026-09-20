@@ -37,6 +37,10 @@ import com.google.common.io.ByteStreams;
  * playlist is filtered on every refresh so the player only ever sees the stream's own segments,
  * resuming at the live edge once the ad window is over.
  *
+ * Before stripping, an ad free backup playlist is requested from AdSwapClient (an adaptation of
+ * the desktop "vaft" solution), when one is found the stream keeps playing during the ad instead
+ * of pausing.
+ *
  * The filter is intentionally fail-open: on any parse error the original playlist is returned
  * unmodified so playback is never broken by the ad blocking itself.
  */
@@ -51,6 +55,8 @@ public final class AdPlaylistFilter {
     private static final String MARKER_STREAM_SOURCE = "twitch-stream-source";
     private static final String MARKER_LEGACY_AD_URL = "stitched-ad";
     private static final String MARKER_LEGACY_AD_TITLE = "Amazon";
+    private static final String MARKER_MIDROLL = "MIDROLL";
+    private static final String LIVE_SEGMENT_TITLE = "live";
 
     public static volatile boolean enabled = true;
 
@@ -58,6 +64,16 @@ public final class AdPlaylistFilter {
 
     public static void setEnabled(boolean value) {
         enabled = value;
+    }
+
+    /**
+     * Records a live channel playback session (usher url + master playlist served to the player),
+     * giving AdSwapClient what it needs to later request ad free backup playlists.
+     */
+    static void recordMasterSession(String masterUrl, byte[] mainPlaylist) {
+        if (!enabled) return;
+
+        AdSwapClient.recordMasterSession(masterUrl, mainPlaylist);
     }
 
     /**
@@ -81,11 +97,26 @@ public final class AdPlaylistFilter {
         byte[] original = ByteStreams.toByteArray(inputStream);
 
         try {
-            byte[] filtered = filter(original);
+            //Only live channel playlists title their segments "live", the title heuristic below
+            //must not be applied to vods as theirs carry a different title convention
+            boolean liveSession = AdSwapClient.isLiveSession(uri);
+            String playlist = new String(original, StandardCharsets.UTF_8);
 
-            return filtered != null ? filtered : original;
+            if (playlistHasAds(playlist, liveSession)) {
+                //First try an ad free backup of the same stream (vaft style), so playback
+                //continues instead of pausing; stripping remains the fallback
+                byte[] clean = AdSwapClient.getCleanPlaylist(uri);
+
+                if (clean != null) return clean;
+
+                byte[] filtered = filter(original, liveSession);
+
+                return filtered != null ? filtered : original;
+            }
+
+            return original;
         } catch (Exception e) {
-            // Fail-open, never let the filter break playback
+            //Fail-open, never let the filter break playback
             Log.e(TAG, "playlist filter error, returning original playlist", e);
 
             return original;
@@ -93,9 +124,34 @@ public final class AdPlaylistFilter {
     }
 
     /**
+     * Whether the playlist carries any sign of ad content. Live playlists title their content
+     * segments "live" (the vaft heuristic), a different title means ad content that carries no
+     * dedicated marker at all.
+     */
+    static boolean playlistHasAds(String playlist, boolean liveSession) {
+        if (playlist.contains(MARKER_LEGACY_AD_URL)) return true;
+        if (playlist.contains("#EXT-X-SCTE35")) return true;
+        if (playlist.contains("\"" + MARKER_MIDROLL + "\"") || playlist.contains("\"midroll\"")) return true;
+
+        if (!liveSession) return false;
+
+        for (String line : playlist.split("\n")) {
+            if (line.startsWith("#EXTINF") && !segmentTitleIsLive(line)) return true;
+        }
+
+        return false;
+    }
+
+    private static boolean segmentTitleIsLive(String extInfLine) {
+        int titleIndex = extInfLine.indexOf(',');
+
+        return titleIndex >= 0 && LIVE_SEGMENT_TITLE.equals(extInfLine.substring(titleIndex + 1).trim());
+    }
+
+    /**
      * Returns the scrubbed playlist, or null when the playlist has no ad content.
      */
-    private static byte[] filter(byte[] playlistBytes) {
+    private static byte[] filter(byte[] playlistBytes, boolean liveSession) {
         String playlist = new String(playlistBytes, StandardCharsets.UTF_8);
 
         // Playlists are small, a simple split is cheaper than a streaming parser
@@ -106,9 +162,16 @@ public final class AdPlaylistFilter {
         int removedSegments = 0;
         int removedAtHead = 0;
         boolean seenKeptSegment = false;
+        //Never prefetch segments while ads are around, the prefetch may carry ad content the
+        //region markers don't cover
+        boolean dropPrefetch = playlistHasAds(playlist, liveSession);
 
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i].trim();
+
+            if (dropPrefetch && line.startsWith("#EXT-X-TWITCH-PREFETCH")) {
+                continue;
+            }
 
             // SCTE-35 markers delimit an ad insertion window, the SSAI DATERANGE marks a
             // twitch-stitched-ad region; both only exist to describe ads, so they are dropped
@@ -139,7 +202,7 @@ public final class AdPlaylistFilter {
             if (line.startsWith("#EXTINF")) {
                 int segmentLine = findSegmentUri(lines, i + 1);
 
-                if (segmentLine != -1 && isAdSegment(line, lines[segmentLine].trim(), inAdRegion)) {
+                if (segmentLine != -1 && isAdSegment(line, lines[segmentLine].trim(), inAdRegion, liveSession)) {
                     removedSegments++;
                     if (!seenKeptSegment) removedAtHead++;
 
@@ -152,15 +215,20 @@ public final class AdPlaylistFilter {
                 seenKeptSegment = true;
             } else if (!line.isEmpty() && !line.startsWith("#")) {
                 seenKeptSegment = true;
-            } else if (line.startsWith("#EXT-X-TWITCH-PREFETCH:") && (inAdRegion || line.contains(MARKER_LEGACY_AD_URL))) {
-                // Never prefetch an ad segment
-                continue;
             }
 
             out.add(line);
         }
 
         if (removedSegments == 0) return null;
+
+        if (!seenKeptSegment) {
+            //Every segment looked like an ad, serving the stripped result would leave the player
+            //with nothing to play; better let the ad run than break the stream
+            Log.w(TAG, "all segments looked like ads, returning original playlist");
+
+            return null;
+        }
 
         collapseDiscontinuities(out);
 
@@ -172,17 +240,23 @@ public final class AdPlaylistFilter {
     }
 
     /**
-     * A segment is ad content when inside an ad region, or when it carries one of the legacy
-     * ad markers in its url or title.
+     * A segment is ad content when inside an ad region, when it carries one of the legacy ad
+     * markers in its url or title, or (live channels only) when its title is not "live".
      */
-    private static boolean isAdSegment(String extInfLine, String uriLine, boolean inAdRegion) {
+    private static boolean isAdSegment(String extInfLine, String uriLine, boolean inAdRegion, boolean liveSession) {
         if (inAdRegion) return true;
 
         if (uriLine.contains(MARKER_LEGACY_AD_URL)) return true;
 
         int titleIndex = extInfLine.indexOf(',');
+        String title = titleIndex >= 0 ? extInfLine.substring(titleIndex + 1).trim() : "";
 
-        return titleIndex >= 0 && MARKER_LEGACY_AD_TITLE.equals(extInfLine.substring(titleIndex + 1).trim());
+        //The advertiser title format is "Amazon" or "Amazon|<creative id>"
+        if (title.startsWith(MARKER_LEGACY_AD_TITLE)) return true;
+
+        //Live channel playlists title their content segments "live", anything else is ad
+        //content even when no dedicated marker is present
+        return liveSession && !LIVE_SEGMENT_TITLE.equals(title);
     }
 
     /**

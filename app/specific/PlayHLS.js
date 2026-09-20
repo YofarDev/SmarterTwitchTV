@@ -30,7 +30,9 @@ var Play_live_token =
     // ' videoPlaybackAccessToken(id: $vodID, params: {platform: $platform, playerBackend: \\"mediaplayer\\", playerType: $playerType}) @include(if: $isVod) {    value    signature    __typename  }}",' +
     //'"variables":{"isLive":true,"login":"%x","isVod":false,"vodID":"","playerType":"mobile","platform":"ios"}}';
     '{"extensions":{"persistedQuery":{"sha256Hash":"ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9","version":1}},' +
-    '"operationName":"PlaybackAccessToken","variables":{"isLive":true,"isVod":false,"login":"%x","platform":"web","playerType":"site","vodID":""}}';
+    //playerType popout gets playlists with less ads stitched in than site (same trick used by
+    //github.com/pixeltris/twitchadsolutions), leftovers are handled by the apk side ad filter
+    '"operationName":"PlaybackAccessToken","variables":{"isLive":true,"isVod":false,"login":"%x","platform":"web","playerType":"popout","vodID":""}}';
 
 var Play_base_live_links =
     'player_backend=mediaplayer&reassignments_supported=true&playlist_include_framerate=true&allow_source=true&fast_bread=false&cdm=wv&acmb=e30%3D&p=%p&play_session_id=%i&player_version=1.13.0&supported_codecs=%c';

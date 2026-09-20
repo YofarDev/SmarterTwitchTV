@@ -9,6 +9,13 @@ The App is divided in two part, **Apk** and **Web** you can check it version in 
 
 The app has a building update check function, so whenever there is a update a red text will show up bellow the main pages clock, also a short warning will pop on the screen let you know if is a **Apk** or **Web** update.
 
+September 20 2026
+==============
+
+* Player: Ad blocking upgrade, an adaptation of the desktop twitchadsolutions (vaft) technique: when an ad is detected the player switches on the fly to an ad free copy of the same stream (requested with an alternate player token), so playback continues during blocked ads instead of pausing
+* Player: Ad detection now also catches ads that carry no marker in the playlist, and the stream token is requested with the "popout" player type which gets less ads stitched in
+* Fixed the app icon shown on the Android TV home screen, it now matches the splash screen one
+
 September 17 2026
 ==============
 
