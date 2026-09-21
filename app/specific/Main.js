@@ -225,6 +225,7 @@ function Main_StartApp() {
                     Main_CheckFullxmlHttpGet: Main_CheckFullxmlHttpGet,
                     PlayHLS_GetTokenResult: PlayHLS_GetTokenResult,
                     PlayHLS_PlayListUrlResult: PlayHLS_PlayListUrlResult,
+                    PlayHLS_AdProbeResult: PlayHLS_AdProbeResult,
                     AddCode_AppTokenResult: AddCode_AppTokenResult,
                     Play_UpdateDurationDiv: Play_UpdateDurationDiv,
                     Screens_PlaybackTimeSetVodDuration: Screens_PlaybackTimeSetVodDuration

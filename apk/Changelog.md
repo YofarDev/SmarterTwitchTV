@@ -9,6 +9,12 @@ The App is divided in two part, **Apk** and **Web** you can check it version in 
 
 The app has a building update check function, so whenever there is a update a red text will show up bellow the main pages clock, also a short warning will pop on the screen let you know if is a **Apk** or **Web** update.
 
+September 21 2026 (3.0.383)
+==============
+
+* Player: Fixed ad blocking against the current ad playlist format, ads are recognized again (they now carry a different marker and title format) and a blocked ad no longer ends with a player error
+* Player: streams that are serving a preroll now start with an ad free playback token when one is available (tried before playback starts, never mid stream); prerolls that cannot be avoided play normally instead of erroring
+
 September 21 2026
 ==============
 

@@ -21,11 +21,19 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 382, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/382/SmarterPurpleTV_3_0_382.apk',
+    publishVersionCode: 383, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/383/SmarterPurpleTV_3_0_383.apk',
     WebVersion: 'September 21 2026',
-    WebTag: 730, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 731, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'September 21 2026',
+            changes: [
+                'Player: Fixed ad blocking against the current ad playlist format, ads are recognized again (they now carry a different marker and title format) and a blocked ad no longer ends with a player error',
+                'Player: streams that are serving a preroll now start with an ad free playback token when one is available (tried before playback starts, never mid stream); prerolls that cannot be avoided play normally instead of erroring',
+                'Note: the ad blocking runs on the app (APK) side of the application, it only takes effect after updating to a newly built app version'
+            ]
+        },
         {
             title: 'September 21 2026',
             changes: [

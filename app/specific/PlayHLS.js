@@ -23,6 +23,12 @@ var Play_Headers;
 //Live
 var play_ExtraCodecsValues;
 
+//Preroll retry: token template override used while retrying with an alternate player type;
+//single shot, cleared once consumed by PlayHLS_GetToken
+var PlayHLS_AdRetryToken = null;
+//Preroll retry state per playback load (keyed by checkResult): {original, attempt, current}
+var PlayHLS_AdRetryStates = {};
+
 var Play_live_token_prop = 'streamPlaybackAccessToken';
 var Play_live_token =
     // '{"operationName":"PlaybackAccessToken_Template","query":"query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) ' +
@@ -83,7 +89,7 @@ function PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callB
     OSInterface_XmlHttpGetFull(
         PlayClip_BaseUrl, //String urlString
         DefaultHttpGetTimeout, //int timeout
-        (isLive ? Play_live_token : Play_vod_token).replace('%x', Channel_or_VOD_Id), // String postMessage
+        (isLive ? PlayHLS_AdRetryToken || Play_live_token : Play_vod_token).replace('%x', Channel_or_VOD_Id), // String postMessage
         'POST', //String Method
         Play_Headers, //String JsonHeadersArray
         'PlayHLS_GetTokenResult', //String callback
@@ -96,6 +102,9 @@ function PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callB
         callBackSuccess, //String callBackSuccess
         null //String callBackError
     );
+
+    //The override is single shot, a next retry (if any) sets it again
+    PlayHLS_AdRetryToken = null;
 }
 
 function PlayHLS_GetTokenResult(result, checkResult, check_1, check_2, check_3, check_4, check_5, callBackSuccess) {
@@ -126,6 +135,12 @@ function PlayHLS_GetTokenResult(result, checkResult, check_1, check_2, check_3, 
             PlayHLS_PlayListUrl(isLive, Channel_or_VOD_Id, checkResult, CheckId_x, callBackSuccess, Token, Sig, useProxy);
             return;
         }
+    }
+
+    //When a preroll retry fails to get a token, fall back to the original playlist instead
+    //of surfacing an error
+    if (isLive && PlayHLS_AdRetryFinishOriginal(checkResult, CheckId_x, checkResult, callBackSuccess)) {
+        return;
     }
 
     // prettier-ignore
@@ -238,11 +253,24 @@ function PlayHLS_PlayListUrlResult(result, checkResult, check_1, check_2, check_
             return;
         }
 
+        //When a preroll retry fails to get a playlist, fall back to the original one instead
+        //of surfacing an error
+        if (isLive && PlayHLS_AdRetryFinishOriginal(checkResult, CheckId_x, CheckId_y, callBackSuccess)) {
+            return;
+        }
+
         result = JSON.stringify({
             status: Checked_Token === '1' ? 1 : response.status,
             responseText: response.responseText,
             checkResult: response.checkResult
         });
+    } else if (isLive && !useProxy && PlayHLS_AdFilterOn()) {
+        //Before starting playback check that the stream is not serving a preroll; when it is,
+        //a token with an alternate player type often gets an ad free playlist for the same
+        //stream (the retry happens before playback, never mid stream)
+        if (PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, callBackSuccess)) {
+            return;
+        }
     }
 
     // prettier-ignore
@@ -255,6 +283,144 @@ function PlayHLS_PlayListUrlResult(result, checkResult, check_1, check_2, check_
     if (useProxy) {
         Main_EventProxy(true);
     }
+}
+
+//Whether the ad blocking setting is enabled
+function PlayHLS_AdFilterOn() {
+    return typeof Settings_value !== 'undefined' && Settings_Obj_default('ad_filter') === 1;
+}
+
+/**
+ * Probes the first variant of the just fetched master playlist for ad content, asynchronously;
+ * returns true when the caller must wait for the probe (the flow continues from
+ * PlayHLS_AdProbeResult), false when playback can proceed with the current result.
+ */
+function PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, callBackSuccess) {
+    var responseObj = JSON.parse(result);
+    var variantUrl = PlayHLS_FirstVariantUrl(responseObj.responseText);
+    var state = PlayHLS_AdRetryStates[checkResult];
+
+    if (!variantUrl || (state && state.attempt >= 2)) {
+        if (state) delete PlayHLS_AdRetryStates[checkResult];
+
+        return false;
+    }
+
+    if (!state) {
+        state = PlayHLS_AdRetryStates[checkResult] = {
+            original: result,
+            attempt: 0,
+            current: result
+        };
+    } else {
+        state.current = result;
+    }
+
+    OSInterface_XmlHttpGetFull(
+        variantUrl, //String urlString
+        DefaultHttpGetTimeout, //int timeout
+        null, //String postMessage
+        null, //String Method
+        null, //String JsonHeadersArray
+        'PlayHLS_AdProbeResult', //String callback
+        checkResult, //long checkResult
+        check_1, //String check_1 isLive
+        '0', //String check_2 useProxy (the retry never uses a proxy)
+        check_3, //String check_3 channel
+        '1', //String check_4 marks a probe request (validated by the callback)
+        check_5, //String check_5 CheckId_x
+        callBackSuccess, //String callBackSuccess
+        null //String callBackError
+    );
+
+    return true;
+}
+
+function PlayHLS_AdProbeResult(result, checkResult, check_1, check_2, check_3, check_4, check_5, callBackSuccess) {
+    var state = PlayHLS_AdRetryStates[checkResult];
+
+    //Not a probe of this flow (stale or marked otherwise), ignore it
+    if (!state || check_4 !== '1') return;
+
+    var hasAds = check_1 === '1' && check_2 !== '1' && PlayHLS_ProbeResultHasAds(result);
+
+    if (!hasAds) {
+        //Ad free (or unknowable), play this playlist
+        var current = state.current;
+
+        delete PlayHLS_AdRetryStates[checkResult];
+
+        PlayHLS_AdRetryFinish(current, check_5, checkResult, callBackSuccess);
+        return;
+    }
+
+    state.attempt++;
+
+    if (state.attempt > 2) {
+        //No ad free token found, play the latest playlist (the preroll plays, but without
+        //any playback error thanks to the apk side filter fail open)
+        var playlistResult = state.current;
+
+        delete PlayHLS_AdRetryStates[checkResult];
+
+        PlayHLS_AdRetryFinish(playlistResult, check_5, checkResult, callBackSuccess);
+        return;
+    }
+
+    //Retry the token with an alternate player type ("embed" then "popout"), those often get
+    //playlists without the preroll stitched in
+    PlayHLS_AdRetryToken = Play_live_token.replace('"playerType":"site"', '"playerType":"' + (state.attempt === 1 ? 'embed' : 'popout') + '"');
+    PlayHLS_GetToken(true, check_3, checkResult, parseInt(check_5), callBackSuccess, false);
+}
+
+//Whether a probe response describes a playlist with ad content
+function PlayHLS_ProbeResultHasAds(result) {
+    try {
+        var response = JSON.parse(result);
+
+        return response.status === 200 && (Main_A_includes_B(response.responseText, 'stitched') || Main_A_includes_B(response.responseText, 'Amazon|'));
+    } catch (error) {
+        return false;
+    }
+}
+
+/**
+ * When a preroll retry is (or was) in flight for this playback load, finishes the flow with the
+ * original playlist; returns false when there is nothing to fall back to (the caller proceeds
+ * with its normal error handling).
+ */
+function PlayHLS_AdRetryFinishOriginal(checkResult, CheckId_x, CheckId_y, callBackSuccess) {
+    var state = PlayHLS_AdRetryStates[checkResult];
+
+    if (!state || !state.original) return false;
+
+    delete PlayHLS_AdRetryStates[checkResult];
+
+    PlayHLS_AdRetryFinish(state.original, CheckId_x, CheckId_y, callBackSuccess);
+
+    return true;
+}
+
+function PlayHLS_AdRetryFinish(result, CheckId_x, CheckId_y, callBackSuccess) {
+    // prettier-ignore
+    eval(callBackSuccess)(// jshint ignore:line
+        result,
+        parseInt(CheckId_x),
+        parseInt(CheckId_y)
+    );
+}
+
+//The url of the first variant of a master playlist
+function PlayHLS_FirstVariantUrl(playlist) {
+    var lines = playlist.split('\n');
+
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+
+        if (line.indexOf('http') === 0) return line;
+    }
+
+    return null;
 }
 
 function PlayHLS_CheckProxyResultFail(responseText) {

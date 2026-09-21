@@ -49,8 +49,14 @@ public final class AdPlaylistFilter {
 
     private static final String MARKER_STITCHED_AD = "twitch-stitched-ad";
     private static final String MARKER_STREAM_SOURCE = "twitch-stream-source";
+    //The source marker value when live content is being served; during ads the same marker
+    //carries the ad creative id instead (X-TV-TWITCH-STREAM-SOURCE="Amazon|..."), so only
+    //this exact value really means the ad window is over
+    private static final String MARKER_STREAM_SOURCE_LIVE = "X-TV-TWITCH-STREAM-SOURCE=\"live\"";
     private static final String MARKER_LEGACY_AD_URL = "stitched-ad";
-    private static final String MARKER_LEGACY_AD_TITLE = "Amazon";
+    //Ad segments are titled "Amazon" or "Amazon|<creative id>"
+    private static final String MARKER_AD_TITLE = "Amazon";
+    private static final String LIVE_SEGMENT_TITLE = "live";
 
     public static volatile boolean enabled = true;
 
@@ -122,8 +128,9 @@ public final class AdPlaylistFilter {
                     inAdRegion = true;
                     continue;
                 } else if (line.contains(MARKER_STREAM_SOURCE)) {
-                    // Live content resumed after the ad
-                    inAdRegion = false;
+                    //Live content resumed after the ad; only when the marker really says live,
+                    //during an ad it describes the ad creative instead
+                    if (line.contains(MARKER_STREAM_SOURCE_LIVE)) inAdRegion = false;
                 }
             } else if (line.startsWith("#EXT-X-SCTE35") || line.startsWith("#EXT-X-ASSET")) {
                 // Leftover SSAI signalling tags
@@ -137,6 +144,10 @@ public final class AdPlaylistFilter {
             }
 
             if (line.startsWith("#EXTINF")) {
+                //Ad segments are never titled "live", so a live title also ends any ad region
+                //whose end marker may be missing
+                if (inAdRegion && segmentTitleIs(line, LIVE_SEGMENT_TITLE)) inAdRegion = false;
+
                 int segmentLine = findSegmentUri(lines, i + 1);
 
                 if (segmentLine != -1 && isAdSegment(line, lines[segmentLine].trim(), inAdRegion)) {
@@ -162,27 +173,47 @@ public final class AdPlaylistFilter {
 
         if (removedSegments == 0) return null;
 
+        if (!seenKeptSegment) {
+            //The whole window is ad content (a preroll), serving the stripped result would give
+            //the player an empty playlist and end with a PlaylistStuckException error; better
+            //to let this ad run and continue normally once it is over
+            Log.i(TAG, "playlist is all ad content, letting it play");
+            return null;
+        }
+
         collapseDiscontinuities(out);
 
         if (removedAtHead > 0) bumpMediaSequence(out, removedAtHead);
 
-        Log.d(TAG, "removed " + removedSegments + " ad segment(s)");
+        Log.i(TAG, "removed " + removedSegments + " ad segment(s)");
 
         return joinLines(out);
     }
 
     /**
-     * A segment is ad content when inside an ad region, or when it carries one of the legacy
-     * ad markers in its url or title.
+     * A segment is ad content when inside an ad region, or when it carries one of the ad
+     * markers in its url or title.
      */
     private static boolean isAdSegment(String extInfLine, String uriLine, boolean inAdRegion) {
         if (inAdRegion) return true;
 
         if (uriLine.contains(MARKER_LEGACY_AD_URL)) return true;
 
-        int titleIndex = extInfLine.indexOf(',');
+        return segmentTitleIs(extInfLine, MARKER_AD_TITLE);
+    }
 
-        return titleIndex >= 0 && MARKER_LEGACY_AD_TITLE.equals(extInfLine.substring(titleIndex + 1).trim());
+    /**
+     * Whether the EXTINF line's title (the text after the comma) is or starts with the given
+     * ad title... when checking for the live title it must match exactly, for ad titles a
+     * prefix match covers the "Amazon|<creative id>" format.
+     */
+    private static boolean segmentTitleIs(String extInfLine, String title) {
+        int titleIndex = extInfLine.indexOf(',');
+        if (titleIndex < 0) return false;
+
+        String segmentTitle = extInfLine.substring(titleIndex + 1).trim();
+
+        return title.equals(LIVE_SEGMENT_TITLE) ? segmentTitle.equals(title) : segmentTitle.startsWith(title);
     }
 
     /**
