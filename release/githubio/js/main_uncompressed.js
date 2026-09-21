@@ -8180,14 +8180,15 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 384, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/384/SmarterPurpleTV_3_0_384.apk',
+        publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
         WebVersion: 'September 21 2026',
-        WebTag: 732, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 733, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
             {
                 title: 'September 21 2026',
                 changes: [
+                    'Debug logs: the on device log capture now keeps around 8mb of history (it was filling up in a couple of minutes), no visible change otherwise',
                     'Player: Midroll ads that the playlist filter cannot hide (longer than the playback buffer) now trigger a quick stream reload with a fresh playback token instead of buffering until the ad plays; ads still cannot be skipped when every token serves them, but playback no longer stalls into them',
                     'Player: Fixed ad blocking against the current ad playlist format, ads are recognized again (they now carry a different marker and title format) and a blocked ad no longer ends with a player error',
                     'Player: streams that are serving a preroll now start with an ad free playback token when one is available (tried before playback starts, never mid stream)',

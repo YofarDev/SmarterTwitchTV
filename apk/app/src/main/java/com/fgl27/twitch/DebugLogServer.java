@@ -62,10 +62,11 @@ public final class DebugLogServer {
 
     private static final int PORT = 8977;
     private static final String SERVICE_TYPE = "_sptv._tcp.";
-    //Rotate the capture at 256kb keeping 3 old copies, at most ~1mb is served per request
-    private static final int ROTATE_KB = 256;
+    //Rotate the capture at 2mb keeping 3 old copies (~8mb of history, the app logs whole
+    //playlists what makes the capture grow fast), at most ~6mb is served per request
+    private static final int ROTATE_KB = 2048;
     private static final int ROTATE_COUNT = 3;
-    private static final int MAX_SERVED_BYTES = 1024 * 1024;
+    private static final int MAX_SERVED_BYTES = 6 * 1024 * 1024;
 
     private static Context appContext;
     private static Process logcatProcess;
