@@ -291,16 +291,19 @@ function PlayHLS_AdFilterOn() {
 }
 
 /**
- * Probes the first variant of the just fetched master playlist for ad content, asynchronously;
- * returns true when the caller must wait for the probe (the flow continues from
- * PlayHLS_AdProbeResult), false when playback can proceed with the current result.
+ * Probes the first and last variants of the just fetched master playlist for ad content,
+ * asynchronously; returns true when the caller must wait for the probe (the flow continues
+ * from PlayHLS_AdProbeResult), false when playback can proceed with the current result.
+ *
+ * Ads are stitched per variant, so a single variant can temporarily look clean while the one
+ * being played carries ads; probing both ends of the variant list catches that.
  */
 function PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, callBackSuccess) {
     var responseObj = JSON.parse(result);
-    var variantUrl = PlayHLS_FirstVariantUrl(responseObj.responseText);
+    var variants = PlayHLS_VariantUrls(responseObj.responseText);
     var state = PlayHLS_AdRetryStates[checkResult];
 
-    if (!variantUrl || (state && state.attempt >= 2)) {
+    if (!variants.first) {
         if (state) delete PlayHLS_AdRetryStates[checkResult];
 
         return false;
@@ -310,14 +313,30 @@ function PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, 
         state = PlayHLS_AdRetryStates[checkResult] = {
             original: result,
             attempt: 0,
-            current: result
+            current: result,
+            lastVariant: variants.last
         };
     } else {
         state.current = result;
+        state.lastVariant = variants.last;
     }
 
+    //The autoplay (360p) escape is the last resort, accept its playlist without probing and
+    //schedule a restore of the quality once the ad break is over
+    if (state.attempt >= 3) {
+        PlayHLS_AdLog('accepting the autoplay playlist without probing');
+
+        delete PlayHLS_AdRetryStates[checkResult];
+        PlayHLS_AdScheduleRestore();
+        PlayHLS_AdRetryFinish(result, check_5, checkResult, callBackSuccess);
+
+        return true;
+    }
+
+    PlayHLS_AdLog('probing for ads, player type attempt ' + state.attempt);
+
     OSInterface_XmlHttpGetFull(
-        variantUrl, //String urlString
+        variants.first, //String urlString
         DefaultHttpGetTimeout, //int timeout
         null, //String postMessage
         null, //String Method
@@ -327,7 +346,7 @@ function PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, 
         check_1, //String check_1 isLive
         '0', //String check_2 useProxy (the retry never uses a proxy)
         check_3, //String check_3 channel
-        '1', //String check_4 marks a probe request (validated by the callback)
+        '1', //String check_4 probe slot (1 first variant, 2 last variant)
         check_5, //String check_5 CheckId_x
         callBackSuccess, //String callBackSuccess
         null //String callBackError
@@ -340,9 +359,39 @@ function PlayHLS_AdProbeResult(result, checkResult, check_1, check_2, check_3, c
     var state = PlayHLS_AdRetryStates[checkResult];
 
     //Not a probe of this flow (stale or marked otherwise), ignore it
-    if (!state || check_4 !== '1') return;
+    if (!state || (check_4 !== '1' && check_4 !== '2')) return;
 
-    var hasAds = check_1 === '1' && check_2 !== '1' && PlayHLS_ProbeResultHasAds(result);
+    var live = check_1 === '1' && check_2 !== '1';
+    var hasAds = live && PlayHLS_ProbeResultHasAds(result);
+
+    PlayHLS_AdLog('probe slot ' + check_4 + (hasAds ? ' found ads' : ' is clean'));
+
+    if (!hasAds && check_4 === '1' && state.lastVariant && state.lastVariant !== '') {
+        var responseObj = JSON.parse(state.current);
+        var variants = PlayHLS_VariantUrls(responseObj.responseText);
+
+        //Only probe the last variant when it is a different playlist
+        if (variants.last && variants.last !== variants.first) {
+            OSInterface_XmlHttpGetFull(
+                variants.last, //String urlString
+                DefaultHttpGetTimeout, //int timeout
+                null, //String postMessage
+                null, //String Method
+                null, //String JsonHeadersArray
+                'PlayHLS_AdProbeResult', //String callback
+                checkResult, //long checkResult
+                check_1, //String check_1 isLive
+                check_2, //String check_2 useProxy
+                check_3, //String check_3 channel
+                '2', //String check_4 probe slot 2 (last variant)
+                check_5, //String check_5 CheckId_x
+                callBackSuccess, //String callBackSuccess
+                null //String callBackError
+            );
+
+            return;
+        }
+    }
 
     if (!hasAds) {
         //Ad free (or unknowable), play this playlist
@@ -356,21 +405,50 @@ function PlayHLS_AdProbeResult(result, checkResult, check_1, check_2, check_3, c
 
     state.attempt++;
 
-    if (state.attempt > 2) {
+    if (state.attempt > 3) {
         //No ad free token found, play the latest playlist (the preroll plays, but without
         //any playback error thanks to the apk side filter fail open)
         var playlistResult = state.current;
 
         delete PlayHLS_AdRetryStates[checkResult];
 
+        PlayHLS_AdLog('no ad free player type found, playing with ads');
         PlayHLS_AdRetryFinish(playlistResult, check_5, checkResult, callBackSuccess);
         return;
     }
 
-    //Retry the token with an alternate player type ("embed" then "popout"), those often get
-    //playlists without the preroll stitched in
-    PlayHLS_AdRetryToken = Play_live_token.replace('"playerType":"site"', '"playerType":"' + (state.attempt === 1 ? 'embed' : 'popout') + '"');
+    //Retry the token with an alternate player type ("embed", "popout" and last "autoplay",
+    //the 360p one), those often get playlists without the current ad stitched in
+    var playerType = state.attempt === 1 ? 'embed' : state.attempt === 2 ? 'popout' : 'autoplay';
+    PlayHLS_AdLog('retrying with the ' + playerType + ' player type');
+    PlayHLS_AdRetryToken = Play_live_token.replace('"playerType":"site"', '"playerType":"' + playerType + '"');
     PlayHLS_GetToken(true, check_3, checkResult, parseInt(check_5), callBackSuccess, false);
+}
+
+//After an autoplay (360p) escape, reload the current stream once the ad break should be over,
+//restoring the normal quality (and the normal player type)
+var PlayHLS_AdRestoreScheduled = false;
+function PlayHLS_AdScheduleRestore() {
+    if (PlayHLS_AdRestoreScheduled) return;
+
+    PlayHLS_AdRestoreScheduled = true;
+    PlayHLS_AdLog('scheduled a quality restore reload');
+
+    Main_setTimeout(
+        function () {
+            PlayHLS_AdRestoreScheduled = false;
+
+            if (typeof Play_loadData === 'function' && Play_isOn && !Play_isEndDialogVisible() && Play_data.data.length > 6) {
+                PlayHLS_AdLog('running the quality restore reload');
+                Play_loadData();
+            }
+        },
+        75000
+    );
+}
+
+function PlayHLS_AdLog(message) {
+    console.log('[PlayHLS-Ad] ' + message);
 }
 
 //Whether a probe response describes a playlist with ad content
@@ -410,17 +488,25 @@ function PlayHLS_AdRetryFinish(result, CheckId_x, CheckId_y, callBackSuccess) {
     );
 }
 
-//The url of the first variant of a master playlist
-function PlayHLS_FirstVariantUrl(playlist) {
+//The first and last variant urls of a master playlist
+function PlayHLS_VariantUrls(playlist) {
     var lines = playlist.split('\n');
+    var first = null;
+    var last = null;
 
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i].trim();
 
-        if (line.indexOf('http') === 0) return line;
+        if (line.indexOf('http') === 0) {
+            if (first === null) first = line;
+            last = line;
+        }
     }
 
-    return null;
+    return {
+        first: first,
+        last: last
+    };
 }
 
 function PlayHLS_CheckProxyResultFail(responseText) {
