@@ -8180,16 +8180,17 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 383, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/383/SmarterPurpleTV_3_0_383.apk',
+        publishVersionCode: 384, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/384/SmarterPurpleTV_3_0_384.apk',
         WebVersion: 'September 21 2026',
-        WebTag: 731, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 732, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
             {
                 title: 'September 21 2026',
                 changes: [
+                    'Player: Midroll ads that the playlist filter cannot hide (longer than the playback buffer) now trigger a quick stream reload with a fresh playback token instead of buffering until the ad plays; ads still cannot be skipped when every token serves them, but playback no longer stalls into them',
                     'Player: Fixed ad blocking against the current ad playlist format, ads are recognized again (they now carry a different marker and title format) and a blocked ad no longer ends with a player error',
-                    'Player: streams that are serving a preroll now start with an ad free playback token when one is available (tried before playback starts, never mid stream); prerolls that cannot be avoided play normally instead of erroring',
+                    'Player: streams that are serving a preroll now start with an ad free playback token when one is available (tried before playback starts, never mid stream)',
                     'Note: the ad blocking runs on the app (APK) side of the application, it only takes effect after updating to a newly built app version'
                 ]
             },
@@ -17077,6 +17078,7 @@
                         PlayHLS_GetTokenResult: PlayHLS_GetTokenResult,
                         PlayHLS_PlayListUrlResult: PlayHLS_PlayListUrlResult,
                         PlayHLS_AdProbeResult: PlayHLS_AdProbeResult,
+                        Play_AdBlockReload: Play_AdBlockReload,
                         AddCode_AppTokenResult: AddCode_AppTokenResult,
                         Play_UpdateDurationDiv: Play_UpdateDurationDiv,
                         Screens_PlaybackTimeSetVodDuration: Screens_PlaybackTimeSetVodDuration
@@ -22830,6 +22832,25 @@
                 PlayHLS_GetPlayListAsync(true, Play_data.data[6], Play_loadDataId, null, Play_loadDataResult);
             }
         } else Play_loadDataSuccessFake();
+    }
+
+    var Play_AdBlockReloadLast = 0;
+    function Play_AdBlockReload() {
+        //Called only by JAVA when the ad filter can no longer hide a midroll from the playback;
+        //reloads the current stream, the reload re-requests the playback token which often comes
+        //back without ads stitched in (PlayHLS probes and retries with alternate player types)
+        if (
+            Play_isOn &&
+            Play_data.data.length > 6 &&
+            !Play_isEndDialogVisible() &&
+            PlayHLS_AdFilterOn() &&
+            new Date().getTime() - Play_AdBlockReloadLast > 60000
+        ) {
+            Play_AdBlockReloadLast = new Date().getTime();
+
+            Play_showBufferDialog();
+            Play_loadData();
+        }
     }
 
     function Play_loadDataResult(response) {
@@ -52583,6 +52604,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         PlayHLS_GetTokenResult: PlayHLS_GetTokenResult,
         PlayHLS_PlayListUrlResult: PlayHLS_PlayListUrlResult,
         PlayHLS_AdProbeResult: PlayHLS_AdProbeResult,
+        Play_AdBlockReload: Play_AdBlockReload,
         AddCode_AppTokenResult: AddCode_AppTokenResult,
         Play_UpdateDurationDiv: Play_UpdateDurationDiv,
         Screens_PlaybackTimeSetVodDuration: Screens_PlaybackTimeSetVodDuration

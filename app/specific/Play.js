@@ -801,6 +801,25 @@ function Play_loadData(synchronous) {
     } else Play_loadDataSuccessFake();
 }
 
+var Play_AdBlockReloadLast = 0;
+function Play_AdBlockReload() {
+    //Called only by JAVA when the ad filter can no longer hide a midroll from the playback;
+    //reloads the current stream, the reload re-requests the playback token which often comes
+    //back without ads stitched in (PlayHLS probes and retries with alternate player types)
+    if (
+        Play_isOn &&
+        Play_data.data.length > 6 &&
+        !Play_isEndDialogVisible() &&
+        PlayHLS_AdFilterOn() &&
+        new Date().getTime() - Play_AdBlockReloadLast > 60000
+    ) {
+        Play_AdBlockReloadLast = new Date().getTime();
+
+        Play_showBufferDialog();
+        Play_loadData();
+    }
+}
+
 function Play_loadDataResult(response) {
     if (Play_isOn) {
         if (response) {

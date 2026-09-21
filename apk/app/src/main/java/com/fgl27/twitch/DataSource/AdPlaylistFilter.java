@@ -60,10 +60,60 @@ public final class AdPlaylistFilter {
 
     public static volatile boolean enabled = true;
 
+    /**
+     * Fired (from a player loader thread) when a midroll can no longer be hidden by stripping,
+     * the web side is expected to reload the stream in the hope of getting an ad free token.
+     */
+    public interface AdReloadListener {
+
+        void onAdReloadRequested();
+    }
+
+    private static volatile AdReloadListener adReloadListener;
+    private static volatile long strippingSince;
+    private static volatile long lastReloadNotify;
+
+    //A midroll shorter than this is usually covered by the player buffer and never visible
+    private static final long STRIP_GRACE_MS = 6000;
+    //Minimum time between reload requests, prevents reload loops when every token has ads
+    private static final long RELOAD_COOLDOWN_MS = 60000;
+
     private AdPlaylistFilter() {}
 
     public static void setEnabled(boolean value) {
         enabled = value;
+    }
+
+    public static void setAdReloadListener(AdReloadListener listener) {
+        adReloadListener = listener;
+    }
+
+    private static void requestAdReloadIfNeeded(boolean allAds) {
+        long now = System.currentTimeMillis();
+
+        if (!allAds) {
+            if (strippingSince == 0) {
+                strippingSince = now;
+                return;
+            }
+
+            if (now - strippingSince < STRIP_GRACE_MS) return;
+        }
+
+        if (now - lastReloadNotify < RELOAD_COOLDOWN_MS) return;
+
+        lastReloadNotify = now;
+        strippingSince = 0;
+
+        AdReloadListener listener = adReloadListener;
+        if (listener != null) {
+            Log.i(TAG, "requesting a stream reload to escape ads");
+            listener.onAdReloadRequested();
+        }
+    }
+
+    private static void resetAdReloadTracking() {
+        strippingSince = 0;
     }
 
     /**
@@ -87,9 +137,17 @@ public final class AdPlaylistFilter {
         byte[] original = ByteStreams.toByteArray(inputStream);
 
         try {
-            byte[] filtered = filter(original);
+            FilterResult result = filter(original);
 
-            return filtered != null ? filtered : original;
+            if (result == null) {
+                //No ad content, playback is clean
+                resetAdReloadTracking();
+                return original;
+            }
+
+            requestAdReloadIfNeeded(result.allAds);
+
+            return result.playlist != null ? result.playlist : original;
         } catch (Exception e) {
             // Fail-open, never let the filter break playback
             Log.e(TAG, "playlist filter error, returning original playlist", e);
@@ -99,9 +157,24 @@ public final class AdPlaylistFilter {
     }
 
     /**
-     * Returns the scrubbed playlist, or null when the playlist has no ad content.
+     * The outcome of a filter pass: the scrubbed playlist (null when the original must be
+     * served) and whether the whole window turned out to be ad content.
      */
-    private static byte[] filter(byte[] playlistBytes) {
+    private static class FilterResult {
+
+        final byte[] playlist;
+        final boolean allAds;
+
+        FilterResult(byte[] playlist, boolean allAds) {
+            this.playlist = playlist;
+            this.allAds = allAds;
+        }
+    }
+
+    /**
+     * Returns the filter outcome, or null when the playlist has no ad content.
+     */
+    private static FilterResult filter(byte[] playlistBytes) {
         String playlist = new String(playlistBytes, StandardCharsets.UTF_8);
 
         // Playlists are small, a simple split is cheaper than a streaming parser
@@ -178,7 +251,8 @@ public final class AdPlaylistFilter {
             //the player an empty playlist and end with a PlaylistStuckException error; better
             //to let this ad run and continue normally once it is over
             Log.i(TAG, "playlist is all ad content, letting it play");
-            return null;
+
+            return new FilterResult(null, true);
         }
 
         collapseDiscontinuities(out);
@@ -187,7 +261,7 @@ public final class AdPlaylistFilter {
 
         Log.i(TAG, "removed " + removedSegments + " ad segment(s)");
 
-        return joinLines(out);
+        return new FilterResult(joinLines(out), false);
     }
 
     /**

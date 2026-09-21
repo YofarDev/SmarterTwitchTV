@@ -369,6 +369,12 @@ public class PlayerActivity extends Activity {
             //too, the web settings call later only adjusts it if the setting changed
             DebugLogServer.setEnabled(this, appPreferences.getBoolean(Constants.PREF_DEBUG_LOGS, true));
 
+            //When the ad filter can no longer hide a midroll ask the web to reload the stream,
+            //the reload re-requests the token which often comes back ad free
+            AdPlaylistFilter.setAdReloadListener(
+                () -> runOnUiThread(() -> LoadUrlWebView("javascript:smartTwitchTV.Play_AdBlockReload()"))
+            );
+
             Intent intent = getIntent();
             boolean isChannelIntent = Objects.equals(intent.getAction(), Constants.CHANNEL_INTENT);
             boolean isDeeplinkIntent = Objects.equals(intent.getScheme(), Constants.DEEPLINK_SCHEME);
