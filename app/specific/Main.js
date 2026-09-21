@@ -1078,6 +1078,8 @@ function Main_checkVersion(skipCheck) {
             var Main_AndroidSDK = OSInterface_getSDK();
 
             Main_Log('Webviewversion ' + Webviewversion);
+            //Marks the running web version in the device log (visible on the debug log server)
+            Main_Log('WebTag ' + version.WebTag);
 
             Main_versionTag =
                 'Apk: ' +

@@ -8183,11 +8183,12 @@
         publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
         WebVersion: 'September 21 2026',
-        WebTag: 734, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 735, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
             {
                 title: 'September 21 2026',
                 changes: [
+                    'Player: The running web version is now written to the device debug log, and the ad escape decisions are logged too (helps diagnosing ad blocking behavior)',
                     'Player: Improved the ad escape during streams: the ad check now covers both ends of the stream playlists, and when no full quality ad free stream exists it falls back to a low quality ad free one and restores the quality once the ad break is over',
                     'Debug logs: the on device log capture now keeps around 8mb of history (it was filling up in a couple of minutes), no visible change otherwise',
                     'Player: Midroll ads that the playlist filter cannot hide (longer than the playback buffer) now trigger a quick stream reload with a fresh playback token instead of buffering until the ad plays; ads still cannot be skipped when every token serves them, but playback no longer stalls into them',
@@ -17935,6 +17936,8 @@
                 var Main_AndroidSDK = OSInterface_getSDK();
 
                 Main_Log('Webviewversion ' + Webviewversion);
+                //Marks the running web version in the device log (visible on the debug log server)
+                Main_Log('WebTag ' + version.WebTag);
 
                 Main_versionTag =
                     'Apk: ' +
@@ -30994,7 +30997,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     function PlayHLS_AdLog(message) {
-        console.log('[PlayHLS-Ad] ' + message);
+        //Main_Log goes through the apk logging bridge, plain console.log never reaches logcat on
+        //the Amazon WebView
+        Main_Log('[PlayHLS-Ad] ' + message);
     }
 
     //Whether a probe response describes a playlist with ad content

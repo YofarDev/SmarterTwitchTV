@@ -448,7 +448,9 @@ function PlayHLS_AdScheduleRestore() {
 }
 
 function PlayHLS_AdLog(message) {
-    console.log('[PlayHLS-Ad] ' + message);
+    //Main_Log goes through the apk logging bridge, plain console.log never reaches logcat on
+    //the Amazon WebView
+    Main_Log('[PlayHLS-Ad] ' + message);
 }
 
 //Whether a probe response describes a playlist with ad content
