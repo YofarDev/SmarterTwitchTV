@@ -419,10 +419,6 @@ public class DefaultHttpDataSource extends BaseDataSource implements HttpDataSou
         transferInitializing(dataSpec);
 
         if (isPlaylist) {
-            //The master playlist request the player never really makes, record it so
-            //AdPlaylistFilter/AdSwapClient can later map media playlists back to this session
-            AdPlaylistFilter.recordMasterSession(uri.toString(), mainPlaylist);
-
             if (dataSpec.position > mainPlaylist.length) {
                 throw new HttpDataSourceException(
                     dataSpec,

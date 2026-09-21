@@ -21,11 +21,19 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 381, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/381/SmarterPurpleTV_3_0_381.apk',
-    WebVersion: 'September 20 2026',
-    WebTag: 729, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    publishVersionCode: 382, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/382/SmarterPurpleTV_3_0_382.apk',
+    WebVersion: 'September 21 2026',
+    WebTag: 730, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'September 21 2026',
+            changes: [
+                'Player: Reverted the 3.0.381 ad blocking changes, during ad breaks they could make the stream glitch, loop the last seconds and end with a player error. Ad blocking works like 3.0.380 again: ads stitched into the playlist are removed and the stream pauses briefly during a blocked ad',
+                'New "Debug logs" option (Settings → Player, on by default): the app saves its own logs and serves them over the local network so they can be read from a computer on the same network to help diagnose issues. Only this app own logs are exposed, only inside your network',
+                'Note: both changes run on the app (APK) side of the application, it only takes effect after updating to a newly built app version'
+            ]
+        },
         {
             title: 'September 20 2026',
             changes: [

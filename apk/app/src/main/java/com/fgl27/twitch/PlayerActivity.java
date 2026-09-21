@@ -365,6 +365,10 @@ public class PlayerActivity extends Activity {
         if (!onCreateReady) {
             appPreferences = new AppPreferences(this);
 
+            //Start the debug log server early (when enabled) so app/web load issues are captured
+            //too, the web settings call later only adjusts it if the setting changed
+            DebugLogServer.setEnabled(this, appPreferences.getBoolean(Constants.PREF_DEBUG_LOGS, true));
+
             Intent intent = getIntent();
             boolean isChannelIntent = Objects.equals(intent.getAction(), Constants.CHANNEL_INTENT);
             boolean isDeeplinkIntent = Objects.equals(intent.getScheme(), Constants.DEEPLINK_SCHEME);
@@ -2465,6 +2469,12 @@ public class PlayerActivity extends Activity {
         @JavascriptInterface
         public void SetAdFilter(boolean enable) {
             AdPlaylistFilter.setEnabled(enable);
+        }
+
+        @JavascriptInterface
+        public void SetDebugLog(boolean enable) {
+            appPreferences.put(Constants.PREF_DEBUG_LOGS, enable);
+            DebugLogServer.setEnabled(mWebViewContext, enable);
         }
 
         @JavascriptInterface

@@ -628,6 +628,9 @@ function en_USLang() {
     STR_AD_FILTER = 'Block ads';
     STR_AD_FILTER_SUMMARY =
         "When enabled, ads stitched into the stream are removed from the playback playlists. During a blocked ad the stream pauses briefly and resumes where the ad ended. This works directly with Twitch's servers, no proxy is involved.";
+    STR_DEBUG_LOG = 'Debug logs';
+    STR_DEBUG_LOG_SUMMARY =
+        'When enabled, the app saves its own logs and serves them over the local network (http port 8977), so they can be read from a computer on the same network to help diagnose issues. Only this app logs are exposed, and only inside your network.';
     STR_PLAYER_LAG = "Player is lagging, quality changed to 'Auto mode'";
     STR_PLAYER_SOURCE = 'Player is lagging, quality was lowered';
     STR_TOO_ERRORS = 'or too many errors';

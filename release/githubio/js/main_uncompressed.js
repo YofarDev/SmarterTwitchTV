@@ -597,6 +597,8 @@
         STR_SOURCE_CHECK_SUMMARY,
         STR_AD_FILTER,
         STR_AD_FILTER_SUMMARY,
+        STR_DEBUG_LOG,
+        STR_DEBUG_LOG_SUMMARY,
         STR_AUTO_REFRESH_BACKGROUND,
         STR_AUTO_REFRESH_BACKGROUND_SUMMARY,
         STR_LOWLATENCY_ARRAY,
@@ -2011,6 +2013,9 @@
         STR_AD_FILTER = 'Block ads';
         STR_AD_FILTER_SUMMARY =
             "When enabled, ads stitched into the stream are removed from the playback playlists. During a blocked ad the stream pauses briefly and resumes where the ad ended. This works directly with Twitch's servers, no proxy is involved.";
+        STR_DEBUG_LOG = 'Debug logs';
+        STR_DEBUG_LOG_SUMMARY =
+            'When enabled, the app saves its own logs and serves them over the local network (http port 8977), so they can be read from a computer on the same network to help diagnose issues. Only this app logs are exposed, and only inside your network.';
         STR_PLAYER_LAG = "Player is lagging, quality changed to 'Auto mode'";
         STR_PLAYER_SOURCE = 'Player is lagging, quality was lowered';
         STR_TOO_ERRORS = 'or too many errors';
@@ -8175,11 +8180,19 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 381, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/381/SmarterPurpleTV_3_0_381.apk',
-        WebVersion: 'September 20 2026',
-        WebTag: 729, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        publishVersionCode: 382, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/382/SmarterPurpleTV_3_0_382.apk',
+        WebVersion: 'September 21 2026',
+        WebTag: 730, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'September 21 2026',
+                changes: [
+                    'Player: Reverted the 3.0.381 ad blocking changes, during ad breaks they could make the stream glitch, loop the last seconds and end with a player error. Ad blocking works like 3.0.380 again: ads stitched into the playlist are removed and the stream pauses briefly during a blocked ad',
+                    'New "Debug logs" option (Settings → Player, on by default): the app saves its own logs and serves them over the local network so they can be read from a computer on the same network to help diagnose issues. Only this app own logs are exposed, only inside your network',
+                    'Note: both changes run on the app (APK) side of the application, it only takes effect after updating to a newly built app version'
+                ]
+            },
             {
                 title: 'September 20 2026',
                 changes: [
@@ -21515,6 +21528,14 @@
         if (Main_IsOn_OSInterface) Android.SetAdFilter(enable);
     }
 
+    //public void SetDebugLog(boolean enable)
+    //enable enable disable
+    //Android specific: true
+    //Allows to enable disable the local debug log server (app logs over the local network)
+    function OSInterface_SetDebugLog(enable) {
+        if (Main_IsOn_OSInterface) Android.SetDebugLog(enable);
+    }
+
     //public void showToast(String toast)
     //toast player toast
     //Android specific: true
@@ -30524,9 +30545,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         // ' videoPlaybackAccessToken(id: $vodID, params: {platform: $platform, playerBackend: \\"mediaplayer\\", playerType: $playerType}) @include(if: $isVod) {    value    signature    __typename  }}",' +
         //'"variables":{"isLive":true,"login":"%x","isVod":false,"vodID":"","playerType":"mobile","platform":"ios"}}';
         '{"extensions":{"persistedQuery":{"sha256Hash":"ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9","version":1}},' +
-        //playerType popout gets playlists with less ads stitched in than site (same trick used by
-        //github.com/pixeltris/twitchadsolutions), leftovers are handled by the apk side ad filter
-        '"operationName":"PlaybackAccessToken","variables":{"isLive":true,"isVod":false,"login":"%x","platform":"web","playerType":"popout","vodID":""}}';
+        '"operationName":"PlaybackAccessToken","variables":{"isLive":true,"isVod":false,"login":"%x","platform":"web","playerType":"site","vodID":""}}';
 
     var Play_base_live_links =
         'player_backend=mediaplayer&reassignments_supported=true&playlist_include_framerate=true&allow_source=true&fast_bread=false&cdm=wv&acmb=e30%3D&p=%p&play_session_id=%i&player_version=1.13.0&supported_codecs=%c';
@@ -42174,6 +42193,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             values: ['no', 'yes'],
             defaultValue: 2
         },
+        debug_logs: {
+            values: ['no', 'yes'],
+            defaultValue: 2
+        },
         enable_mature: {
             values: ['no', 'yes'],
             defaultValue: 2
@@ -42734,6 +42757,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         div += Settings_Content('ad_filter', array_no_yes, STR_AD_FILTER, STR_AD_FILTER_SUMMARY);
 
+        div += Settings_Content('debug_logs', array_no_yes, STR_DEBUG_LOG, STR_DEBUG_LOG_SUMMARY);
+
         div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
 
         key = 'default_quality';
@@ -42911,6 +42936,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         OSInterface_SetPreviewSize(Settings_Obj_default('preview_sizes'));
         OSInterface_SetCheckSource(Settings_Obj_default('check_source') === 1);
         OSInterface_SetAdFilter(Settings_Obj_default('ad_filter') === 1);
+        OSInterface_SetDebugLog(Settings_Obj_default('debug_logs') === 1);
         Settings_SetPingWarning();
         SettingsColor_SetAnimationStyleRestore();
         //Settings_proxy_set_start();
@@ -43157,6 +43183,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         else if (position === 'seek_preview') PlayVod_SetPreviewType();
         else if (position === 'check_source') OSInterface_SetCheckSource(Settings_Obj_default('check_source') === 1);
         else if (position === 'ad_filter') OSInterface_SetAdFilter(Settings_Obj_default('ad_filter') === 1);
+        else if (position === 'debug_logs') OSInterface_SetDebugLog(Settings_Obj_default('debug_logs') === 1);
         else if (position === 'thumb_quality') Main_SetThumb();
         else if (position === 'preview_others_volume_new') OSInterface_SetPreviewOthersAudio(Settings_Obj_default('preview_others_volume_new'));
         else if (position === 'preview_volume_new') OSInterface_SetPreviewAudio(Settings_Obj_default('preview_volume_new'));

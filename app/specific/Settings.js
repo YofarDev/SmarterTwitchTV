@@ -429,6 +429,10 @@ var Settings_value = {
         values: ['no', 'yes'],
         defaultValue: 2
     },
+    debug_logs: {
+        values: ['no', 'yes'],
+        defaultValue: 2
+    },
     enable_mature: {
         values: ['no', 'yes'],
         defaultValue: 2
@@ -984,6 +988,8 @@ function Settings_SetSettings() {
 
     div += Settings_Content('ad_filter', array_no_yes, STR_AD_FILTER, STR_AD_FILTER_SUMMARY);
 
+    div += Settings_Content('debug_logs', array_no_yes, STR_DEBUG_LOG, STR_DEBUG_LOG_SUMMARY);
+
     div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
 
     key = 'default_quality';
@@ -1161,6 +1167,7 @@ function Settings_SetDefaults() {
     OSInterface_SetPreviewSize(Settings_Obj_default('preview_sizes'));
     OSInterface_SetCheckSource(Settings_Obj_default('check_source') === 1);
     OSInterface_SetAdFilter(Settings_Obj_default('ad_filter') === 1);
+    OSInterface_SetDebugLog(Settings_Obj_default('debug_logs') === 1);
     Settings_SetPingWarning();
     SettingsColor_SetAnimationStyleRestore();
     //Settings_proxy_set_start();
@@ -1407,6 +1414,7 @@ function Settings_SetDefault(position) {
     else if (position === 'seek_preview') PlayVod_SetPreviewType();
     else if (position === 'check_source') OSInterface_SetCheckSource(Settings_Obj_default('check_source') === 1);
     else if (position === 'ad_filter') OSInterface_SetAdFilter(Settings_Obj_default('ad_filter') === 1);
+    else if (position === 'debug_logs') OSInterface_SetDebugLog(Settings_Obj_default('debug_logs') === 1);
     else if (position === 'thumb_quality') Main_SetThumb();
     else if (position === 'preview_others_volume_new') OSInterface_SetPreviewOthersAudio(Settings_Obj_default('preview_others_volume_new'));
     else if (position === 'preview_volume_new') OSInterface_SetPreviewAudio(Settings_Obj_default('preview_volume_new'));

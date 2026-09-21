@@ -942,6 +942,14 @@ function OSInterface_SetAdFilter(enable) {
     if (Main_IsOn_OSInterface) Android.SetAdFilter(enable);
 }
 
+//public void SetDebugLog(boolean enable)
+//enable enable disable
+//Android specific: true
+//Allows to enable disable the local debug log server (app logs over the local network)
+function OSInterface_SetDebugLog(enable) {
+    if (Main_IsOn_OSInterface) Android.SetDebugLog(enable);
+}
+
 //public void showToast(String toast)
 //toast player toast
 //Android specific: true

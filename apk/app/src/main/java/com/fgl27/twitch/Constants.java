@@ -47,6 +47,7 @@ public final class Constants {
     public static final String PREF_NOTIFICATION_STREAM_LIVE = "notification_live";
     public static final String PREF_NOTIFICATION_STREAM_TITLE = "notification_title";
     public static final String PREF_NOTIFICATION_STREAM_GAME = "notification_game";
+    public static final String PREF_DEBUG_LOGS = "debug_logs";
 
     public static final String PREF_CLIENT_ID = "client_id";
     static final String PREF_CLIENT_SECRET = "client_secret";
