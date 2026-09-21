@@ -802,22 +802,41 @@ function Play_loadData(synchronous) {
 }
 
 var Play_AdBlockReloadLast = 0;
+var Play_AdBlockReloadRound = 0;
+var Play_AdBlockReloadSuppressUntil = 0;
 function Play_AdBlockReload() {
     //Called only by JAVA when the ad filter can no longer hide a midroll from the playback;
-    //reloads the current stream, the reload re-requests the playback token which often comes
-    //back without ads stitched in (PlayHLS probes and retries with alternate player types)
-    if (
-        Play_isOn &&
-        Play_data.data.length > 6 &&
-        !Play_isEndDialogVisible() &&
-        PlayHLS_AdFilterOn() &&
-        new Date().getTime() - Play_AdBlockReloadLast > 60000
-    ) {
-        Play_AdBlockReloadLast = new Date().getTime();
+    //reloads the current stream rotating the player type each round (the probe alone cannot be
+    //trusted, a variant can look clean while the played one carries the ads). When every type
+    //served ads the reloads stop for a while, the ad break plays out and playback continues
+    var now = new Date().getTime();
 
-        Play_showBufferDialog();
-        Play_loadData();
+    if (now < Play_AdBlockReloadSuppressUntil) return;
+
+    if (!Play_isOn || Play_data.data.length < 7 || Play_isEndDialogVisible() || !PlayHLS_AdFilterOn()) return;
+
+    if (now - Play_AdBlockReloadLast <= 60000) return;
+
+    //A previous ad break is long over, start from the first player type again
+    if (now - Play_AdBlockReloadLast > 180000) Play_AdBlockReloadRound = 0;
+
+    Play_AdBlockReloadLast = now;
+    Play_AdBlockReloadRound++;
+
+    var playerTypes = ['embed', 'popout', 'autoplay'];
+
+    if (Play_AdBlockReloadRound > playerTypes.length) {
+        Play_AdBlockReloadRound = 0;
+        Play_AdBlockReloadSuppressUntil = now + 300000;
+        PlayHLS_AdLog('every player type is serving ads, waiting out this ad break');
+        return;
     }
+
+    PlayHLS_AdRetryToken = Play_live_token.replace('"playerType":"site"', '"playerType":"' + playerTypes[Play_AdBlockReloadRound - 1] + '"');
+    PlayHLS_AdLog('ad escape reload round ' + Play_AdBlockReloadRound + ' (' + playerTypes[Play_AdBlockReloadRound - 1] + ')');
+
+    Play_showBufferDialog();
+    Play_loadData();
 }
 
 function Play_loadDataResult(response) {

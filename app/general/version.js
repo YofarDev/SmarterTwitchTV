@@ -24,11 +24,12 @@ var version = {
     publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
     WebVersion: 'September 21 2026',
-    WebTag: 735, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 736, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
         {
             title: 'September 21 2026',
             changes: [
+                'Player: During an ad break the escape reload now rotates the player type each round (instead of retrying the same one when the ad check misses), and stops reloading for a few minutes once every type served ads so the break plays out calmly',
                 'Player: The running web version is now written to the device debug log, and the ad escape decisions are logged too (helps diagnosing ad blocking behavior)',
                 'Player: Improved the ad escape during streams: the ad check now covers both ends of the stream playlists, and when no full quality ad free stream exists it falls back to a low quality ad free one and restores the quality once the ad break is over',
                 'Debug logs: the on device log capture now keeps around 8mb of history (it was filling up in a couple of minutes), no visible change otherwise',

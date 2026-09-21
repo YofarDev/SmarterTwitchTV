@@ -8183,11 +8183,12 @@
         publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
         WebVersion: 'September 21 2026',
-        WebTag: 735, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 736, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
             {
                 title: 'September 21 2026',
                 changes: [
+                    'Player: During an ad break the escape reload now rotates the player type each round (instead of retrying the same one when the ad check misses), and stops reloading for a few minutes once every type served ads so the break plays out calmly',
                     'Player: The running web version is now written to the device debug log, and the ad escape decisions are logged too (helps diagnosing ad blocking behavior)',
                     'Player: Improved the ad escape during streams: the ad check now covers both ends of the stream playlists, and when no full quality ad free stream exists it falls back to a low quality ad free one and restores the quality once the ad break is over',
                     'Debug logs: the on device log capture now keeps around 8mb of history (it was filling up in a couple of minutes), no visible change otherwise',
@@ -22840,22 +22841,41 @@
     }
 
     var Play_AdBlockReloadLast = 0;
+    var Play_AdBlockReloadRound = 0;
+    var Play_AdBlockReloadSuppressUntil = 0;
     function Play_AdBlockReload() {
         //Called only by JAVA when the ad filter can no longer hide a midroll from the playback;
-        //reloads the current stream, the reload re-requests the playback token which often comes
-        //back without ads stitched in (PlayHLS probes and retries with alternate player types)
-        if (
-            Play_isOn &&
-            Play_data.data.length > 6 &&
-            !Play_isEndDialogVisible() &&
-            PlayHLS_AdFilterOn() &&
-            new Date().getTime() - Play_AdBlockReloadLast > 60000
-        ) {
-            Play_AdBlockReloadLast = new Date().getTime();
+        //reloads the current stream rotating the player type each round (the probe alone cannot be
+        //trusted, a variant can look clean while the played one carries the ads). When every type
+        //served ads the reloads stop for a while, the ad break plays out and playback continues
+        var now = new Date().getTime();
 
-            Play_showBufferDialog();
-            Play_loadData();
+        if (now < Play_AdBlockReloadSuppressUntil) return;
+
+        if (!Play_isOn || Play_data.data.length < 7 || Play_isEndDialogVisible() || !PlayHLS_AdFilterOn()) return;
+
+        if (now - Play_AdBlockReloadLast <= 60000) return;
+
+        //A previous ad break is long over, start from the first player type again
+        if (now - Play_AdBlockReloadLast > 180000) Play_AdBlockReloadRound = 0;
+
+        Play_AdBlockReloadLast = now;
+        Play_AdBlockReloadRound++;
+
+        var playerTypes = ['embed', 'popout', 'autoplay'];
+
+        if (Play_AdBlockReloadRound > playerTypes.length) {
+            Play_AdBlockReloadRound = 0;
+            Play_AdBlockReloadSuppressUntil = now + 300000;
+            PlayHLS_AdLog('every player type is serving ads, waiting out this ad break');
+            return;
         }
+
+        PlayHLS_AdRetryToken = Play_live_token.replace('"playerType":"site"', '"playerType":"' + playerTypes[Play_AdBlockReloadRound - 1] + '"');
+        PlayHLS_AdLog('ad escape reload round ' + Play_AdBlockReloadRound + ' (' + playerTypes[Play_AdBlockReloadRound - 1] + ')');
+
+        Play_showBufferDialog();
+        Play_loadData();
     }
 
     function Play_loadDataResult(response) {
@@ -30914,9 +30934,22 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (!state || (check_4 !== '1' && check_4 !== '2')) return;
 
         var live = check_1 === '1' && check_2 !== '1';
-        var hasAds = live && PlayHLS_ProbeResultHasAds(result);
+        var status = 0;
+        var hasAds = false;
 
-        PlayHLS_AdLog('probe slot ' + check_4 + (hasAds ? ' found ads' : ' is clean'));
+        try {
+            var response = JSON.parse(result);
+
+            status = response.status;
+            hasAds =
+                live &&
+                status === 200 &&
+                (Main_A_includes_B(response.responseText, 'stitched') || Main_A_includes_B(response.responseText, 'Amazon|'));
+        } catch (error) {
+            hasAds = false;
+        }
+
+        PlayHLS_AdLog('probe slot ' + check_4 + ' http ' + status + (hasAds ? ' found ads' : ' no ads'));
 
         if (!hasAds && check_4 === '1' && state.lastVariant && state.lastVariant !== '') {
             var responseObj = JSON.parse(state.current);
@@ -31003,19 +31036,6 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     //Whether a probe response describes a playlist with ad content
-    function PlayHLS_ProbeResultHasAds(result) {
-        try {
-            var response = JSON.parse(result);
-
-            return (
-                response.status === 200 &&
-                (Main_A_includes_B(response.responseText, 'stitched') || Main_A_includes_B(response.responseText, 'Amazon|'))
-            );
-        } catch (error) {
-            return false;
-        }
-    }
-
     /**
      * When a preroll retry is (or was) in flight for this playback load, finishes the flow with the
      * original playlist; returns false when there is nothing to fall back to (the caller proceeds

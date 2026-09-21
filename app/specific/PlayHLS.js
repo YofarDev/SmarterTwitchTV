@@ -362,9 +362,19 @@ function PlayHLS_AdProbeResult(result, checkResult, check_1, check_2, check_3, c
     if (!state || (check_4 !== '1' && check_4 !== '2')) return;
 
     var live = check_1 === '1' && check_2 !== '1';
-    var hasAds = live && PlayHLS_ProbeResultHasAds(result);
+    var status = 0;
+    var hasAds = false;
 
-    PlayHLS_AdLog('probe slot ' + check_4 + (hasAds ? ' found ads' : ' is clean'));
+    try {
+        var response = JSON.parse(result);
+
+        status = response.status;
+        hasAds = live && status === 200 && (Main_A_includes_B(response.responseText, 'stitched') || Main_A_includes_B(response.responseText, 'Amazon|'));
+    } catch (error) {
+        hasAds = false;
+    }
+
+    PlayHLS_AdLog('probe slot ' + check_4 + ' http ' + status + (hasAds ? ' found ads' : ' no ads'));
 
     if (!hasAds && check_4 === '1' && state.lastVariant && state.lastVariant !== '') {
         var responseObj = JSON.parse(state.current);
@@ -454,16 +464,6 @@ function PlayHLS_AdLog(message) {
 }
 
 //Whether a probe response describes a playlist with ad content
-function PlayHLS_ProbeResultHasAds(result) {
-    try {
-        var response = JSON.parse(result);
-
-        return response.status === 200 && (Main_A_includes_B(response.responseText, 'stitched') || Main_A_includes_B(response.responseText, 'Amazon|'));
-    } catch (error) {
-        return false;
-    }
-}
-
 /**
  * When a preroll retry is (or was) in flight for this playback load, finishes the flow with the
  * original playlist; returns false when there is nothing to fall back to (the caller proceeds
