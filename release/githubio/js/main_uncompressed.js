@@ -8183,8 +8183,15 @@
         publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
         WebVersion: 'September 22 2026',
-        WebTag: 740, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 741, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'September 22 2026',
+                changes: [
+                    'New look: the side panel was redone — the black separator lines between items are gone (they also showed on the collapsed icon rail), the rail and the open panel are now one uniform elevated charcoal surface, and the purple highlight of the active item blends into it cleanly',
+                    'Removed the patchy pure black blocks the rail was made of (including a stray black sliver at its bottom corner)'
+                ]
+            },
             {
                 title: 'September 22 2026',
                 changes: [
