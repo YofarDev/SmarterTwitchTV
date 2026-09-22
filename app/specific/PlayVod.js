@@ -405,8 +405,10 @@ function PlayVod_loadDataSuccessEnd(playlist) {
 
 function PlayVod_loadDataCheckSub() {
     if (AddUser_UserHasToken()) {
-        AddCode_Channel_id = Main_values.Main_selectedChannel_id;
-        AddCode_CheckSub();
+        //Sub only VOD: retry the playback token with the user own OAuth token, Twitch only
+        //returns a token without restricted qualities when the user is subbed to the channel
+        PlayVod_loadDataId = new Date().getTime();
+        PlayHLS_GetPlayListAsync(false, Main_values.ChannelVod_vodId, PlayVod_loadDataId, null, PlayVod_loadDataResultSub, true);
     } else PlayVod_WarnEnd(STR_IS_SUB_ONLY + STR_IS_SUB_NOOAUTH);
 }
 
@@ -414,9 +416,20 @@ function PlayVod_NotSub() {
     PlayVod_WarnEnd(STR_IS_SUB_ONLY + STR_IS_SUB_NOT_SUB);
 }
 
-//TODO revise this
-function PlayVod_isSub() {
-    PlayVod_WarnEnd(STR_IS_SUB_ONLY + STR_IS_SUB_IS_SUB);
+//Result of the sub only VOD retry done with the user OAuth token: only an ok playlist means
+//Twitch granted access, anything else means the user has no sub to this channel
+function PlayVod_loadDataResultSub(response) {
+    if (PlayVod_isOn && response) {
+        var responseObj = JSON.parse(response);
+
+        if (responseObj.checkResult > 0 && responseObj.checkResult === PlayVod_loadDataId && responseObj.status === 200) {
+            PlayVod_autoUrl = responseObj.url;
+            PlayVod_loadDataSuccessEnd(responseObj.responseText);
+            return;
+        }
+    }
+
+    PlayVod_NotSub();
 }
 
 var PlayVod_WarnEndId;

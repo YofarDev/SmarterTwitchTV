@@ -68,7 +68,7 @@ var Play_vod_token = '{"query":"{videoPlaybackAccessToken(id:\\"%x\\", params:{p
 var Play_vod_links =
     'https://usher.ttvnw.net/vod/%x.m3u8?nauth=%t&nauthsig=%s&reassignments_supported=true&playlist_include_framerate=true&allow_source=true&cdm=wv&p=%d&supported_codecs=%c';
 
-function PlayHLS_GetPlayListAsync(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess) {
+function PlayHLS_GetPlayListAsync(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, useUserAuth) {
     // console.log('isLive', isLive);
     // console.log('Channel_or_VOD_Id', Channel_or_VOD_Id);
     // console.log('CheckId_y', CheckId_y);
@@ -81,17 +81,23 @@ function PlayHLS_GetPlayListAsync(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_
     if (use_proxy && isLive && !proxy_has_token) {
         PlayHLS_PlayListUrl(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, null, null, true);
     } else {
-        PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, use_proxy);
+        PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, use_proxy, useUserAuth);
     }
 }
 
-function PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, useProxy) {
+//Same headers HttpGetSetUserHeader builds for the logged user, built on demand so a retry
+//always carries the token as fresh as AddUser_UsernameArray currently holds it
+function PlayHLS_UserAuthHeaders() {
+    return JSON.stringify([[clientIdHeader, AddCode_backup_client_id], [Bearer_Header, Main_OAuth + AddUser_UsernameArray[0].access_token]]);
+}
+
+function PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, useProxy, useUserAuth) {
     OSInterface_XmlHttpGetFull(
         PlayClip_BaseUrl, //String urlString
         DefaultHttpGetTimeout, //int timeout
         (isLive ? PlayHLS_AdRetryToken || Play_live_token : Play_vod_token).replace('%x', Channel_or_VOD_Id), // String postMessage
         'POST', //String Method
-        Play_Headers, //String JsonHeadersArray
+        useUserAuth && AddUser_UserHasToken() ? PlayHLS_UserAuthHeaders() : Play_Headers, //String JsonHeadersArray
         'PlayHLS_GetTokenResult', //String callback
         CheckId_y, //long checkResult
         isLive ? '1' : '0', //String check_1

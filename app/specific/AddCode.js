@@ -20,7 +20,6 @@
 
 //Variable initialization
 var AddCode_IsFollowing = false;
-var AddCode_IsSub = false;
 var AddCode_PlayRequest = false;
 var AddCode_Channel_id = '';
 //var AddCode_Expires_in_offset = 100;
@@ -363,45 +362,6 @@ function AddCode_UnFollowSucess(obj) {
         Play_setFollow();
         ChatLive_FollowState[0].follows = false;
     } else ChannelContent_setFollow();
-}
-
-function AddCode_CheckSub() {
-    AddCode_IsSub = false;
-
-    var theUrl = Main_kraken_api + 'users/' + AddUser_UsernameArray[0].id + '/subscriptions/' + AddCode_Channel_id + Main_TwitchV5Flag_I;
-
-    FullxmlHttpGet(
-        theUrl,
-        Main_GetHeader(3, Main_OAuth + AddUser_UsernameArray[0].access_token),
-        AddCode_CheckSubSucess,
-        noop_fun,
-        0,
-        0,
-        'GET',
-        null
-    );
-}
-
-function AddCode_CheckSubSucess(obj) {
-    if (obj.status === 200) {
-        //success yes user is a SUB
-
-        AddCode_IsSub = true;
-        PlayVod_isSub();
-    } else if (obj.status === 401 || obj.status === 403) {
-        //token expired
-
-        AddCode_validateToken(0);
-        PlayVod_isSub();
-    } else {
-        // internet error
-        AddCode_CheckSubSucessFail();
-    }
-}
-
-function AddCode_CheckSubSucessFail() {
-    AddCode_IsSub = false;
-    PlayVod_NotSub();
 }
 
 var AddCode_redirect_uri = 'https://fgl27.github.io/SmartTwitchTV/release/index.html';

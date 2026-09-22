@@ -56,6 +56,7 @@
         Play_ShowVideoQuality: Play_ShowVideoQuality,
         Play_PlayPauseChange: Play_PlayPauseChange,
         PlayVod_loadDataResult: PlayVod_loadDataResult,
+        PlayVod_loadDataResultSub: PlayVod_loadDataResultSub,
         PlayExtra_ResumeResult: PlayExtra_ResumeResult,
         Play_loadDataResult: Play_loadDataResult,
         PlayClip_CheckIfIsLiveResult: PlayClip_CheckIfIsLiveResult,

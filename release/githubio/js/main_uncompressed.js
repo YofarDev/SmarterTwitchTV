@@ -8182,9 +8182,16 @@
         VersionBase: '3.0',
         publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
-        WebVersion: 'September 21 2026',
-        WebTag: 736, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebVersion: 'September 22 2026',
+        WebTag: 737, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'September 22 2026',
+                changes: [
+                    'Player: Sub only VODs now play for users subbed to the channel: when a sub only VOD is detected the playback token is requested again with the user own authorization token, so Twitch serves the playlist to entitled users; users without a sub keep getting the clear sub only warning (this replaces a status check done against the long retired Twitch v5 API that never led to playback)',
+                    'General: removed dead code left by the retired v5 API sub check'
+                ]
+            },
             {
                 title: 'September 21 2026',
                 changes: [
@@ -8287,7 +8294,6 @@
 
     //Variable initialization
     var AddCode_IsFollowing = false;
-    var AddCode_IsSub = false;
     var AddCode_PlayRequest = false;
     var AddCode_Channel_id = '';
     //var AddCode_Expires_in_offset = 100;
@@ -8630,45 +8636,6 @@
             Play_setFollow();
             ChatLive_FollowState[0].follows = false;
         } else ChannelContent_setFollow();
-    }
-
-    function AddCode_CheckSub() {
-        AddCode_IsSub = false;
-
-        var theUrl = Main_kraken_api + 'users/' + AddUser_UsernameArray[0].id + '/subscriptions/' + AddCode_Channel_id + Main_TwitchV5Flag_I;
-
-        FullxmlHttpGet(
-            theUrl,
-            Main_GetHeader(3, Main_OAuth + AddUser_UsernameArray[0].access_token),
-            AddCode_CheckSubSucess,
-            noop_fun,
-            0,
-            0,
-            'GET',
-            null
-        );
-    }
-
-    function AddCode_CheckSubSucess(obj) {
-        if (obj.status === 200) {
-            //success yes user is a SUB
-
-            AddCode_IsSub = true;
-            PlayVod_isSub();
-        } else if (obj.status === 401 || obj.status === 403) {
-            //token expired
-
-            AddCode_validateToken(0);
-            PlayVod_isSub();
-        } else {
-            // internet error
-            AddCode_CheckSubSucessFail();
-        }
-    }
-
-    function AddCode_CheckSubSucessFail() {
-        AddCode_IsSub = false;
-        PlayVod_NotSub();
     }
 
     var AddCode_redirect_uri = 'https://fgl27.github.io/SmartTwitchTV/release/index.html';
@@ -17000,12 +16967,10 @@
     var Main_Bearer_User_Headers = [];
     var Main_Headers = [];
     var Main_Headers_Backup = [];
-    var Main_kraken_api = 'https://api.twitch.tv/kraken/';
     var Main_helix_api = 'https://api.twitch.tv/helix/';
     var Main_Authorization = 'Authorization';
     var Main_OAuth = 'OAuth ';
     var Main_TwitchV5Flag = '&api_version=5';
-    var Main_TwitchV5Flag_I = '?api_version=5';
 
     var Main_classThumb = 'stream_thumbnail_focused';
     var Main_DataAttribute = 'data-array';
@@ -19014,17 +18979,6 @@
         }
 
         calbackError(key, checkResult, obj); // jshint ignore:line
-    }
-
-    function Main_GetHeader(HeaderQuatity, access_token) {
-        if (HeaderQuatity) {
-            var array = [];
-            if (access_token) Main_Headers[2][1] = access_token;
-
-            for (var i = 0; i < HeaderQuatity; i++) array.push([Main_Headers[i][0], Main_Headers[i][1]]);
-
-            return array;
-        } else return [];
     }
 
     var Bearer = 'Bearer ';
@@ -30639,7 +30593,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var Play_vod_links =
         'https://usher.ttvnw.net/vod/%x.m3u8?nauth=%t&nauthsig=%s&reassignments_supported=true&playlist_include_framerate=true&allow_source=true&cdm=wv&p=%d&supported_codecs=%c';
 
-    function PlayHLS_GetPlayListAsync(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess) {
+    function PlayHLS_GetPlayListAsync(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, useUserAuth) {
         // console.log('isLive', isLive);
         // console.log('Channel_or_VOD_Id', Channel_or_VOD_Id);
         // console.log('CheckId_y', CheckId_y);
@@ -30652,17 +30606,26 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (use_proxy && isLive && !proxy_has_token) {
             PlayHLS_PlayListUrl(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, null, null, true);
         } else {
-            PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, use_proxy);
+            PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, use_proxy, useUserAuth);
         }
     }
 
-    function PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, useProxy) {
+    //Same headers HttpGetSetUserHeader builds for the logged user, built on demand so a retry
+    //always carries the token as fresh as AddUser_UsernameArray currently holds it
+    function PlayHLS_UserAuthHeaders() {
+        return JSON.stringify([
+            [clientIdHeader, AddCode_backup_client_id],
+            [Bearer_Header, Main_OAuth + AddUser_UsernameArray[0].access_token]
+        ]);
+    }
+
+    function PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, useProxy, useUserAuth) {
         OSInterface_XmlHttpGetFull(
             PlayClip_BaseUrl, //String urlString
             DefaultHttpGetTimeout, //int timeout
             (isLive ? PlayHLS_AdRetryToken || Play_live_token : Play_vod_token).replace('%x', Channel_or_VOD_Id), // String postMessage
             'POST', //String Method
-            Play_Headers, //String JsonHeadersArray
+            useUserAuth && AddUser_UserHasToken() ? PlayHLS_UserAuthHeaders() : Play_Headers, //String JsonHeadersArray
             'PlayHLS_GetTokenResult', //String callback
             CheckId_y, //long checkResult
             isLive ? '1' : '0', //String check_1
@@ -32467,8 +32430,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
     function PlayVod_loadDataCheckSub() {
         if (AddUser_UserHasToken()) {
-            AddCode_Channel_id = Main_values.Main_selectedChannel_id;
-            AddCode_CheckSub();
+            //Sub only VOD: retry the playback token with the user own OAuth token, Twitch only
+            //returns a token without restricted qualities when the user is subbed to the channel
+            PlayVod_loadDataId = new Date().getTime();
+            PlayHLS_GetPlayListAsync(false, Main_values.ChannelVod_vodId, PlayVod_loadDataId, null, PlayVod_loadDataResultSub, true);
         } else PlayVod_WarnEnd(STR_IS_SUB_ONLY + STR_IS_SUB_NOOAUTH);
     }
 
@@ -32476,9 +32441,20 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         PlayVod_WarnEnd(STR_IS_SUB_ONLY + STR_IS_SUB_NOT_SUB);
     }
 
-    //TODO revise this
-    function PlayVod_isSub() {
-        PlayVod_WarnEnd(STR_IS_SUB_ONLY + STR_IS_SUB_IS_SUB);
+    //Result of the sub only VOD retry done with the user OAuth token: only an ok playlist means
+    //Twitch granted access, anything else means the user has no sub to this channel
+    function PlayVod_loadDataResultSub(response) {
+        if (PlayVod_isOn && response) {
+            var responseObj = JSON.parse(response);
+
+            if (responseObj.checkResult > 0 && responseObj.checkResult === PlayVod_loadDataId && responseObj.status === 200) {
+                PlayVod_autoUrl = responseObj.url;
+                PlayVod_loadDataSuccessEnd(responseObj.responseText);
+                return;
+            }
+        }
+
+        PlayVod_NotSub();
     }
 
     var PlayVod_WarnEndId;
@@ -52695,6 +52671,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Play_ShowVideoQuality: Play_ShowVideoQuality,
         Play_PlayPauseChange: Play_PlayPauseChange,
         PlayVod_loadDataResult: PlayVod_loadDataResult,
+        PlayVod_loadDataResultSub: PlayVod_loadDataResultSub,
         PlayExtra_ResumeResult: PlayExtra_ResumeResult,
         Play_loadDataResult: Play_loadDataResult,
         PlayClip_CheckIfIsLiveResult: PlayClip_CheckIfIsLiveResult,

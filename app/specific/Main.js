@@ -143,12 +143,10 @@ var Main_OAuth_User_Headers = [];
 var Main_Bearer_User_Headers = [];
 var Main_Headers = [];
 var Main_Headers_Backup = [];
-var Main_kraken_api = 'https://api.twitch.tv/kraken/';
 var Main_helix_api = 'https://api.twitch.tv/helix/';
 var Main_Authorization = 'Authorization';
 var Main_OAuth = 'OAuth ';
 var Main_TwitchV5Flag = '&api_version=5';
-var Main_TwitchV5Flag_I = '?api_version=5';
 
 var Main_classThumb = 'stream_thumbnail_focused';
 var Main_DataAttribute = 'data-array';
@@ -2155,17 +2153,6 @@ function Main_BasexmlHttpStatus(obj, key, callbackSuccess, calbackError, checkRe
     }
 
     calbackError(key, checkResult, obj); // jshint ignore:line
-}
-
-function Main_GetHeader(HeaderQuatity, access_token) {
-    if (HeaderQuatity) {
-        var array = [];
-        if (access_token) Main_Headers[2][1] = access_token;
-
-        for (var i = 0; i < HeaderQuatity; i++) array.push([Main_Headers[i][0], Main_Headers[i][1]]);
-
-        return array;
-    } else return [];
 }
 
 var Bearer = 'Bearer ';

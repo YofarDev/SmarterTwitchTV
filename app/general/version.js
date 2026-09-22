@@ -23,9 +23,16 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
-    WebVersion: 'September 21 2026',
-    WebTag: 736, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'September 22 2026',
+    WebTag: 737, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'September 22 2026',
+            changes: [
+                'Player: Sub only VODs now play for users subbed to the channel: when a sub only VOD is detected the playback token is requested again with the user own authorization token, so Twitch serves the playlist to entitled users; users without a sub keep getting the clear sub only warning (this replaces a status check done against the long retired Twitch v5 API that never led to playback)',
+                'General: removed dead code left by the retired v5 API sub check'
+            ]
+        },
         {
             title: 'September 21 2026',
             changes: [
