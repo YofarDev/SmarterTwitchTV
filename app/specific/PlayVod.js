@@ -1594,8 +1594,31 @@ function PlayVod_previews_success_end() {
         PlayVod_previews_obj.images[i] = base_url + PlayVod_previews_obj.images[i];
 
         PlayVod_previews_tmp_images[i] = new Image();
+    }
 
-        PlayVod_previews_tmp_images[i].src = PlayVod_previews_obj.images[i];
+    PlayVod_previews_tmp_images_load();
+}
+
+var PlayVod_previews_tmp_images_pos = 0;
+var PlayVod_previews_tmp_imagesId;
+
+function PlayVod_previews_tmp_images_load() {
+    Main_clearTimeout(PlayVod_previews_tmp_imagesId);
+
+    PlayVod_previews_tmp_images_pos = 0;
+    PlayVod_previews_tmp_images_next();
+}
+
+function PlayVod_previews_tmp_images_next() {
+    //Preload the seek preview sprites staggered, loading them all at once
+    //competes with the video stream startup for bandwidth on low end devices
+    if (PlayVod_PreviewType && PlayVod_previews_tmp_images_pos < PlayVod_previews_tmp_images.length) {
+        PlayVod_previews_tmp_images[PlayVod_previews_tmp_images_pos].src =
+            PlayVod_previews_obj.images[PlayVod_previews_tmp_images_pos];
+
+        PlayVod_previews_tmp_images_pos++;
+
+        PlayVod_previews_tmp_imagesId = Main_setTimeout(PlayVod_previews_tmp_images_next, 300, PlayVod_previews_tmp_imagesId);
     }
 }
 
@@ -1613,6 +1636,7 @@ function PlayVod_previews_pre_start(seek_previews_url) {
 }
 
 function PlayVod_previews_clear() {
+    Main_clearTimeout(PlayVod_previews_tmp_imagesId);
     PlayVod_previews_obj.images = [];
     PlayVod_previews_images_pos = -1;
     PlayVod_previews_clear_img();

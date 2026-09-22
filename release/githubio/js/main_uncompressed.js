@@ -8183,8 +8183,17 @@
         publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
         WebVersion: 'September 22 2026',
-        WebTag: 738, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 739, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'September 22 2026',
+                changes: [
+                    'Performance: the side panel live feed no longer re-downloads every channel thumbnail each time the panel opens or a new page of the feed loads, each image is now preloaded only once per feed load',
+                    'Performance: paging through a live game feed no longer re-clones the whole feed backup on every page load, a slowdown that grew the further you scrolled',
+                    'Performance: chat no longer builds up an ever growing message buffer while it is paused, and VOD seek preview thumbnails now load gradually instead of all at once so they don’t compete with the video stream startup for bandwidth',
+                    'Performance: removed a background layout recalculation that ran while VOD thumbnails animate, and a class scan of the whole side panel feed on every key press'
+                ]
+            },
             {
                 title: 'September 22 2026',
                 changes: [
@@ -14622,6 +14631,11 @@
                 Chat_Clean(messageObj.chat_number);
             }
         } else {
+            //Cap the paused buffer, Chat_Clean keeps only the latest messages in the dom anyway
+            if (ChatLive_Messages[messageObj.chat_number].length > Chat_CleanMax * 2) {
+                ChatLive_Messages[messageObj.chat_number].shift();
+            }
+
             ChatLive_Messages[messageObj.chat_number].push(messageObj);
         }
     }
@@ -33644,8 +33658,30 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             PlayVod_previews_obj.images[i] = base_url + PlayVod_previews_obj.images[i];
 
             PlayVod_previews_tmp_images[i] = new Image();
+        }
 
-            PlayVod_previews_tmp_images[i].src = PlayVod_previews_obj.images[i];
+        PlayVod_previews_tmp_images_load();
+    }
+
+    var PlayVod_previews_tmp_images_pos = 0;
+    var PlayVod_previews_tmp_imagesId;
+
+    function PlayVod_previews_tmp_images_load() {
+        Main_clearTimeout(PlayVod_previews_tmp_imagesId);
+
+        PlayVod_previews_tmp_images_pos = 0;
+        PlayVod_previews_tmp_images_next();
+    }
+
+    function PlayVod_previews_tmp_images_next() {
+        //Preload the seek preview sprites staggered, loading them all at once
+        //competes with the video stream startup for bandwidth on low end devices
+        if (PlayVod_PreviewType && PlayVod_previews_tmp_images_pos < PlayVod_previews_tmp_images.length) {
+            PlayVod_previews_tmp_images[PlayVod_previews_tmp_images_pos].src = PlayVod_previews_obj.images[PlayVod_previews_tmp_images_pos];
+
+            PlayVod_previews_tmp_images_pos++;
+
+            PlayVod_previews_tmp_imagesId = Main_setTimeout(PlayVod_previews_tmp_images_next, 300, PlayVod_previews_tmp_imagesId);
         }
     }
 
@@ -33663,6 +33699,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     function PlayVod_previews_clear() {
+        Main_clearTimeout(PlayVod_previews_tmp_imagesId);
         PlayVod_previews_obj.images = [];
         PlayVod_previews_images_pos = -1;
         PlayVod_previews_clear_img();
@@ -41554,11 +41591,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 this.onload = null;
                 Main_AddClass(screen.ids[1] + screen.posY + '_' + screen.posX, 'opacity_zero');
                 div.style.backgroundSize = div.offsetWidth + 'px';
-                var frame = 0;
+                //Read the frame height once, reading offsetHeight inside the interval forces a reflow every tick
+                var frameHeight = div.offsetHeight,
+                    frame = 0;
                 screen.AnimateThumbId = Main_setInterval(
                     function () {
                         // 10 = quantity of frames in the preview img
-                        div.style.backgroundPosition = '0px ' + (++frame % 10) * -div.offsetHeight + 'px';
+                        div.style.backgroundPosition = '0px ' + (++frame % 10) * -frameHeight + 'px';
                     },
                     650,
                     screen.AnimateThumbId
@@ -47089,22 +47128,22 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     function Sidepannel_PreloadImgs() {
         if (!Sidepannel_isShowingUserLive()) return;
 
-        if (UserLiveFeed_PreloadImgs[Sidepannel_PosFeed]) {
-            Main_ImageLoaderWorker.postMessage(
-                UserLiveFeed_PreloadImgs[Sidepannel_PosFeed].replace('{width}x{height}', Main_SidePannelSize) + Main_randomImg
-            );
-        }
-        UserLiveFeed_PreloadImgs.splice(Sidepannel_PosFeed, 1);
-
+        //Preload each thumbnail only once per feed load, posting the remaining urls
+        //on every call re-downloads the whole feed each time the panel opens or a new page lands
         var i = 0,
             len = UserLiveFeed_PreloadImgs.length;
+
         for (i; i < len; i++) {
-            Main_ImageLoaderWorker.postMessage(UserLiveFeed_PreloadImgs[i].replace('{width}x{height}', Main_SidePannelSize) + Main_randomImg);
+            if (!UserLiveFeed_PreloadImgsDone.hasOwnProperty(UserLiveFeed_PreloadImgs[i])) {
+                UserLiveFeed_PreloadImgsDone[UserLiveFeed_PreloadImgs[i]] = 1;
+                Main_ImageLoaderWorker.postMessage(UserLiveFeed_PreloadImgs[i].replace('{width}x{height}', Main_SidePannelSize) + Main_randomImg);
+            }
         }
     }
 
     function Sidepannel_GetSize() {
-        return Sidepannel_ScroolDoc.getElementsByClassName('side_panel_feed').length;
+        //All children of the scroll doc are feed entries, childElementCount avoids a class scan on every key press
+        return Sidepannel_ScroolDoc.childElementCount;
     }
 
     function Sidepannel_KeyEnterUser() {
@@ -47728,6 +47767,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var UserLiveFeed_PreventHide = false;
 
     var UserLiveFeed_PreloadImgs = [];
+    var UserLiveFeed_PreloadImgsDone = {};
     var UserLiveFeed_FeedHolderDocId;
     var UserLiveFeed_AnimationTimeout = 200; //Same value as user_feed_scroll
 
@@ -49251,6 +49291,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         Main_ShowElementWithEle(Sidepannel_SidepannelLoadingDialog);
         UserLiveFeed_PreloadImgs = [];
+        UserLiveFeed_PreloadImgsDone = {};
         Sidepannel_PosFeed = 0;
         Main_emptyWithEle(Sidepannel_ScroolDoc);
         Main_textContentWithEle(Sidepannel_PosCounter, '');
@@ -50752,15 +50793,17 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (game) {
             if (UserLiveFeed_obj[pos].data[game]) {
                 UserLiveFeed_obj[pos].data[game].push.apply(UserLiveFeed_obj[pos].data[game], response);
+
+                //Clone only the new page and append, re-cloning the whole feed on every page load is quadratic
+                UserLiveFeed_obj[pos].backup[game].data = UserLiveFeed_obj[pos].backup[game].data.concat(JSON.parse(JSON.stringify(response)));
             } else {
                 UserLiveFeedobj_backupStartObj(pos, game);
 
                 UserLiveFeed_obj[pos].data[game] = response;
+                UserLiveFeed_obj[pos].backup[game].data = JSON.parse(JSON.stringify(response));
                 UserLiveFeed_obj[pos].backup[game].lastRefresh = new Date().getTime();
                 UserLiveFeed_obj[pos].backup[game].ContentLang = Main_ContentLang;
             }
-
-            UserLiveFeed_obj[pos].backup[game].data = JSON.parse(JSON.stringify(UserLiveFeed_obj[pos].data[game]));
         }
 
         UserLiveFeedobj_loadDataBaseLiveSuccessEnd(response, total, pos, itemsCount, game);
@@ -50902,9 +50945,32 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     function UserLiveFeedobj_loadDataBaseLiveBackup(pos, game) {
         UserLiveFeedobj_backupStartObj(pos, game);
 
-        UserLiveFeed_obj[pos].backup[game].idObject = JSON.parse(JSON.stringify(UserLiveFeed_idObject[pos]));
-        UserLiveFeed_obj[pos].backup[game].DataObj = JSON.parse(JSON.stringify(UserLiveFeed_DataObj[pos]));
-        UserLiveFeed_obj[pos].backup[game].cell = Main_Slice(UserLiveFeed_cell[pos]);
+        var backup = UserLiveFeed_obj[pos].backup[game],
+            i;
+
+        //A null cell means the backup was invalidated (feed reload), rebuild it in full
+        if (!backup.cell || !backup.backedCount) {
+            backup.cell = [];
+            backup.idObject = {};
+            backup.DataObj = {};
+            backup.backedCount = 0;
+        }
+
+        //Copy only the new entries, cloning idObject/DataObj and slicing cell on every page load is quadratic
+        for (i = backup.backedCount; i < UserLiveFeed_cell[pos].length; i++) {
+            backup.cell[i] = UserLiveFeed_cell[pos][i];
+
+            if (UserLiveFeed_DataObj[pos].hasOwnProperty(i)) {
+                backup.DataObj[i] = JSON.parse(JSON.stringify(UserLiveFeed_DataObj[pos][i]));
+            }
+        }
+        backup.backedCount = i;
+
+        for (i in UserLiveFeed_idObject[pos]) {
+            if (!backup.idObject.hasOwnProperty(i)) {
+                backup.idObject[i] = UserLiveFeed_idObject[pos][i];
+            }
+        }
     }
 
     function UserLiveFeedobj_loadDataBaseLiveSuccessFinish(pos, total, response_items) {

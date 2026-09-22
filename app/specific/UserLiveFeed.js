@@ -30,6 +30,7 @@ var UserLiveFeed_FocusClass = 'feed_thumbnail_focused';
 var UserLiveFeed_PreventHide = false;
 
 var UserLiveFeed_PreloadImgs = [];
+var UserLiveFeed_PreloadImgsDone = {};
 var UserLiveFeed_FeedHolderDocId;
 var UserLiveFeed_AnimationTimeout = 200; //Same value as user_feed_scroll
 

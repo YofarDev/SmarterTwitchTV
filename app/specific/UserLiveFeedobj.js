@@ -131,6 +131,7 @@ function UserLiveFeedobj_CheckToken() {
 
     Main_ShowElementWithEle(Sidepannel_SidepannelLoadingDialog);
     UserLiveFeed_PreloadImgs = [];
+    UserLiveFeed_PreloadImgsDone = {};
     Sidepannel_PosFeed = 0;
     Main_emptyWithEle(Sidepannel_ScroolDoc);
     Main_textContentWithEle(Sidepannel_PosCounter, '');
@@ -1621,15 +1622,17 @@ function UserLiveFeedobj_loadDataBaseLiveSuccess(responseText, pos, game) {
     if (game) {
         if (UserLiveFeed_obj[pos].data[game]) {
             UserLiveFeed_obj[pos].data[game].push.apply(UserLiveFeed_obj[pos].data[game], response);
+
+            //Clone only the new page and append, re-cloning the whole feed on every page load is quadratic
+            UserLiveFeed_obj[pos].backup[game].data = UserLiveFeed_obj[pos].backup[game].data.concat(JSON.parse(JSON.stringify(response)));
         } else {
             UserLiveFeedobj_backupStartObj(pos, game);
 
             UserLiveFeed_obj[pos].data[game] = response;
+            UserLiveFeed_obj[pos].backup[game].data = JSON.parse(JSON.stringify(response));
             UserLiveFeed_obj[pos].backup[game].lastRefresh = new Date().getTime();
             UserLiveFeed_obj[pos].backup[game].ContentLang = Main_ContentLang;
         }
-
-        UserLiveFeed_obj[pos].backup[game].data = JSON.parse(JSON.stringify(UserLiveFeed_obj[pos].data[game]));
     }
 
     UserLiveFeedobj_loadDataBaseLiveSuccessEnd(response, total, pos, itemsCount, game);
@@ -1771,9 +1774,32 @@ function UserLiveFeedobj_backupStartObj(pos, game) {
 function UserLiveFeedobj_loadDataBaseLiveBackup(pos, game) {
     UserLiveFeedobj_backupStartObj(pos, game);
 
-    UserLiveFeed_obj[pos].backup[game].idObject = JSON.parse(JSON.stringify(UserLiveFeed_idObject[pos]));
-    UserLiveFeed_obj[pos].backup[game].DataObj = JSON.parse(JSON.stringify(UserLiveFeed_DataObj[pos]));
-    UserLiveFeed_obj[pos].backup[game].cell = Main_Slice(UserLiveFeed_cell[pos]);
+    var backup = UserLiveFeed_obj[pos].backup[game],
+        i;
+
+    //A null cell means the backup was invalidated (feed reload), rebuild it in full
+    if (!backup.cell || !backup.backedCount) {
+        backup.cell = [];
+        backup.idObject = {};
+        backup.DataObj = {};
+        backup.backedCount = 0;
+    }
+
+    //Copy only the new entries, cloning idObject/DataObj and slicing cell on every page load is quadratic
+    for (i = backup.backedCount; i < UserLiveFeed_cell[pos].length; i++) {
+        backup.cell[i] = UserLiveFeed_cell[pos][i];
+
+        if (UserLiveFeed_DataObj[pos].hasOwnProperty(i)) {
+            backup.DataObj[i] = JSON.parse(JSON.stringify(UserLiveFeed_DataObj[pos][i]));
+        }
+    }
+    backup.backedCount = i;
+
+    for (i in UserLiveFeed_idObject[pos]) {
+        if (!backup.idObject.hasOwnProperty(i)) {
+            backup.idObject[i] = UserLiveFeed_idObject[pos][i];
+        }
+    }
 }
 
 function UserLiveFeedobj_loadDataBaseLiveSuccessFinish(pos, total, response_items) {

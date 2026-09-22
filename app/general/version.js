@@ -24,8 +24,17 @@ var version = {
     publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
     WebVersion: 'September 22 2026',
-    WebTag: 738, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 739, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'September 22 2026',
+            changes: [
+                'Performance: the side panel live feed no longer re-downloads every channel thumbnail each time the panel opens or a new page of the feed loads, each image is now preloaded only once per feed load',
+                'Performance: paging through a live game feed no longer re-clones the whole feed backup on every page load, a slowdown that grew the further you scrolled',
+                'Performance: chat no longer builds up an ever growing message buffer while it is paused, and VOD seek preview thumbnails now load gradually instead of all at once so they don’t compete with the video stream startup for bandwidth',
+                'Performance: removed a background layout recalculation that ran while VOD thumbnails animate, and a class scan of the whole side panel feed on every key press'
+            ]
+        },
         {
             title: 'September 22 2026',
             changes: [

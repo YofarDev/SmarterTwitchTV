@@ -3226,11 +3226,13 @@ function ScreensObj_AnimateThumbId(screen) {
             this.onload = null;
             Main_AddClass(screen.ids[1] + screen.posY + '_' + screen.posX, 'opacity_zero');
             div.style.backgroundSize = div.offsetWidth + 'px';
-            var frame = 0;
+            //Read the frame height once, reading offsetHeight inside the interval forces a reflow every tick
+            var frameHeight = div.offsetHeight,
+                frame = 0;
             screen.AnimateThumbId = Main_setInterval(
                 function () {
                     // 10 = quantity of frames in the preview img
-                    div.style.backgroundPosition = '0px ' + (++frame % 10) * -div.offsetHeight + 'px';
+                    div.style.backgroundPosition = '0px ' + (++frame % 10) * -frameHeight + 'px';
                 },
                 650,
                 screen.AnimateThumbId

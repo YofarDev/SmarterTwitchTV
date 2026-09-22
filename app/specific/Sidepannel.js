@@ -384,22 +384,22 @@ function Sidepannel_partnerIcon(name, partner, isrerun) {
 function Sidepannel_PreloadImgs() {
     if (!Sidepannel_isShowingUserLive()) return;
 
-    if (UserLiveFeed_PreloadImgs[Sidepannel_PosFeed]) {
-        Main_ImageLoaderWorker.postMessage(
-            UserLiveFeed_PreloadImgs[Sidepannel_PosFeed].replace('{width}x{height}', Main_SidePannelSize) + Main_randomImg
-        );
-    }
-    UserLiveFeed_PreloadImgs.splice(Sidepannel_PosFeed, 1);
-
+    //Preload each thumbnail only once per feed load, posting the remaining urls
+    //on every call re-downloads the whole feed each time the panel opens or a new page lands
     var i = 0,
         len = UserLiveFeed_PreloadImgs.length;
+
     for (i; i < len; i++) {
-        Main_ImageLoaderWorker.postMessage(UserLiveFeed_PreloadImgs[i].replace('{width}x{height}', Main_SidePannelSize) + Main_randomImg);
+        if (!UserLiveFeed_PreloadImgsDone.hasOwnProperty(UserLiveFeed_PreloadImgs[i])) {
+            UserLiveFeed_PreloadImgsDone[UserLiveFeed_PreloadImgs[i]] = 1;
+            Main_ImageLoaderWorker.postMessage(UserLiveFeed_PreloadImgs[i].replace('{width}x{height}', Main_SidePannelSize) + Main_randomImg);
+        }
     }
 }
 
 function Sidepannel_GetSize() {
-    return Sidepannel_ScroolDoc.getElementsByClassName('side_panel_feed').length;
+    //All children of the scroll doc are feed entries, childElementCount avoids a class scan on every key press
+    return Sidepannel_ScroolDoc.childElementCount;
 }
 
 function Sidepannel_KeyEnterUser() {

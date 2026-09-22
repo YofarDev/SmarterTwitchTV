@@ -2003,6 +2003,11 @@ function ChatLive_LineAdd(messageObj) {
             Chat_Clean(messageObj.chat_number);
         }
     } else {
+        //Cap the paused buffer, Chat_Clean keeps only the latest messages in the dom anyway
+        if (ChatLive_Messages[messageObj.chat_number].length > Chat_CleanMax * 2) {
+            ChatLive_Messages[messageObj.chat_number].shift();
+        }
+
         ChatLive_Messages[messageObj.chat_number].push(messageObj);
     }
 }
