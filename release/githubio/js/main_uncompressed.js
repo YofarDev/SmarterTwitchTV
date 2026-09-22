@@ -8183,8 +8183,15 @@
         publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
         WebVersion: 'September 22 2026',
-        WebTag: 739, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 740, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'September 22 2026',
+                changes: [
+                    'Polish: the search and password inputs now follow the new design — dark charcoal field with white text, subtle hairline edge and readable muted placeholder, matching the buttons below them (they were still the old light gray pills)',
+                    'Polish: the chat message input follows the same treatment, with a purple edge when active and a red edge when sending is blocked, and its focus no longer causes a small size jump'
+                ]
+            },
             {
                 title: 'September 22 2026',
                 changes: [
