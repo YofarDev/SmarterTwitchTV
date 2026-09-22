@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "smarttv-client-for-twitch",
     "public": "release",
     "ignore": [
       "firebase.json",
