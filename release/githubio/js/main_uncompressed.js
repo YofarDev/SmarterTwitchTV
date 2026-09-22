@@ -8183,8 +8183,16 @@
         publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
         WebVersion: 'September 22 2026',
-        WebTag: 737, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 738, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'September 22 2026',
+                changes: [
+                    'New look: full visual refresh with a layered charcoal design — soft violet-tinted surfaces instead of flat black, rounded corners on cards, thumbnails, dialogs and inputs, refined text hierarchy (bold names, muted titles and metadata), and a stronger layered purple focus glow on the focused item',
+                    'New look: the side navigation, settings rows, dialogs, player overlays, progress bar and chat share the same new design language; the focus color styles and all themes still work as before',
+                    'General: Roboto Black is now used for screen titles and the clock, giving a heavier headline hierarchy (font was already bundled)'
+                ]
+            },
             {
                 title: 'September 22 2026',
                 changes: [
@@ -45940,7 +45948,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var SettingsColor_DefaultColors = [
         [
             //Default
-            'rgba(0,0,0,1)', //background
+            'rgba(21,18,28,1)', //background
             'rgba(255,255,255,1)', //TextColor
             'rgba(118,53,252,1)', //border
             'rgba(118,53,252,1)' //progressColor
@@ -46340,6 +46348,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             progressColor = SettingsColor_DefaultColors[pos][3],
             //Softer alpha of the border color for the focus glow, falls back to the full color
             glow = border.replace(', 1)', ', 0.45)'),
+            //Layered focus: tight accent edge + soft glow + depth shadow, never scales the card
+            //(scroll math and the native preview overlay read live getBoundingClientRect())
+            focusShadow = '0 0 0 0.05em ' + glow + ',0 0 0.7em 0.1em ' + glow + ',0 0.35em 1em rgba(0,0,0,0.5)',
             cssClass =
                 '.feed_thumbnail_focused_no_ani,.feed_thumbnail_focused,.stream_thumbnail_focused_no_ani,.stream_thumbnail_focused {background-color:' +
                 background +
@@ -46347,8 +46358,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 TextColor +
                 ' !important;border-color:' +
                 border +
-                ' !important;box-shadow:0 0 0.6em 0.1em ' +
-                glow +
+                ' !important;box-shadow:' +
+                focusShadow +
                 ' !important;}' +
                 //feed_thumbnail_focused same animation time as user_feed_scroll
                 '.feed_thumbnail_focused {transition:background-color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,border-color 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s,box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s;}' +
@@ -46375,7 +46386,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             arrayColors[1] +
             ' !important;border-color:' +
             arrayColors[2] +
-            ' !important;box-shadow:0 0 0.6em 0.1em ' +
+            ' !important;box-shadow:0 0 0 0.05em ' +
+            arrayColors[2].replace(', 1)', ', 0.45)') +
+            ',0 0 0.7em 0.1em ' +
             arrayColors[2].replace(', 1)', ', 0.45)') +
             ' !important;}';
 

@@ -18,6 +18,14 @@
     font-style: normal;
 }
 
+/* woff2 only: no woff file is bundled; 'Roboto-Bold' in the font stack is the fallback */
+@font-face {
+    font-family: 'Roboto-Black';
+    src: url('fonts/Roboto-Black.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
 @font-face {
     font-family: 'icons';
     src:

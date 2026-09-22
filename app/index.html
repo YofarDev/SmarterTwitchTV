@@ -48,6 +48,19 @@
         <style id="vh_class"></style>
         <style id="chat_highlights"></style>
         <style>
+            /*
+                Design tokens — Smarter Purple TV "layered charcoal" system.
+                No CSS variables (old TV WebViews); keep values in sync by hand.
+                bg-base      #0b0a0e  scenes, scrims
+                bg-elevated  #15121c  dialogs, rail, cards, input bars
+                bg-surface   #1f1b29  pressed/hover row surfaces
+                edge         #2b2438  hairline borders
+                text         #ffffff primary / #b4a9cf secondary / #7d7396 meta
+                accent       #7635fc  focus, progress, live accent (bright #a78bfa)
+                radius       0.15em chips / 0.25em cards and dialogs
+                Focus never scales or transforms the element: scroll math and
+                the native preview overlay read live getBoundingClientRect().
+            */
             body,
             html {
                 background-color: rgba(0, 0, 0, 0);
@@ -88,8 +101,8 @@
 
             .feed_end_name_focus {
                 transform: translate(0, 29%) scale(1.25);
-                background-color: rgba(0, 0, 0, 0.85);
-                border-color: #ffffff;
+                background-color: rgba(21, 18, 28, 0.95);
+                border-color: #a78bfa;
                 z-index: 999;
                 position: relative;
             }
@@ -235,7 +248,7 @@
                 width: auto;
                 height: 1.75%;
                 text-align: left;
-                color: #ffffff;
+                color: #b4a9cf;
                 font-size: 55%;
                 font-family: 'Roboto-Bold';
                 vertical-align: middle;
@@ -280,7 +293,9 @@
                 width: 100%;
                 display: inline-block;
                 padding-bottom: 2.75%;
-                background-color: #000000;
+                background-color: #15121c;
+                border-radius: 0.25em;
+                overflow: hidden;
                 color: #ffffff;
                 position: relative;
             }
@@ -318,20 +333,24 @@
                 /*16 by 9 in relation to the width % size*/
                 padding-bottom: 56.109375%;
                 background-repeat: no-repeat;
-                background: #000000;
+                background: #15121c;
+                border-radius: 0.25em;
+                overflow: hidden;
             }
 
             .stream_thumbnail_player_feed {
                 padding-bottom: 93%;
                 width: 97%;
                 background-repeat: no-repeat;
-                background: #000000;
+                background: #15121c;
+                border-radius: 0.25em;
+                overflow: hidden;
                 color: #ffffff;
             }
 
             .stream_switch_focused {
-                background-color: rgba(255, 255, 255, 0.15);
-                border-color: #ebebeb !important;
+                background-color: rgba(118, 53, 252, 0.18);
+                border-color: #7635fc !important;
             }
 
             .stream_thumbnail_channel_vod {
@@ -343,28 +362,32 @@
 
             .stream_thumbnail_live {
                 padding-bottom: 79.5%;
-                background-color: #000000;
+                background-color: #15121c;
+                border-radius: 0.25em;
+                overflow: hidden;
                 color: #ffffff;
             }
 
             .stream_thumbnail_feed_game,
             .stream_thumbnail_live_game {
                 width: 100%;
-                background-color: #000000;
+                background-color: #15121c;
+                border-radius: 0.15em;
+                overflow: hidden;
                 padding-bottom: 139.7%;
                 position: relative;
             }
 
             .stream_thumbnail_live_img {
                 width: 100%;
-                background-color: #000000;
+                background-color: #0e0c13;
                 padding-bottom: 56.25%;
                 position: relative;
             }
 
             .stream_thumbnail_channel_img {
                 width: 100%;
-                background-color: #000000;
+                background-color: #0e0c13;
                 padding-bottom: 100%;
                 position: relative;
             }
@@ -386,7 +409,9 @@
             .stream_thumbnail_game {
                 padding-bottom: 164%;
                 font-size: 80%;
-                background-color: #000000;
+                background-color: #15121c;
+                border-radius: 0.15em;
+                overflow: hidden;
                 color: #ffffff;
             }
 
@@ -502,7 +527,8 @@
                 text-overflow: ellipsis;
                 overflow: hidden;
                 font-size: 75%;
-                font-family: 'Roboto-Bold';
+                font-family: 'Roboto';
+                color: #7d7396;
             }
 
             .channel_live_icon {
@@ -533,6 +559,8 @@
                 font-size: 67%;
                 width: 100%;
                 display: block;
+                font-family: 'Roboto';
+                color: #b4a9cf;
             }
 
             .stream_info_user_name {
@@ -545,6 +573,7 @@
                 overflow: hidden;
                 font-family: 'Roboto';
                 font-size: 74%;
+                color: #b4a9cf;
             }
 
             .stream_info_live_title {
@@ -553,6 +582,8 @@
                 font-size: 72%;
                 overflow: hidden;
                 white-space: normal;
+                color: #b4a9cf;
+                font-family: 'Roboto';
             }
 
             .stream_info_live_title_single_line {
@@ -561,6 +592,8 @@
                 font-size: 72%;
                 overflow: hidden;
                 white-space: normal;
+                color: #b4a9cf;
+                font-family: 'Roboto';
             }
 
             .add_user_text {
@@ -575,7 +608,7 @@
             .dialog_multi_help,
             .dialog_multi {
                 z-index: 2;
-                border-radius: 1em;
+                border-radius: 0.25em;
                 left: 15%;
                 width: 70% !important;
                 height: auto !important;
@@ -583,8 +616,8 @@
                 text-align: center;
                 transform: translateY(-50%);
                 font-size: 110%;
-                background-color: rgba(0, 0, 0, 0.85) !important;
-                border: 0.1em solid #ffffff;
+                background-color: rgba(21, 18, 28, 0.97) !important;
+                border: 0.075em solid #2b2438;
             }
 
             .dialog_multi_help {
@@ -622,13 +655,17 @@
 
             .stream_thumbnail_channel {
                 padding-bottom: 112%;
-                background-color: #000000;
+                background-color: #15121c;
+                border-radius: 0.25em;
+                overflow: hidden;
                 color: #ffffff;
             }
 
             .stream_thumbnail_user {
                 padding-bottom: 122%;
-                background-color: #000000;
+                background-color: #15121c;
+                border-radius: 0.25em;
+                overflow: hidden;
                 color: #ffffff;
             }
 
@@ -809,9 +846,9 @@
                 position: absolute;
                 border-radius: 0.5vh;
                 box-shadow:
-                    inset 0 0 0 0.025vh #ffffff,
-                    0 0 0 0.3vh #ffffff,
-                    0 0 0 0.6vh #000000;
+                    0 0 0 0.3vh rgba(11, 10, 14, 0.9),
+                    0 0 0 0.42vh #a78bfa,
+                    0 0.3vh 1.2vh rgba(0, 0, 0, 0.6);
             }
 
             .stream_channel_follow_icon {
@@ -821,12 +858,12 @@
 
             .scenefeed_background_no_ani,
             .scenefeed_background {
-                background: rgba(0, 0, 0, 1);
+                background: #0b0a0e;
             }
 
             .scenefeed_background {
                 transition: background 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s;
-                background: rgba(0, 0, 0, 1);
+                background: #0b0a0e;
             }
 
             .user_feed {
@@ -836,7 +873,7 @@
                 height: 43.75%;
                 width: 100%;
                 overflow: hidden;
-                background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
+                background: linear-gradient(to top, rgba(11, 10, 14, 0.88), rgba(11, 10, 14, 0));
                 transform: translateY(0);
                 transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1) 0s;
                 will-change: transform;
@@ -894,7 +931,7 @@
                 text-align: center;
                 font-size: 2.4vh;
                 font-family: 'Roboto-Bold';
-                background-color: #000000;
+                background-color: #0b0a0e;
                 color: #ffffff;
             }
 
@@ -912,7 +949,8 @@
             .chat_result_holder {
                 max-height: 24.5vh;
                 margin-bottom: 1%;
-                border: 0.4vh solid #ffffff;
+                border: 0.4vh solid #2b2438;
+                border-radius: 0.25em;
                 transform: rotate(180deg);
                 overflow: hidden;
             }
@@ -937,8 +975,8 @@
             }
 
             .chat_input_class_focus {
-                border: 0.2em solid red;
-                caret-color: red;
+                border: 0.2em solid #7635fc;
+                caret-color: #7635fc;
                 box-shadow: inset 0 0 0 0.1em #ffffff;
                 background-color: #ffffff;
             }
@@ -982,8 +1020,9 @@
             }
 
             .chat_emotes_focus {
-                background-color: rgba(0, 0, 0, 0.6);
-                box-shadow: inset 0 0 0 0.4vh #ebebeb;
+                background-color: rgba(118, 53, 252, 0.35);
+                border-radius: 0.15em;
+                box-shadow: inset 0 0 0 0.4vh #a78bfa;
             }
 
             .chat_emotes_name_holder {
@@ -1016,7 +1055,7 @@
                 height: 46.5%;
                 bottom: 0;
                 font-size: 0;
-                background: rgba(0, 0, 0, 0.7);
+                background: rgba(11, 10, 14, 0.82);
                 z-index: 2;
             }
 
@@ -1037,10 +1076,10 @@
                 color: #ffffff;
                 font-family: 'Roboto-Bold';
                 font-size: 2.4vh;
-                background-color: #2f2f2f;
+                background-color: #221d30;
                 display: inline-block;
-                border: 0.1em solid #ffffff;
-                box-shadow: inset 0 0 0 0.1em #000000;
+                border: 0.1em solid #2b2438;
+                border-radius: 0.15em;
                 text-align: center;
             }
 
@@ -1048,15 +1087,14 @@
                 font-size: 0;
                 top: 0;
                 z-index: 8;
-                background: rgba(0, 0, 0, 0.7);
+                background: rgba(11, 10, 14, 0.75);
                 height: 0;
             }
 
             .button_chat_focused {
-                color: #000000;
-                background-color: #ebebeb;
-                border-color: #000000;
-                box-shadow: inset 0 0 0 0.1em #ff0000;
+                color: #ffffff;
+                background-color: #7635fc;
+                border-color: #a78bfa;
             }
 
             .input_text_box {
@@ -1112,18 +1150,9 @@
             .button_dialog:hover,
             .button_dialog_focused,
             .button_search_focused {
-                background-color: #3e3e3e;
-                text-shadow:
-                    -0.03em -0.03em 0 #000,
-                    0.03em -0.03em 0 #000,
-                    -0.03em 0.03em 0 #000,
-                    0.03em 0.03em 0 #000;
-                border-image: linear-gradient(to right, #000000 6%, #d0d3d4, #000000 94%) 1;
+                background-color: #1f1b29;
+                border-image: linear-gradient(to right, #15121c 6%, #7635fc, #15121c 94%) 1;
                 margin-bottom: 0 !important;
-            }
-
-            .button_dialog_focused {
-                border-image: linear-gradient(to right, #101010 9%, #d0d3d4, #101010 91%) 1;
             }
 
             .about_text_title {
@@ -1138,15 +1167,11 @@
             .controls_text {
                 width: 99%;
                 display: inline-block;
-                color: #ffffff;
+                color: #b4a9cf;
                 margin: 0.5%;
                 text-align: center;
                 word-wrap: break-word;
                 font-size: 75%;
-                text-shadow:
-                    #000000 0 0 0.2em,
-                    #000000 0 0 0.2em,
-                    #000000 0 0 0.15em;
             }
 
             .exit_text {
@@ -1214,6 +1239,7 @@
                 top: 0.75%;
                 width: 100%;
                 color: #ffffff;
+                font-family: 'Roboto-Black', 'Roboto-Bold';
                 font-size: 100%;
                 text-shadow:
                     -0.05em -0.05em 0 #000,
@@ -1241,7 +1267,7 @@
 
             .playerinfo {
                 width: 100%;
-                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0));
+                background: linear-gradient(to bottom, rgba(11, 10, 14, 0.92), rgba(11, 10, 14, 0));
             }
 
             .partnericon_div {
@@ -1340,6 +1366,12 @@
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
+                color: #b4a9cf;
+                font-family: 'Roboto';
+            }
+
+            .side_panel_feed_thumb_title_text {
+                color: #ffffff;
             }
 
             .side_panel_feed_thumb_title_text {
@@ -1356,7 +1388,9 @@
                 height: 97.5%;
                 top: 2.1%;
                 left: 24.3%;
-                background-color: #000000;
+                background-color: #15121c;
+                border-radius: 0.25em;
+                overflow: hidden;
                 will-change: opacity;
                 transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s;
             }
@@ -1397,7 +1431,7 @@
             }
 
             .side_panel_background_color {
-                background-color: #000000;
+                background-color: #0b0a0e;
             }
 
             .side_panel_fix_top_2,
@@ -1475,13 +1509,13 @@
             }
 
             .side_panel_new_icons_text {
-                background: linear-gradient(to right, #000000 18%, rgba(255, 255, 255, 0.3), #000000 80%);
-                border-image: linear-gradient(to right, #000000 18%, #d0d3d4, #000000 80%) 1 !important;
+                background: linear-gradient(to right, #15121c 18%, rgba(118, 53, 252, 0.4), #15121c 80%);
+                border-image: linear-gradient(to right, #0b0a0e 18%, #a78bfa, #0b0a0e 80%) 1 !important;
             }
 
             .side_panel_new_icons_text_botton {
-                background: linear-gradient(to right, #000000 0%, rgba(255, 255, 255, 0.3), #000000 70%);
-                border-image: linear-gradient(to right, #000000 0%, #d0d3d4, #000000 70%) 1 !important;
+                background: linear-gradient(to right, #15121c 0%, rgba(118, 53, 252, 0.4), #15121c 70%);
+                border-image: linear-gradient(to right, #0b0a0e 0%, #a78bfa, #0b0a0e 70%) 1 !important;
             }
 
             .side_panel_new_icons_pad {
@@ -1489,8 +1523,8 @@
             }
 
             .side_panel_new_icons_start {
-                background: linear-gradient(to right, #000000 8%, rgba(255, 255, 255, 0.3), #000000 92%);
-                border-image: linear-gradient(to right, #000000 8%, #d0d3d4, #000000 92%) 1 !important;
+                background: linear-gradient(to right, rgba(118, 53, 252, 0.32) 8%, rgba(118, 53, 252, 0.08) 60%, #0b0a0e 92%);
+                border-image: linear-gradient(to right, #7635fc 8%, rgba(118, 53, 252, 0.15), #0b0a0e 92%) 1 !important;
             }
 
             .side_panel_movel_user_text,
@@ -1522,7 +1556,7 @@
                 transform: translateX(0);
                 transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s;
                 will-change: transform;
-                background: #000000;
+                background: #0b0a0e;
             }
 
             .side_panel_hide {
@@ -1568,11 +1602,11 @@
             .about_dialogs {
                 position: absolute;
                 z-index: 99;
-                background-color: #101010;
+                background-color: #15121c;
                 top: 50%;
                 transform: translateY(-50%);
-                border-radius: 0.2em;
-                border-color: #ffffff !important;
+                border-radius: 0.25em;
+                border-color: #2b2438 !important;
             }
 
             .dialogs {
@@ -1660,10 +1694,11 @@
                 width: 60%;
                 margin-top: 14%;
                 margin-left: 20%;
-                background-color: #101010;
-                border-top: 0.1em solid;
-                border-bottom: 0.1em solid;
-                border-image: linear-gradient(to right, #101010 20%, #d0d3d4, #101010 80%) 1;
+                background-color: #15121c;
+                border-radius: 0.25em;
+                border-top: 0.09em solid;
+                border-bottom: 0.09em solid;
+                border-image: linear-gradient(to right, #15121c 20%, #7635fc, #15121c 80%) 1;
             }
 
             .dialog_period {
@@ -1675,33 +1710,33 @@
             .chat_container1,
             .chat_container {
                 z-index: 2;
-                border-radius: 0.1em;
+                border-radius: 0.25em;
                 left: 75.1%;
                 top: 51.5%;
                 position: absolute;
                 width: 24.7%;
                 height: 48%;
-                background-color: rgba(0, 0, 0, 0.5);
+                background-color: rgba(11, 10, 14, 0.55);
             }
 
             .chat_container1 {
                 left: 0.2%;
                 top: 0.2%;
                 height: 96.1%;
-                background-color: rgba(0, 0, 0, 1);
+                background-color: #0b0a0e;
             }
 
             .chat_container_name,
             .chat_container1_name {
                 z-index: 2;
-                border-radius: 0.2em;
+                border-radius: 0.15em;
                 left: 0.15%;
                 bottom: 0.2%;
                 position: absolute;
                 width: 24.5%;
                 height: 3%;
-                background-color: #000;
-                border: 0.09em solid #ffffff;
+                background-color: #15121c;
+                border: 0.075em solid #2b2438;
                 color: #ffffff;
                 text-align: center;
                 font-size: 90%;
@@ -1729,7 +1764,8 @@
                 width: 100%;
                 color: #ffffff;
                 font-size: 130%;
-                font-family: 'Roboto-Bold';
+                font-family: 'Roboto-Black', 'Roboto-Bold';
+                letter-spacing: 0.02em;
                 position: absolute;
                 /* 1vh offset to hide content that may show benhide it*/
                 top: 1vh;
@@ -1739,7 +1775,7 @@
                 position: absolute;
                 margin-left: 4.75%;
                 width: 95.24%;
-                background: rgba(0, 0, 0, 1);
+                background: linear-gradient(to bottom, #0b0a0e 88%, rgba(11, 10, 14, 0));
                 /* 1vh offset to hide content that may show benhide it*/
                 height: 5.35%;
                 transform: translateY(-1vh);
@@ -1798,8 +1834,8 @@
             }
 
             .dialog_end_icons_focus {
-                border-color: #ffffff !important;
-                background-color: rgba(150, 150, 150, 0.55);
+                border-color: #a78bfa !important;
+                background-color: rgba(118, 53, 252, 0.35);
             }
 
             .right,
@@ -1842,7 +1878,7 @@
                 box-sizing: border-box;
                 border-top: 0.05em solid;
                 border-bottom: 0.05em solid;
-                border-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)) 1;
+                border-image: linear-gradient(to right, rgba(255, 255, 255, 0) 2%, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 98%) 1;
             }
 
             .hist_div {
@@ -1850,8 +1886,8 @@
             }
 
             .settings_div_focus {
-                background-color: rgba(255, 255, 255, 0.15);
-                border-image: linear-gradient(to right, #000000 20%, #d0d3d4, #000000 80%) 1 !important;
+                background-color: rgba(118, 53, 252, 0.16);
+                border-image: linear-gradient(to right, #15121c 20%, #7635fc, #15121c 80%) 1 !important;
             }
 
             .hist_value,
@@ -1874,13 +1910,15 @@
             }
 
             .settings_value_focus {
-                background-color: rgba(255, 255, 255, 0.15);
-                border-image: linear-gradient(to right, #000000 20%, #d0d3d4, #000000 80%) 1 !important;
+                background-color: rgba(118, 53, 252, 0.2);
+                border-image: linear-gradient(to right, #15121c 20%, #7635fc, #15121c 80%) 1 !important;
             }
 
             .settings_section {
                 font-size: 130%;
                 text-align: center;
+                color: #7d7396;
+                font-family: 'Roboto';
             }
 
             .settings_title {
@@ -1896,6 +1934,7 @@
                 font-size: 75%;
                 text-align: left;
                 font-family: 'Roboto';
+                color: #7d7396;
             }
 
             .hist_name,
@@ -1938,7 +1977,7 @@
                 height: auto;
                 text-align: center;
                 padding-top: 3%;
-                background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
+                background: linear-gradient(to top, rgba(11, 10, 14, 0.88), rgba(11, 10, 14, 0));
             }
 
             .colorCanvas {
@@ -1958,7 +1997,7 @@
             .cavas_holder {
                 z-index: 99;
                 border-radius: 0.2em;
-                border: 0.4vh solid #000000;
+                border: 0.4vh solid #2b2438;
                 width: 96%;
                 margin-left: 2%;
                 height: 5vh;
@@ -1966,7 +2005,7 @@
             }
 
             .cavas_holder_focused {
-                border-color: #ffffff !important;
+                border-color: #a78bfa !important;
             }
 
             .colorCanvas_pos {
@@ -2113,9 +2152,9 @@
                 overflow: hidden;
                 border-radius: 0.5vh;
                 box-shadow:
-                    inset 0 0 0 0.025vh #ffffff,
-                    0 0 0 0.3vh #ffffff,
-                    0 0 0 0.6vh #000000;
+                    0 0 0 0.3vh rgba(11, 10, 14, 0.9),
+                    0 0 0 0.42vh #a78bfa,
+                    0 0.3vh 1.2vh rgba(0, 0, 0, 0.6);
             }
 
             .end_img_holder {
@@ -2131,9 +2170,9 @@
                 overflow: hidden;
                 border-radius: 0.5vh;
                 box-shadow:
-                    inset 0 0 0 0.025vh #ffffff,
-                    0 0 0 0.3vh #ffffff,
-                    0 0 0 0.6vh #000000;
+                    0 0 0 0.3vh rgba(11, 10, 14, 0.9),
+                    0 0 0 0.42vh #a78bfa,
+                    0 0.3vh 1.2vh rgba(0, 0, 0, 0.6);
             }
 
             .progress_bar_div {
@@ -2148,8 +2187,8 @@
             }
 
             .progress_bar_div_focus {
-                background-color: rgba(0, 0, 0, 0.7);
-                border-color: #ffffff !important;
+                background-color: rgba(11, 10, 14, 0.72);
+                border-color: rgba(167, 139, 250, 0.9) !important;
             }
 
             .progress_bar_jump,
@@ -2182,15 +2221,15 @@
             }
 
             .progress_bar_holder_focus {
-                box-shadow: 0 0 0 0.1em #ffffff;
+                box-shadow: 0 0 0 0.09em #a78bfa;
             }
 
             .progress_bar {
                 width: 100%;
                 box-sizing: border-box;
-                border: 0.1em solid #000000;
+                border: 0.1em solid #0b0a0e;
                 border-radius: 0.1em;
-                background-color: #ebebeb;
+                background-color: rgba(255, 255, 255, 0.22);
             }
 
             .inner_progress_animate_holder {
@@ -2268,6 +2307,7 @@
             .stream_thumbnail_game_feed,
             .stream_thumbnail_game {
                 border: 0.09em solid rgba(0, 0, 0, 0);
+                border-radius: 0.25em;
             }
 
             /* Chat this is a adaptation of https://www.nightdev.com/kapchat/ functions*/
@@ -2422,8 +2462,8 @@
             }
 
             .side_panel_div_focused {
-                background: linear-gradient(to right, #000000 20%, rgba(255, 255, 255, 0.25), #000000 80%);
-                border-image: linear-gradient(to right, #000000 20%, #d0d3d4, #000000 80%) 1 !important;
+                background: linear-gradient(to right, #15121c 20%, rgba(118, 53, 252, 0.3), #15121c 80%);
+                border-image: linear-gradient(to right, #0b0a0e 20%, #a78bfa, #0b0a0e 80%) 1 !important;
             }
 
             .side_panel_iner_div1_pp,
@@ -2574,8 +2614,8 @@
 
             .side_panel_feed_img_focus {
                 box-shadow:
-                    0 0 0 0.1em #000000,
-                    0 0 0 0.2em #7635fc;
+                    0 0 0 0.12em #7635fc,
+                    0 0 0.7em 0.1em rgba(118, 53, 252, 0.45);
             }
 
             /*adapted from https://loading.io/css/*/
@@ -2674,7 +2714,7 @@
 
     <body>
         <div id="body_container" class="screen_size" style="position: relative">
-            <div id="scene1" class="screen_size" style="background-color: rgba(0, 0, 0, 1); opacity: 1; will-change: opacity; z-index: 2">
+            <div id="scene1" class="screen_size" style="background-color: #0b0a0e; opacity: 1; will-change: opacity; z-index: 2">
                 <div id="dialog_loading" class="screens dialogs hide" style="z-index: 98; margin-top: 50vh; overflow: visible">
                     <div class="loading">
                         <div></div>
@@ -3830,12 +3870,12 @@
                                                     <div
                                                         id="inner_progress_bar_buffer"
                                                         class="inner_progress_animate inner_progress_bar avoidclicks"
-                                                        style="background-color: rgba(148, 0, 0, 0.8); position: absolute; bottom: 27%"
+                                                        style="background-color: rgba(255, 255, 255, 0.25); position: absolute; bottom: 27%"
                                                     ></div>
                                                     <div
                                                         id="inner_progress_bar"
                                                         class="inner_progress_animate inner_progress_bar avoidclicks"
-                                                        style="background-color: rgb(77, 77, 77); border-radius: 5%"
+                                                        style="background-color: #7635fc; border-radius: 5%"
                                                     >
                                                         <div class="inner_progress_circle"></div>
                                                     </div>

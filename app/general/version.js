@@ -24,8 +24,16 @@ var version = {
     publishVersionCode: 385, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/385/SmarterPurpleTV_3_0_385.apk',
     WebVersion: 'September 22 2026',
-    WebTag: 737, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 738, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'September 22 2026',
+            changes: [
+                'New look: full visual refresh with a layered charcoal design — soft violet-tinted surfaces instead of flat black, rounded corners on cards, thumbnails, dialogs and inputs, refined text hierarchy (bold names, muted titles and metadata), and a stronger layered purple focus glow on the focused item',
+                'New look: the side navigation, settings rows, dialogs, player overlays, progress bar and chat share the same new design language; the focus color styles and all themes still work as before',
+                'General: Roboto Black is now used for screen titles and the clock, giving a heavier headline hierarchy (font was already bundled)'
+            ]
+        },
         {
             title: 'September 22 2026',
             changes: [
