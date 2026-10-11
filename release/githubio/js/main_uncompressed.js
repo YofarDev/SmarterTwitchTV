@@ -8280,11 +8280,17 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 390, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/390/SmarterPurpleTV_3_0_390.apk',
+        publishVersionCode: 391, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/391/SmarterPurpleTV_3_0_391.apk',
         WebVersion: 'October 11 2026',
-        WebTag: 749, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 750, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'October 11 2026 (APK 391)',
+                changes: [
+                    'Player: fixed playback stopping and returning to the menu when a Bluetooth remote disconnects or sleeps; the player is no longer recreated on keyboard or navigation device changes'
+                ]
+            },
             {
                 title: 'October 11 2026 (APK 390)',
                 changes: [

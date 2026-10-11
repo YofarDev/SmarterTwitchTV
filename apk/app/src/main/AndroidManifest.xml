@@ -66,6 +66,7 @@
             android:launchMode="singleInstance"
             android:theme="@style/AppTheme.Launcher"
             android:screenOrientation="landscape"
+            android:configChanges="keyboard|keyboardHidden|navigation"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
