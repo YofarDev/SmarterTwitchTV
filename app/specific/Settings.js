@@ -923,6 +923,8 @@ function Settings_init() {
     Main_ShowElement('settings_holder');
     Main_IconLoad('label_thumb', 'icon-return', STR_GOBACK);
     Main_HideElement('label_refresh');
+    //Settings is a single list, drop the page counter left by the previous grid screen
+    Main_CounterDialogRst();
     Settings_cursorY = 0;
     Settings_inputFocus(Settings_cursorY);
     Navigation_Render(Main_values.Main_Go);
@@ -938,6 +940,7 @@ function Settings_exit() {
     Main_ShowElement('label_refresh');
     Settings_RemoveInputFocus();
     Main_HideElement('settings_holder');
+    Main_RemoveClass('scene1', 'navigation-settings');
 }
 
 function Settings_isVisible() {
@@ -1984,77 +1987,27 @@ function Settings_HideElem(elem, hide) {
     else Main_RemoveClass(elem, 'opacity_zero');
 }
 
-var Settings_CurY = 0;
-
-function Settings_ScrollDown() {
-    Settings_Do_ScrollDown('settings_scroll');
-}
-
-function Settings_ScrollUp() {
-    Settings_Do_ScrollUp('settings_scroll');
-}
-
-function Settings_Do_ScrollDown(docId) {
-    var doc = Main_getElementById(docId);
-    doc.scrollTop = doc.scrollHeight;
-    if (Settings_Obj_default('app_animations')) {
-        var position = doc.scrollTop;
-        doc.scrollTop = 0;
-        scrollTo(doc, position, 200);
-    }
-}
-
-function Settings_Do_ScrollUp(docId) {
-    var doc = Main_getElementById(docId);
-    if (Settings_Obj_default('app_animations')) scrollTo(doc, 0, 200);
-    else doc.scrollTop = 0;
-}
-
+//The list is taller than two screens, so scroll just enough to keep the focused option in view instead of flipping between top and bottom
 function Settings_ScrollTable() {
-    var scrolPos = 14,
-        offset = 1; //!Main_isTV || !Main_IsOn_OSInterface ? 1 : 0;
+    var doc = Main_getElementById('settings_scroll'),
+        row = Main_getElementById(Settings_value_keys[Settings_cursorY] + '_div'),
+        title = row.previousElementSibling,
+        style = window.getComputedStyle(row),
+        //The focus outline is drawn outside the row, keep it inside the clipped area too
+        edge = Math.ceil((parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
+        top = row.offsetTop - edge,
+        bottom = row.offsetTop + row.offsetHeight + edge;
 
-    if (Settings_CurY < Settings_cursorY && Settings_cursorY === scrolPos + offset) {
-        Settings_ScrollDown();
-    } else if (Settings_CurY > Settings_cursorY && Settings_cursorY === scrolPos - 1 + offset) {
-        Settings_ScrollUp();
-    }
+    //Show the section title together with the first option below it
+    if (title && title.classList.contains('settings_section')) top = Math.min(top, title.offsetTop);
 
-    Settings_CurY = Settings_cursorY;
+    if (top < doc.scrollTop) doc.scrollTop = top;
+    else if (bottom > doc.scrollTop + doc.clientHeight) doc.scrollTop = bottom - doc.clientHeight;
 }
 
 function Settings_ScrollTableReset() {
     Main_getElementById('settings_scroll').scrollTop = 0;
-    Settings_CurY = 0;
 }
-
-function scrollTo(element, to, duration) {
-    var start = element.scrollTop,
-        change = to - start,
-        currentTime = 0,
-        increment = 3;
-
-    var animateScroll = function () {
-        currentTime += increment;
-        var val = Math.easeInOutQuad(currentTime, start, change, duration);
-        element.scrollTop = val;
-        if (currentTime < duration) {
-            setTimeout(animateScroll, increment);
-        }
-    };
-    animateScroll();
-}
-
-//t = current time
-//b = start value
-//c = change in value
-//d = duration
-Math.easeInOutQuad = function (t, b, c, d) {
-    t /= d / 2;
-    if (t < 1) return (c / 2) * t * t + b;
-    t--;
-    return (-c / 2) * (t * (t - 2) - 1) + b;
-};
 
 function Settings_handleKeyLeft(key) {
     if (Settings_Obj_default(key) > 0) {

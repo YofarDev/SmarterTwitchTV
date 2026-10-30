@@ -465,13 +465,13 @@ function SettingsColor_SetAnimationStyle(pos) {
         '#navigation-shell,#navigation-onboarding,#player-ui{color:' +
         TextColor +
         ';}' +
-        '#navigation-shell .navigation-rail,#player-ui .player-ui-bar,#player-ui .player-ui-drawer,#player-ui-paused{background:' +
+        '#navigation-shell .navigation-rail,#player-ui .player-ui-bar,#player-ui .player-ui-drawer,#player-ui-paused,.navigation-settings #settings_holder{background:' +
         surface +
         ';}' +
         '#navigation-onboarding,#navigation-shell #navigation-status{background:' +
         background +
         ';}' +
-        '#navigation-shell .navigation-focused,#player-ui .player-ui-focused,#progress_bar_div.progress_bar_div_focus{outline-color:' +
+        '#navigation-shell .navigation-focused,#player-ui .player-ui-focused,#progress_bar_div.progress_bar_div_focus,#settings_main .settings_div_focus,#settings_main .settings_value_focus{outline-color:' +
         focusColor +
         ' !important;background:' +
         focusSurface +
