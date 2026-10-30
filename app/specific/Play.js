@@ -1860,6 +1860,7 @@ function Play_ShowVideoQuality(who_called, value) {
         }
     } else {
         Main_innerHTML('stream_quality', value);
+        PlayerUI_SetAutoQuality(who_called, value);
     }
 }
 

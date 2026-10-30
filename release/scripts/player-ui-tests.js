@@ -373,4 +373,38 @@ check(
     effects.some(x => Array.isArray(x) && x[0] === 'hidePanel' && x[1] === 1),
     'bar timeout delegates existing hide policy'
 );
+/* Auto quality caption: the native report names the playing rendition, matched to the stream's own list entry. */
+s.STR_UI = {quality: 'Quality', separator: ' · ', qualityAutoPlaying: '{quality} ({playing})'};
+s.Play_data.qualities = [
+    {id: 'Auto', position: -1},
+    {id: '1080p60 | source', position: 0},
+    {id: '720p60', position: 1}
+];
+s.Play_data.qualityPlaying = 'Auto';
+s.PlayerUI_State.mode = 1;
+s.PlayerUI_State.frames = [{group: 'bar', index: 0}];
+s.PlayerUI_State.autoQuality = '';
+s.PlayerUI_QualityCaption();
+check(element('player-ui-name').textContent === 'Quality · Auto', 'Auto caption before the player reports');
+s.PlayerUI_SetAutoQuality(0, '1080p60 | Auto | 8.99Mbps | AVC');
+check(element('player-ui-name').textContent === 'Quality · Auto (1080p60 | source)', 'Auto caption names the playing list entry');
+s.PlayerUI_SetAutoQuality(0, '720p60 | Auto | 3.42Mbps | AVC');
+check(element('player-ui-name').textContent === 'Quality · Auto (720p60)', 'Auto caption follows a rendition switch');
+s.PlayerUI_SetAutoQuality(0, '936p60 | Auto | 5.00Mbps | AVC');
+check(element('player-ui-name').textContent === 'Quality · Auto (936p60)', 'unlisted rendition keeps the native resolution');
+s.Play_data.qualityPlaying = '720p60';
+s.PlayerUI_QualityCaption();
+check(element('player-ui-name').textContent === 'Quality · 720p60', 'a fixed quality shows as selected');
+s.PlayVod_qualities = [
+    {id: 'Auto', position: -1},
+    {id: '1080p60 | source', position: 0}
+];
+s.PlayVod_qualityPlaying = 'Auto';
+s.PlayerUI_State.mode = 2;
+s.PlayerUI_SetAutoQuality(1, '1080p60 | Auto | 6.00Mbps | AVC');
+check(element('player-ui-name').textContent === 'Quality · Auto (1080p60 | source)', 'VOD Auto caption uses the VOD list');
+s.PlayerUI_State.frames = [];
+element('player-ui-name').textContent = '';
+s.PlayerUI_SetAutoQuality(1, '720p60 | Auto | 3.00Mbps | AVC');
+check(element('player-ui-name').textContent === '' && s.PlayerUI_State.autoQuality === '720p60', 'closed bar only stores the report');
 console.log(checks + ' production player action checks passed');

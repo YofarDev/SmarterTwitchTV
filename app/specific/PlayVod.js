@@ -639,6 +639,8 @@ function PlayVod_showPanel(autoHide) {
 
 function PlayVod_RefreshProgressBarrStart(showVideoQuality, who_called) {
     PlayVod_getVideoQualityRate = 0;
+    //Not carried over from another stream; the first refresh below asks the player again
+    PlayerUI_State.autoQuality = '';
 
     if (Play_isOn) Play_RefreshWatchingTime();
 
@@ -665,9 +667,10 @@ var PlayVod_getVideoQualityRate = 0;
 function PlayVod_RefreshProgressBarr(showVideoQuality, who_called) {
     var Update_status = Play_Status_Visible;
 
+    //Status "Always visible" (1) already asks every second (Play_UpdateStatus); the panel's quality caption needs it otherwise
     if (
         !PlayVod_getVideoQualityRate &&
-        !Update_status &&
+        Update_status !== 1 &&
         Main_IsOn_OSInterface &&
         showVideoQuality &&
         ((Main_A_includes_B(PlayVod_qualityPlaying, 'Auto') && PlayVod_isOn) || (Main_A_includes_B(Play_data.qualityPlaying, 'Auto') && Play_isOn))

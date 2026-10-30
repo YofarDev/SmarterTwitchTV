@@ -1,5 +1,15 @@
 /* Player presentation adapter. Playback objects and their original callbacks remain authoritative. */
-var PlayerUI_State = {mode: 0, frames: [], suspended: false, closing: false, hiddenTimer: null, timelineTimer: null, paused: false, barPaused: null};
+var PlayerUI_State = {
+    mode: 0,
+    frames: [],
+    suspended: false,
+    closing: false,
+    hiddenTimer: null,
+    timelineTimer: null,
+    paused: false,
+    barPaused: null,
+    autoQuality: ''
+};
 
 function PlayerUI_Mode() {
     return Play_isOn ? 1 : PlayVod_isOn ? 2 : PlayClip_isOn ? 3 : 0;
@@ -272,6 +282,34 @@ function PlayerUI_QualityPick(index) {
     PlayerUI_ScheduleHide();
 }
 
+function PlayerUI_QualityCaption() {
+    var quality = PlayerUI_State.mode === 1 ? Play_data.qualityPlaying : PlayerUI_State.mode === 2 ? PlayVod_qualityPlaying : PlayClip_qualityPlaying;
+
+    if (PlayerUI_State.autoQuality && PlayerUI_State.mode < 3 && Main_A_includes_B(quality, 'Auto')) {
+        quality = STR_UI.qualityAutoPlaying.replace('{quality}', quality).replace('{playing}', PlayerUI_State.autoQuality);
+    }
+
+    Main_textContent('player-ui-name', STR_UI.quality + STR_UI.separator + quality);
+}
+
+//Native report of the Auto rendition (Play_ShowVideoQuality), e.g. '1080p60 | Auto | 8.99Mbps | AVC';
+//named after the stream's own list entry when one matches ('1080p60 | source')
+function PlayerUI_SetAutoQuality(who_called, value) {
+    var playing = value.split(' | ')[0],
+        list = who_called ? PlayVod_qualities : Play_data.qualities,
+        i;
+
+    for (i = 0; i < list.length; i++) {
+        if (list[i].id && list[i].id.split(' | ')[0] === playing) {
+            playing = list[i].id;
+            break;
+        }
+    }
+
+    PlayerUI_State.autoQuality = playing;
+    if (PlayerUI_State.frames.length && !PlayerUI_State.suspended) PlayerUI_QualityCaption();
+}
+
 function PlayerUI_TimelineClass() {
     var timeline = Main_getElementById('progress_pause_holder');
     if (timeline.offsetHeight > 0) Main_AddClass('player-ui', 'player-ui-has-timeline');
@@ -325,12 +363,7 @@ function PlayerUI_Render() {
             } else if (key === 'more') node.className += ' player-ui-bar-end';
         }
     }
-    Main_textContent(
-        'player-ui-name',
-        STR_UI.quality +
-            STR_UI.separator +
-            (PlayerUI_State.mode === 1 ? Play_data.qualityPlaying : PlayerUI_State.mode === 2 ? PlayVod_qualityPlaying : PlayClip_qualityPlaying)
-    );
+    PlayerUI_QualityCaption();
     Main_textContent('player-ui-value', PlayerUI_State.paused ? STR_UI.paused : '');
     drawer.style.display = frame.group === 'bar' ? 'none' : '';
     frame.list = false;
