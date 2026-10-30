@@ -86,4 +86,19 @@ for (const intent of [false, true])
 check(s.Navigation_Startup({explicitScreen: s.Main_Clip, hasAccount: true}).screen === s.Main_Clip, 'explicit screen remains authoritative');
 check(s.Navigation_Startup({hasAccount: true, hasToken: false}).screen === s.Main_UserLive, 'username-only account is still an account');
 check(s.Navigation_Startup({hasAccount: false}).screen === null, 'onboarding does not invoke account loader');
+/* Key hints: placeholders become icon glyphs, the label text stays escaped plain text. */
+require('vm').runInContext(
+    require('fs')
+        .readFileSync('app/specific/Screens.js', 'utf8')
+        .match(/function Screens_AriaEscape\([\s\S]*?\n}/)[0],
+    s
+);
+const hint = s.Navigation_KeyHintHtml('{ok} Select    {left}{right} Adjust    Hold {ok} Options    {back} Return');
+check(hint.indexOf('{') === -1, 'every known key placeholder is replaced');
+check(hint.split('navigation-key-ok" aria-hidden="true">OK</span>').length === 3, 'OK is drawn as a key cap each time');
+check(hint.indexOf('icon-key-left') !== -1 && hint.indexOf('icon-key-right') !== -1, 'arrows use key glyphs');
+check(hint.indexOf('icon-return') !== -1, 'Back uses the return glyph');
+check(hint.indexOf('aria-hidden="true"') !== -1 && hint.indexOf('</span> Select ') !== -1, 'glyphs are decorative, labels kept');
+check(hint.split('navigation-key-divider').length === 4 && hint.indexOf('   ') === -1, 'each gap between key groups becomes one divider');
+check(s.Navigation_KeyHintHtml('<b>{nope}</b> & {up}').indexOf('&lt;b>{nope}&lt;/b> &amp; <i class="icon icon-key-up') === 0, 'labels escaped, unknown placeholders left as text');
 console.log(checks + ' production navigation checks passed');
