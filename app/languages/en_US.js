@@ -59,6 +59,8 @@ function en_USLang() {
         pause: 'Pause',
         channels: 'Channels',
         quality: 'Quality',
+        //{quality} is the selected option (Auto), {playing} the quality it is currently playing, e.g. 1080p60 | source
+        qualityAutoPlaying: '{quality} ({playing})',
         unavailable: 'Not available in this playback mode',
         settingsHelp: 'About, controls and updates',
         loading: 'Loading your channels…',
