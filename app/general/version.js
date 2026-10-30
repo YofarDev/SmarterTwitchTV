@@ -23,9 +23,16 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 394, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/394/SmarterPurpleTV_3_0_394.apk',
-    WebVersion: 'October 29 2026',
-    WebTag: 771, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'October 30 2026',
+    WebTag: 772, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'October 30 2026 (Web 772)',
+            changes: [
+                'Fix: opening or recovering a stream could stay on a black screen with a loading spinner after a duplicate badge request corrupted the chat badge cache; badges now use the correct request callback and incomplete caches recover safely',
+                'Fix: missing or invalid chat badges no longer poison future stream loads, and a chat initialization failure no longer prevents video playback from starting'
+            ]
+        },
         {
             title: 'October 29 2026 (Web 771)',
             changes: [

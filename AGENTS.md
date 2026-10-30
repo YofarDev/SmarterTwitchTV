@@ -31,6 +31,7 @@ Focused fixture harnesses (not complete end-to-end coverage):
 node release/scripts/phonechat-tests.js          # phone logic and mock DOM; add --built for generated bundle
 node release/scripts/update-tests.js
 node release/scripts/phonechat-collector-tests.js
+node release/scripts/chat-badge-tests.js        # badge HTTP contracts/cache and playback recovery; add --built for generated definitions
 node release/scripts/chat-optimization-tests.js # TV scheduler/cache with fake clock
 node release/scripts/grid-window-tests.js        # browse grid row window; add --built for generated bundle
 node release/scripts/ad-filter-tests.js          # ad playlist filter (JDK 8+) and web ad probe chain

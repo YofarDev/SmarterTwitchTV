@@ -163,42 +163,79 @@ var ChatLive_Base_BTTV_url = 'https://cdn.betterttv.net/emote/';
 //Variable initialization end
 
 function ChatLive_Init(chat_number, SkipClear) {
-    if (!SkipClear) {
-        ChatLive_Clear(chat_number);
+    try {
+        if (!SkipClear) {
+            ChatLive_Clear(chat_number);
+        }
+
+        if (Main_values.Play_ChatForceDisable) {
+            Chat_Disable();
+            return;
+        }
+
+        if (!Main_IsOn_OSInterface) {
+            Chat_StartFakeClock();
+        }
+
+        ChatLive_SetOptions(
+            chat_number,
+            !chat_number ? Play_data.data[14] : PlayExtra_data.data[14],
+            !chat_number ? Play_data.data[6] : PlayExtra_data.data[6]
+        );
+        ChatLive_StartShared(chat_number, Chat_Id[chat_number]);
+
+        if (!SkipClear) {
+            ChatLive_PreLoadChat(chat_number, Chat_Id[chat_number]);
+        }
+
+        ChatLive_loadChat(chat_number, Chat_Id[chat_number], SkipClear);
+
+        if (!SkipClear) {
+            ChatLive_SendStart(chat_number, Chat_Id[chat_number]);
+            ChatLive_loadChatters(chat_number, Chat_Id[chat_number]);
+        }
+
+        if (ChatLive_User_Set) {
+            ChatLive_loadGlobalEmotes(chat_number, Chat_Id[chat_number]);
+
+            ChatLive_checkFallow(chat_number, Chat_Id[chat_number]);
+            ChatLive_checkSub(chat_number, Chat_Id[chat_number]);
+        }
+    } catch (error) {
+        //Chat is optional: synchronous provider/DOM failures must not abort native startup.
+        var generation = Chat_Id[chat_number];
+        Chat_Id[chat_number] = 0;
+        Main_Log('[Chat] initialization failed, slot ' + chat_number + ' generation ' + generation);
+        ChatLive_InitCleanup(chat_number);
     }
+}
 
-    if (Main_values.Play_ChatForceDisable) {
-        Chat_Disable();
-        return;
+function ChatLive_InitCleanup(chat_number) {
+    //Try the independent cleanup steps even if a partially initialized DOM/socket fails.
+    var cleanup = [
+        function (slot) {
+            ChatLive_ClearIds(slot, !!slot);
+        },
+        ChatLive_CacheRelease,
+        ChatLive_resetChatters,
+        ChatLive_Close
+    ];
+    for (var i = 0; i < cleanup.length; i++) {
+        try {
+            cleanup[i](chat_number);
+        } catch (error) {
+            Main_Log('[Chat] initialization cleanup failed, slot ' + chat_number + ' step ' + i);
+        }
     }
-
-    if (!Main_IsOn_OSInterface) {
-        Chat_StartFakeClock();
-    }
-
-    ChatLive_SetOptions(
-        chat_number,
-        !chat_number ? Play_data.data[14] : PlayExtra_data.data[14],
-        !chat_number ? Play_data.data[6] : PlayExtra_data.data[6]
-    );
-    ChatLive_StartShared(chat_number, Chat_Id[chat_number]);
-
-    if (!SkipClear) {
-        ChatLive_PreLoadChat(chat_number, Chat_Id[chat_number]);
-    }
-
-    ChatLive_loadChat(chat_number, Chat_Id[chat_number], SkipClear);
-
-    if (!SkipClear) {
-        ChatLive_SendStart(chat_number, Chat_Id[chat_number]);
-        ChatLive_loadChatters(chat_number, Chat_Id[chat_number]);
-    }
-
-    if (ChatLive_User_Set) {
-        ChatLive_loadGlobalEmotes(chat_number, Chat_Id[chat_number]);
-
-        ChatLive_checkFallow(chat_number, Chat_Id[chat_number]);
-        ChatLive_checkSub(chat_number, Chat_Id[chat_number]);
+    ChatLive_Messages[chat_number] = [];
+    ChatLive_LineAddCounter[chat_number] = 0;
+    ChatLive_loaded[chat_number] = false;
+    if (!chat_number) {
+        try {
+            ChatLive_SendClose();
+        } catch (error) {
+            Main_Log('[Chat] send cleanup failed, slot ' + chat_number);
+        }
     }
 }
 
@@ -521,15 +558,25 @@ function ChatLive_checkSubFail(chat_number, id) {
 }
 
 function ChatLive_loadBadgesChannel(chat_number, id, input_channelId) {
-    if (id !== Chat_Id[chat_number]) return;
-
     var channelId = input_channelId ? input_channelId : ChatLive_selectedChannel_id[chat_number];
+    if (!Chat_badgesRequestIsCurrent(chat_number, id, channelId)) return;
     ChatLive_CacheTouch(channelId);
 
-    if (!extraEmotesDone.BadgesChannel[channelId]) {
+    if (typeof extraEmotesDone.BadgesChannel[channelId] !== 'string') {
         var theUrl = Main_helix_api + 'chat/badges?broadcaster_id=' + channelId;
 
-        BaseXmlHttpGetFull(theUrl, true, id, chat_number + '', channelId + '', null, null, null, ChatLive_loadBadgesChannelSuccess, noop_fun);
+        BaseXmlHttpGetFull(
+            theUrl,
+            true,
+            id,
+            chat_number + '',
+            channelId + '',
+            null,
+            null,
+            null,
+            ChatLive_loadBadgesChannelSuccess,
+            Chat_badgesLoadError
+        );
     } else {
         Chat_tagCSS(extraEmotesDone.BadgesChannel[channelId], Chat_div[chat_number]);
         ChatLive_sharedChannelBadgeLoaded[chat_number][channelId] = true;
@@ -537,14 +584,18 @@ function ChatLive_loadBadgesChannel(chat_number, id, input_channelId) {
 }
 
 function ChatLive_loadBadgesChannelSuccess(obj, id, chat_number, channelId) {
-    if (id !== Chat_Id[chat_number]) return;
+    if (!Chat_badgesRequestIsCurrent(chat_number, id, channelId)) return;
 
-    if (!ChatLive_CachePins[chat_number][channelId]) return;
+    var styles = Chat_buildBadgeStyles(obj, channelId, true, Chat_GlobalBadges_Bits_Subs);
+    if (!styles) {
+        Chat_badgesLoadError(chat_number, id);
+        return;
+    }
+
     ChatLive_CacheTouch(channelId);
-    extraEmotesDone.BadgesChannel[channelId] = Chat_loadBadgesTransform(obj, channelId, true, chat_number);
+    extraEmotesDone.BadgesChannel[channelId] = styles.css;
     ChatLive_sharedChannelBadgeLoaded[chat_number][channelId] = true;
-
-    Chat_tagCSS(extraEmotesDone.BadgesChannel[channelId], Chat_div[chat_number]);
+    Chat_tagCSS(styles.css, Chat_div[chat_number]);
 }
 
 function ChatLive_resetChatters(chat_number) {
@@ -2408,16 +2459,16 @@ function ChatLive_SetLatency(chat_number, latency) {
     }
 }
 
-function ChatLive_ClearIds(chat_number) {
+function ChatLive_ClearIds(chat_number, keepSender) {
     ChatLive_DelayClear(chat_number);
     ChatLive_CheckClear(chat_number);
-    Main_clearTimeout(ChatLive_socketSendCheckID);
+    if (!keepSender) Main_clearTimeout(ChatLive_socketSendCheckID);
     Main_clearTimeout(ChatLive_loadBadgesChannelId);
     Main_clearTimeout(ChatLive_LatencyId[chat_number]);
     Main_clearInterval(ChatLive_loadChattersId[chat_number]);
     Main_clearInterval(ChatLive_StartSharedId[chat_number]);
     Main_clearInterval(ChatLive_PingId[chat_number]);
-    Main_clearInterval(ChatLive_SendPingId);
+    if (!keepSender) Main_clearInterval(ChatLive_SendPingId);
 }
 
 function ChatLive_Clear(chat_number) {

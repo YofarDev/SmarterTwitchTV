@@ -217,44 +217,85 @@ function Chat_loadBadgesGlobalRequest(chat_number, id) {
     Chat_loadBadgesGlobalRequestWithChannel(chat_number, id, ChatLive_selectedChannel_id[chat_number]);
 }
 
+//Both transports return numeric generations and numeric/string chat slots. Cleared slots
+//must never accept a callback, even when a misplaced argument happens to equal zero.
+function Chat_badgesSessionIsCurrent(chat_number, id) {
+    return (chat_number === 0 || chat_number === 1 || chat_number === '0' || chat_number === '1') && id > 0 && id === Chat_Id[chat_number];
+}
+
+function Chat_badgesRequestIsCurrent(chat_number, id, channelId) {
+    return (
+        Chat_badgesSessionIsCurrent(chat_number, id) &&
+        ((typeof channelId === 'string' && channelId.length > 0) || (typeof channelId === 'number' && channelId > 0)) &&
+        !!(ChatLive_CachePins[chat_number] && ChatLive_CachePins[chat_number][channelId])
+    );
+}
+
+function Chat_badgesLoadError(chat_number, id) {
+    if (Chat_badgesSessionIsCurrent(chat_number, id)) {
+        Main_Log('[Chat-Badges] load failed, slot ' + chat_number + ' generation ' + id + '; keeping available styles');
+    }
+}
+
 function Chat_loadBadgesGlobalRequestWithChannel(chat_number, id, channelId) {
-    if (id !== Chat_Id[chat_number]) return;
+    if (!Chat_badgesRequestIsCurrent(chat_number, id, channelId)) return;
 
-    if (!Chat_GlobalBadges) {
-        BaseXmlHttpGet(Main_helix_api + 'chat/badges/global', Chat_loadBadgesGlobalSuccess, noop_fun, chat_number, id, true);
+    if (!Chat_GlobalBadges || typeof Chat_GlobalBadges[0] !== 'string') {
+        //An interrupted/invalid transform must remain retryable, never a ready empty cache.
+        Chat_GlobalBadges = null;
+        Chat_GlobalBadges_Bits_Subs = {};
 
-        var theUrl = Main_helix_api + 'chat/badges/global';
+        if (typeof extraEmotesDone.BadgesChannel[channelId] === 'string') {
+            Chat_tagCSS(extraEmotesDone.BadgesChannel[channelId], Chat_div[chat_number]);
+        }
 
-        BaseXmlHttpGetFull(theUrl, true, id, chat_number + '', channelId + '', null, null, null, Chat_loadBadgesGlobalSuccess, noop_fun);
+        //Only the full helper delivers (parsed object, generation, slot, channel).
+        BaseXmlHttpGetFull(
+            Main_helix_api + 'chat/badges/global',
+            true,
+            id,
+            chat_number + '',
+            channelId + '',
+            null,
+            null,
+            null,
+            Chat_loadBadgesGlobalSuccess,
+            Chat_badgesLoadError
+        );
     } else {
-        if (!Chat_GlobalBadges[channelId]) {
+        if (typeof Chat_GlobalBadges[channelId] !== 'string') {
             Chat_GlobalBadges[channelId] = Chat_GlobalBadges[0].replace(/\%x/g, channelId);
         }
 
         Chat_tagCSS(Chat_GlobalBadges[channelId], Chat_div[chat_number]);
-
-        //Load channel badges after global as it depends on Chat_GlobalBadges_Bits & Chat_GlobalBadges_Subs
-        ChatLive_loadBadgesChannel(chat_number, Chat_Id[chat_number], channelId);
+        ChatLive_loadBadgesChannel(chat_number, id, channelId);
     }
 }
 
 function Chat_loadBadgesGlobalSuccess(obj, id, chat_number, channelId) {
-    if (id !== Chat_Id[chat_number]) return;
+    if (!Chat_badgesRequestIsCurrent(chat_number, id, channelId)) return;
 
-    Chat_GlobalBadges = {};
+    var styles = Chat_buildBadgeStyles(obj, '%x', false);
+    if (!styles) {
+        Chat_badgesLoadError(chat_number, id);
+        return;
+    }
 
-    Chat_GlobalBadges_Bits_Subs = {};
-    Chat_GlobalBadges[0] = Chat_loadBadgesTransform(obj, '%x', false, chat_number);
+    //Build every value first: no callback may observe a half-published global cache.
+    var cache = {0: styles.css};
+    cache[channelId] = styles.css.replace(/\%x/g, channelId);
+    Chat_GlobalBadges = cache;
+    Chat_GlobalBadges_Bits_Subs = styles.bitsSubs;
 
-    Chat_GlobalBadges[channelId] = Chat_GlobalBadges[0].replace(/\%x/g, channelId);
-
-    Chat_tagCSS(Chat_GlobalBadges[channelId], Chat_div[chat_number]);
-
-    //Load channel badges after global as it depends on Chat_GlobalBadges_Bits & Chat_GlobalBadges_Subs
-    ChatLive_loadBadgesChannel(chat_number, Chat_Id[chat_number], channelId);
+    Chat_tagCSS(cache[channelId], Chat_div[chat_number]);
+    ChatLive_loadBadgesChannel(chat_number, id, channelId);
 }
 
-function Chat_loadBadgesTransform(responseObj, id, isChannel) {
+//Build locally. Invalid payloads return null; successful empty payloads return empty CSS.
+//The fallback map is an input for channel styles, never mutated by this builder.
+function Chat_buildBadgeStyles(responseObj, id, isChannel, globalBitsSubs) {
+    if (!responseObj || !Array.isArray(responseObj.data)) return null;
+
     var versions,
         versionsIds = {},
         property,
@@ -263,40 +304,44 @@ function Chat_loadBadgesTransform(responseObj, id, isChannel) {
         innerHTML = '',
         tempInnerHTML,
         versionInt,
+        validSets = 0,
+        bitsSubs = {},
         Channel_Badges = {};
 
     responseObj.data.forEach(function (set) {
-        property = set.set_id;
-        versions = set.versions;
+        if (!set || typeof set.set_id !== 'string' || !set.set_id.length || !Array.isArray(set.versions)) return;
 
+        versions = set.versions.filter(function (version) {
+            return (
+                version &&
+                typeof version.id === 'string' &&
+                version.id.length &&
+                typeof version[badgeURLSize] === 'string' &&
+                version[badgeURLSize].length
+            );
+        });
+        if (set.versions.length && !versions.length) return;
+        validSets++;
+        property = set.set_id;
         isSubSet = property === 'subscriber';
         isBitsSet = property === 'bits';
 
-        if (isChannel) {
-            versionsIds = Chat_GetVersionsIdsObj(versions);
-        }
+        if (isChannel) versionsIds = Chat_GetVersionsIdsObj(versions);
 
         versions.forEach(function (version) {
             tempInnerHTML = Chat_BaseTagCSS(property + id, version.id, Chat_BaseTagCSSUrl(version[badgeURLSize]));
 
-            //channel can overwrite bits or subs badges
-            //skip adding global bits or sub
             if (isChannel || (!isSubSet && !isBitsSet)) {
                 innerHTML += tempInnerHTML;
-
-                if (isChannel) {
-                    Channel_Badges[Chat_BaseTagId(property + '%x', version.id)] = tempInnerHTML;
-                }
+                if (isChannel) Channel_Badges[Chat_BaseTagId(property + '%x', version.id)] = tempInnerHTML;
             } else {
-                Chat_GlobalBadges_Bits_Subs[Chat_BaseTagId(property + id, version.id)] = tempInnerHTML;
+                bitsSubs[Chat_BaseTagId(property + id, version.id)] = tempInnerHTML;
             }
 
-            //some channel may be missing 0 3 6 12 etc badges but they have 2000 2003 etc
-            //so convert those 2000+ in normal one if missing
+            //Preserve the alternate subscriber milestone IDs used by some channels.
             versionInt = parseInt(version.id);
             if (isChannel && versionInt >= 2000) {
                 versionInt = versionInt - parseInt(version.id.toString()[0]) * Math.pow(10, version.id.length - 1);
-
                 if (versionInt > -1 && !versionsIds[versionInt]) {
                     innerHTML += Chat_BaseTagCSS(property + id, versionInt, Chat_BaseTagCSSUrl(version[badgeURLSize]));
                 }
@@ -304,11 +349,10 @@ function Chat_loadBadgesTransform(responseObj, id, isChannel) {
         });
     });
 
-    if (isChannel) {
-        innerHTML = Chat_AddMissingBadges(Chat_GlobalBadges_Bits_Subs, Channel_Badges, id, innerHTML);
-    }
+    if (responseObj.data.length && !validSets) return null;
+    if (isChannel) innerHTML = Chat_AddMissingBadges(globalBitsSubs, Channel_Badges, id, innerHTML);
 
-    return innerHTML;
+    return {css: innerHTML, bitsSubs: bitsSubs};
 }
 
 function Chat_AddMissingBadges(global_obj, channel_obj, channel_id, innerHTML) {
