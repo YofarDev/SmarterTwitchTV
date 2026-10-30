@@ -3435,6 +3435,12 @@ function Main_onNewIntent(mobj) {
             Sidepannel_Hide(true);
         } else if (ScreenObj[Main_values.Main_Go].exit_fun) ScreenObj[Main_values.Main_Go].exit_fun();
 
+        //Closing the stream returns to the channel's screen (Browse > Live or Following), not the last one used
+        var liveScreen = Main_onNewIntentGetScreen(obj);
+
+        if (Main_values.Main_Go !== liveScreen && ScreenObj[Main_values.Main_Go].exit_fun) ScreenObj[Main_values.Main_Go].exit_fun();
+        Main_values.Main_Go = liveScreen;
+
         Play_data = JSON.parse(JSON.stringify(Play_data_base));
         Play_data.data = ScreensObj_LiveCellArray(obj.obj);
 
@@ -3464,6 +3470,8 @@ function Main_onNewIntent(mobj) {
         Play_data.data[3] = obj.obj.name;
         Play_data.data[18] = obj.obj.id;
 
+        Main_SetChannelGameOrigin();
+
         if (Main_isScene2DocVisible()) {
             var PlayVodClip = 1;
 
@@ -3478,17 +3486,6 @@ function Main_onNewIntent(mobj) {
         } else {
             if (Sidepannel_isShowingUserLiveSide() || Sidepannel_isShowingMenus()) {
                 Sidepannel_Hide(false);
-            }
-
-            if (!Main_values.Main_BeforeAgameisSet && Main_values.Main_Go !== Main_AGameVod && Main_values.Main_Go !== Main_AGameClip) {
-                Main_values.Main_BeforeAgame =
-                    Main_values.Main_BeforeChannelisSet &&
-                    Main_values.Main_Go !== Main_ChannelContent &&
-                    Main_values.Main_Go !== Main_ChannelVod &&
-                    Main_values.Main_Go !== Main_ChannelClip
-                        ? Main_values.Main_BeforeChannel
-                        : Main_values.Main_Go;
-                Main_values.Main_BeforeAgameisSet = true;
             }
 
             Main_ExitCurrent(Main_values.Main_Go);
@@ -3522,6 +3519,16 @@ function Main_onNewIntent(mobj) {
     } else {
         Main_CheckResume();
     }
+}
+
+//A game from the home screen Games channel (top categories) opens as if picked in Browse > Categories,
+//its header and Back use that instead of whatever screen the app was last on
+function Main_SetChannelGameOrigin() {
+    Main_values.Main_BeforeAgame = Main_games;
+    Main_values.Main_BeforeAgameisSet = true;
+    Main_values.Games_return = false;
+    if (ScreenObj[Main_aGame]) ScreenObj[Main_aGame].BeforeAgame = Main_games;
+    Navigation_Enter(Main_games);
 }
 
 function Main_onNewIntentGetScreen(obj) {
