@@ -1,5 +1,6 @@
-/* Account screen tabs: Up on the first row of the user grid opens the Account tabs, and closing the
- * navigation back to the grid redraws the Users focus. Loads the real Users.js and Navigation.js. */
+/* Account screen navigation: Up on the first row of the user grid opens the Account tabs, closing the
+ * navigation back to the grid redraws the Users focus, and the Add User screen reaches the rail and tabs.
+ * Loads the real Users.js, AddUser.js and Navigation.js. */
 const assert = require('assert');
 const fs = require('fs');
 const vm = require('vm');
@@ -16,6 +17,7 @@ vm.runInContext(
 );
 vm.runInContext(fs.readFileSync('app/specific/Navigation.js', 'utf8'), sandbox);
 vm.runInContext(fs.readFileSync('app/specific/Users.js', 'utf8'), sandbox);
+vm.runInContext(fs.readFileSync('app/specific/AddUser.js', 'utf8'), sandbox);
 
 let checks = 0;
 function check(value, message) {
@@ -94,5 +96,41 @@ s.Navigation_Onboarding = false;
 s.Main_values.Main_Go = s.Main_Live;
 close(true);
 check(!calls.some(call => call.indexOf('focus:') === 0), 'other screens do not get the Users focus');
+
+/* Add User: Left opens the rail, Up the tabs. Without an account it is the Account destination itself,
+ * so Back opens the rail; with one it was opened from the user grid and Back returns there. */
+s.KEY_KEYBOARD_BACKSPACE = 8;
+s.KEY_RETURN = 27;
+s.STR_USER_ADD = 'Add User';
+Object.assign(s, {
+    Navigation_Render: () => {},
+    ScreensObj_SetTopLable: () => {},
+    Main_HideWarningDialog: () => {},
+    Main_CounterDialogRst: () => calls.push('counter-reset'),
+    Main_showLoadDialog: () => {},
+    Main_ShowElement: () => {},
+    Main_HideElement: () => {},
+    AddUser_inputFocus: () => {},
+    Main_isAboutDialogVisible: () => false,
+    Main_isControlsDialogVisible: () => false,
+    AddUser_exit: () => calls.push('exit'),
+    Main_SwitchScreen: () => calls.push('switch')
+});
+s.Navigation_Open = (callback, region) => calls.push('open:' + region + ':' + (callback === s.AddUser_handleKeyDown ? 'adduser' : 'other'));
+function addUserKey(key) {
+    calls.length = 0;
+    s.AddUser_handleKeyDown({keyCode: key});
+    return calls.join(',');
+}
+calls.length = 0;
+s.AddUser_init();
+check(calls.join(',') === 'counter-reset', 'opening Add User drops the previous grid page counter');
+check(s.Main_values.Main_Go === s.Main_addUser, 'Add User is the current screen');
+check(addUserKey(s.KEY_LEFT) === 'open:rail:adduser', 'Left on Add User opens the rail');
+check(addUserKey(s.KEY_UP) === 'open:tabs:adduser', 'Up on Add User opens the Account tabs');
+s.AddUser_UsernameArray = [];
+check(addUserKey(s.KEY_RETURN) === 'open:rail:adduser', 'Back without an account opens the rail');
+s.AddUser_UsernameArray = [{name: 'alex'}];
+check(addUserKey(s.KEY_RETURN) === 'exit,switch', 'Back with an account returns to the screen it came from');
 
 console.log(checks + ' account navigation checks passed');

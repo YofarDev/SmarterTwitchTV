@@ -29,6 +29,8 @@ function AddUser_init() {
     Navigation_Render(Main_addUser);
     ScreensObj_SetTopLable(STR_USER_ADD);
     Main_HideWarningDialog();
+    // No grid here: drop the page counter left by the previous screen.
+    Main_CounterDialogRst();
     Main_showLoadDialog();
     Main_ShowElement('add_user_scroll');
     Main_HideElement('add_user_text_holder');
@@ -49,6 +51,8 @@ function AddUser_exit() {
 function AddUser_handleKeyBack() {
     if (Main_isAboutDialogVisible()) Main_HideAboutDialog();
     else if (Main_isControlsDialogVisible()) Main_HideControlsDialog();
+    // Without an account this is the Account destination itself, so Back opens the navigation like the other destinations.
+    else if (!AddUser_IsUserSet()) Navigation_Open(AddUser_handleKeyDown, 'rail');
     else {
         AddUser_exit();
         Main_SwitchScreen();
@@ -62,6 +66,12 @@ function AddUser_handleKeyDown(event) {
         case KEY_KEYBOARD_BACKSPACE:
         case KEY_RETURN:
             AddUser_handleKeyBack();
+            break;
+        case KEY_LEFT:
+            Navigation_Open(AddUser_handleKeyDown, 'rail');
+            break;
+        case KEY_UP:
+            Navigation_Open(AddUser_handleKeyDown, 'tabs');
             break;
         default:
             break;
