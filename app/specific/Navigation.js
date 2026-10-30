@@ -312,10 +312,11 @@ function Navigation_SyncAccount() {
 }
 
 function Navigation_Focus() {
-    var shell = Main_getElementById('navigation-shell'),
-        old = shell.querySelector('.navigation-focused'),
-        id;
-    if (old) old.classList.remove('navigation-focused');
+    // The onboarding buttons sit outside the shell, so clear the treatment in both, as the close cleanup does.
+    var old = document.querySelectorAll('#navigation-shell .navigation-focused, #navigation-onboarding .navigation-focused'),
+        id,
+        i;
+    for (i = 0; i < old.length; i++) old[i].classList.remove('navigation-focused');
     if (Navigation_Region === 'rail')
         id =
             Navigation_Position < 7
@@ -455,7 +456,11 @@ function Navigation_Handle(event, up) {
             }
         }
     } else if (Navigation_Region === 'recovery') {
-        if (code === KEY_LEFT || code === KEY_RIGHT) Navigation_Position = code === KEY_LEFT ? 0 : 1;
+        if (code === KEY_LEFT && !Navigation_Position) {
+            // Left from the first button opens the rail, as Back does here and Left does from the first tab.
+            Navigation_Region = 'rail';
+            Main_AddClass('navigation-rail', 'navigation-expanded');
+        } else if (code === KEY_LEFT || code === KEY_RIGHT) Navigation_Position = code === KEY_LEFT ? 0 : 1;
         else if (code === KEY_UP) {
             Navigation_Region = 'tabs';
             Navigation_Position = 0;
