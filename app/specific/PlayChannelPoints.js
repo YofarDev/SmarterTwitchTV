@@ -57,7 +57,7 @@ function PlayChannelPoints_Start() {
     PlayChannelPoints_ChannelId = Play_data.data[14] + '';
 
     //The endpoint isn't tied to the channel: found once, then kept across streams until no endpoint is left (SendSuccess)
-    if (!PlayChannelPoints_SpadeUrl) PlayChannelPoints_DiscoverSpadeUrl();
+    if (PlayChannelPoints_ReportEnabled() && !PlayChannelPoints_SpadeUrl) PlayChannelPoints_DiscoverSpadeUrl();
     PlayChannelPoints_IntervalId = Main_setInterval(PlayChannelPoints_SendMinuteWatched, PlayChannelPoints_IntervalMs, PlayChannelPoints_IntervalId);
 }
 
@@ -69,6 +69,11 @@ function PlayChannelPoints_Stop() {
     PlayChannelPoints_BroadcastId = null;
     PlayChannelPoints_ChannelLogin = null;
     PlayChannelPoints_DiscoveryId++;
+    PlayAutoClaim_Reset();
+}
+
+function PlayChannelPoints_ReportEnabled() {
+    return Boolean(Settings_Obj_default('watch_time_points'));
 }
 
 function PlayChannelPoints_IsCurrentStream() {
@@ -137,6 +142,10 @@ function PlayChannelPoints_SendMinuteWatched() {
 
     //Only report minutes that are actually playing: not paused, buffering or with the app in the background
     if (!Play_Playing || Main_isStopped || !Play_isPlaying()) return;
+
+    PlayAutoClaim_Tick(PlayChannelPoints_ChannelId);
+
+    if (!PlayChannelPoints_ReportEnabled()) return;
 
     if (!PlayChannelPoints_SpadeUrl) {
         PlayChannelPoints_DiscoverSpadeUrl();
