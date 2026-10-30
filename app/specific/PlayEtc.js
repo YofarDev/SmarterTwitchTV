@@ -4390,7 +4390,8 @@ function Play_BottomIconsFocusClear() {
 
 function Play_BottomIconsFocus(skipInfo, checkjump, skipHide) {
     if (PlayVod_PanelY > 0 && !PlayerUI_State.suspended) {
-        PlayerUI_Show(PlayerUI_Mode());
+        // The hide paths reset focus here after hiding the panel (timeline inside); the bar opens over a shown panel only.
+        if (Play_isPanelShowing()) PlayerUI_Show(PlayerUI_Mode());
         return;
     }
     if (PlayVod_PanelY < 0) {

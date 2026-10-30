@@ -373,4 +373,24 @@ check(
     effects.some(x => Array.isArray(x) && x[0] === 'hidePanel' && x[1] === 1),
     'bar timeout delegates existing hide policy'
 );
+/* Timeline focus, then Back: the hide path resets focus to the buttons after hiding the panel, which must not
+ * reopen the bar over the hidden panel (no timeline). Production focus bridge from PlayEtc. */
+for (const name of ['Play_BottomIconsFocus', 'Play_BottonIconsResetFocus'])
+    ast.walk(
+        new UglifyJS.TreeWalker(node => {
+            if (node instanceof UglifyJS.AST_Defun && node.name.name === name) vm.runInContext(node.print_to_string(), s);
+        })
+    );
+let panelShowing = false;
+s.Play_isPanelShowing = () => (panelShowing ? 1 : 0);
+s.PlayerUI_State.frames = [];
+s.PlayerUI_State.suspended = false;
+s.PlayVod_PanelY = 0;
+s.Play_BottonIconsResetFocus(true);
+check(s.PlayVod_PanelY === 1 && s.PlayerUI_State.frames.length === 0, 'focus reset after hiding the panel leaves the bar closed');
+panelShowing = true;
+s.PlayVod_PanelY = 0;
+s.Play_BottonIconsResetFocus(true);
+check(s.PlayerUI_State.frames.length === 1, 'focus back to the buttons over a shown panel opens the bar');
+s.UIFocus_Pop(false);
 console.log(checks + ' production player action checks passed');
