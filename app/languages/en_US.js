@@ -32,7 +32,7 @@ function en_USLang() {
         welcomeTitle: 'Your channels, together',
         welcomeCopy: 'Add an account to see who you follow, or browse live channels without one.',
         //Key hints: keep {ok} {up} {down} {left} {right} {back} as is, they are drawn as remote key glyphs
-        browseHelp: '{ok} Watch    {up} Tabs    {left}{right} Navigation    Hold {ok} Options    {back} Return',
+        browseHelp: '{ok} Watch    {up} Tabs    Hold {up} Refresh    {left}{right} Navigation    Hold {ok} Options    {back} Return',
         browseHelpDirect: '{ok} Watch    {up}{down} Rows    {left}{right} Cards and Actions    {back} Return',
         actionsHelp: '{ok} Options    {left} Card    {up}{down} Browse    {back} Card / Return',
         searchHelp: '{ok} Edit search / type    {left}{right} Choose type    {up}{down} Form / results    {back} Return',
