@@ -405,6 +405,8 @@ function Navigation_Close(restore) {
             Screens_addFocus(true, Main_values.Main_Go);
         // Settings drops its row focus when Up opens the rail, give it back with the input.
         if (Settings_isVisible() && !Navigation_Onboarding) Settings_inputFocus(Settings_cursorY);
+        // Users keeps its own grid and cursor outside the Screens objects.
+        if (Main_values.Main_Go === Main_Users && !Navigation_Onboarding && Users_status) Users_addFocus();
         if (obj && obj.emptyContent && Main_values.Main_Go === Main_UserLive && !Navigation_Onboarding)
             Main_getElementById('navigation-retry').focus();
     }
