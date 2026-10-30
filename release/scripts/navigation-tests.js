@@ -101,4 +101,59 @@ check(hint.indexOf('icon-return') !== -1, 'Back uses the return glyph');
 check(hint.indexOf('aria-hidden="true"') !== -1 && hint.indexOf('</span> Select ') !== -1, 'glyphs are decorative, labels kept');
 check(hint.split('navigation-key-divider').length === 4 && hint.indexOf('   ') === -1, 'each gap between key groups becomes one divider');
 check(s.Navigation_KeyHintHtml('<b>{nope}</b> & {up}').indexOf('&lt;b>{nope}&lt;/b> &amp; <i class="icon icon-key-up') === 0, 'labels escaped, unknown placeholders left as text');
+/* Onboarding buttons live outside #navigation-shell; moving between them must leave one focus treatment. */
+const elements = {};
+function element(id, container) {
+    const classes = new Set();
+    return (elements[id] = {
+        id,
+        container,
+        focus: () => {},
+        classList: {add: name => classes.add(name), remove: name => classes.delete(name), contains: name => classes.has(name)}
+    });
+}
+['navigation-tab-0', 'navigation-tab-1'].forEach(id => element(id, 'navigation-shell'));
+['navigation-recovery-0', 'navigation-recovery-1'].forEach(id => element(id, 'navigation-onboarding'));
+// The shell lookup the focus code used before it also covered the onboarding section.
+elements['navigation-shell'] = {
+    querySelector: () => Object.values(elements).find(e => e.container === 'navigation-shell' && e.classList.contains('navigation-focused')) || null
+};
+s.Main_getElementById = id => elements[id] || null;
+s.document = {
+    querySelectorAll: selector =>
+        Object.values(elements).filter(
+            e => e.classList && e.classList.contains('navigation-focused') && selector.indexOf('#' + e.container + ' .navigation-focused') !== -1
+        )
+};
+s.Navigation_Tabs = () => ['Live now', 'Videos'];
+const focused = () =>
+    Object.values(elements)
+        .filter(e => e.classList && e.classList.contains('navigation-focused'))
+        .map(e => e.id);
+s.Navigation_Region = 'recovery';
+for (const pos of [0, 1, 0, 1]) {
+    s.Navigation_Position = pos;
+    s.Navigation_Focus();
+    check(focused().join() === 'navigation-recovery-' + pos, 'onboarding focus moves to button ' + pos + ' alone');
+}
+s.Navigation_Region = 'tabs';
+s.Navigation_Position = 0;
+s.Navigation_Focus();
+check(focused().join() === 'navigation-tab-0', 'leaving the onboarding buttons for the tabs clears their focus');
+
+/* Left from the onboarding buttons: Browse moves to Add User, Add User opens the rail as Back does. */
+require('vm').runInContext(require('fs').readFileSync('app/general/TVKeyValue.js', 'utf8'), s);
+const expanded = [];
+s.Main_AddClass = (id, name) => expanded.push(id + ' ' + name);
+elements['navigation-route-0'] = element('navigation-route-0', 'navigation-shell');
+s.Navigation_Onboarding = true;
+s.Navigation_Region = 'recovery';
+s.Navigation_Position = 1;
+s.Navigation_Handle({keyCode: s.KEY_LEFT});
+check(s.Navigation_Region === 'recovery' && s.Navigation_Position === 0, 'Left on Browse moves to Add User');
+s.Navigation_Handle({keyCode: s.KEY_LEFT});
+check(s.Navigation_Region === 'rail' && s.Navigation_Position === 0, 'Left on Add User opens the rail on Following');
+check(expanded.join() === 'navigation-rail navigation-expanded', 'the rail expands');
+check(focused().join() === 'navigation-route-0', 'only the rail destination is highlighted');
+
 console.log(checks + ' production navigation checks passed');
