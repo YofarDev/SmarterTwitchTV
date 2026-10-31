@@ -133,4 +133,79 @@ check(addUserKey(s.KEY_RETURN) === 'open:rail:adduser', 'Back without an account
 s.AddUser_UsernameArray = [{name: 'alex'}];
 check(addUserKey(s.KEY_RETURN) === 'exit,switch', 'Back with an account returns to the screen it came from');
 
+/* The code flow's requests and timers outlive Add User. Leaving it runs its exit, so an answer landing on the next
+ * screen must stop the flow instead of acting as Back there: no rail over that screen, no switch away from it. */
+vm.runInContext(fs.readFileSync('app/specific/AddUser.js', 'utf8'), s); // the real exit this time
+const requests = [];
+const timers = [];
+Object.assign(s, {
+    STR_ADD_ERROR: 'error',
+    AddCode_Url: '',
+    AddCode_Scopes: [],
+    AddCode_backup_client_id: '',
+    Main_isTV: true,
+    Main_IsOn_OSInterface: false,
+    Main_removeEventListener: () => {},
+    Main_HideLoadDialog: () => {},
+    Main_showWarningDialog: () => {},
+    Main_textContent: () => {},
+    FullxmlHttpGet: (url, headers, success) => requests.push(success),
+    Main_setTimeout: fn => timers.push(fn),
+    Main_clearTimeout: id => {
+        if (id) timers[id - 1] = null;
+    }
+});
+function onAddUser(account) {
+    s.AddUser_UsernameArray = account ? [{name: 'alex'}] : [];
+    s.Main_values.Main_Before = s.Main_Users;
+    s.Main_values.Main_Go = s.Main_addUser;
+    requests.length = 0;
+}
+// Ids are 1-based positions in timers; this is the wait the last error started.
+function errorWait() {
+    s.AddUser_getCodeError();
+    return timers.length - 1;
+}
+for (const account of [false, true]) {
+    const who = account ? 'with an account: ' : 'without an account: ',
+        next = account ? s.Main_Users : s.Main_Live;
+    // The device code request is out when the rail or the tabs take the user to the next screen.
+    onAddUser(account);
+    s.AddUser_getCode();
+    s.AddUser_exit();
+    s.Main_values.Main_Before = s.Main_addUser;
+    s.Main_values.Main_Go = next;
+    calls.length = 0;
+    const started = timers.length;
+    requests[0]({status: 200, responseText: JSON.stringify({user_code: 'A', verification_uri: 'u', device_code: 'd'})});
+    check(
+        !calls.length && s.Main_values.Main_Go === next && timers.length === started,
+        who + 'a late device code answer stops, the next screen stays'
+    );
+    s.AddUser_getCodeCheck(3);
+    s.AddUser_getDeviceCodeSuccess({status: 400, responseText: '{"message":"authorization_pending"}'});
+    s.AddUser_getUserTokenSuccess({status: 200, responseText: '{}'});
+    check(
+        !calls.length && s.Main_values.Main_Go === next && requests.length === 1 && timers.length === started,
+        who + 'late countdown, poll and user answers stop too'
+    );
+
+    // An error goes Back after a wait while Add User is still up, never after the user left.
+    onAddUser(account);
+    let wait = errorWait();
+    calls.length = 0;
+    timers[wait]();
+    check(calls.join(',') === (account ? 'switch' : 'open:rail:adduser'), who + 'an error on Add User still goes Back after the wait');
+    onAddUser(account);
+    wait = errorWait();
+    s.AddUser_exit();
+    check(timers[wait] === null, who + 'leaving cancels the error wait');
+    onAddUser(account);
+    wait = errorWait();
+    s.Main_values.Main_Go = next;
+    calls.length = 0;
+    timers[wait]();
+    check(!calls.length && s.Main_values.Main_Go === next, who + 'an error wait that outlives the screen does nothing');
+}
+
 console.log(checks + ' account navigation checks passed');

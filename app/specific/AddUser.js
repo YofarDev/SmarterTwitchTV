@@ -46,6 +46,7 @@ function AddUser_exit() {
     Main_HideElement('add_user_scroll');
     Main_HideLoadDialog();
     Main_clearTimeout(AddUser_getCodeCheckId);
+    Main_clearTimeout(AddUser_getCodeErrorId);
 }
 
 function AddUser_handleKeyBack() {
@@ -84,11 +85,11 @@ function AddUser_inputFocus() {
     AddUser_getCode();
 }
 
+//The code flow's requests and timers outlive the screen. Leaving it (Back, the rail or the tabs) runs AddUser_exit,
+//so each step only stops once another screen took over; running Back there would act on that screen.
 function AddUser_getCode() {
-    if (!AddUser_IsInUserScreen()) {
-        AddUser_handleKeyBack();
-        return;
-    }
+    if (!AddUser_IsInUserScreen()) return;
+
     AddUser_DeviceCode = null;
     var theUrl = AddCode_Url + 'device?scopes=' + encodeURIComponent(AddCode_Scopes.join(' ')) + '&client_id=' + AddCode_backup_client_id;
 
@@ -98,10 +99,7 @@ function AddUser_getCode() {
 var AddUser_DeviceCode = null;
 var AddUser_DeviceCodeTimeout = 5;
 function AddUser_getCodeSuccess(resultObj) {
-    if (!AddUser_IsInUserScreen()) {
-        AddUser_handleKeyBack();
-        return;
-    }
+    if (!AddUser_IsInUserScreen()) return;
 
     if (resultObj.status === 200) {
         var data = JSON.parse(resultObj.responseText);
@@ -129,20 +127,22 @@ function AddUser_getCodeSuccess(resultObj) {
 //     return str.substr(0, index) + value + str.substr(index);
 // }
 
+var AddUser_getCodeErrorId;
 function AddUser_getCodeError() {
     Main_HideLoadDialog();
     Main_showWarningDialog(STR_ADD_ERROR, 7500, true);
-    Main_setTimeout(function () {
-        AddUser_handleKeyBack();
-    }, 3000);
+    AddUser_getCodeErrorId = Main_setTimeout(
+        function () {
+            if (AddUser_IsInUserScreen()) AddUser_handleKeyBack();
+        },
+        3000,
+        AddUser_getCodeErrorId
+    );
 }
 
 var AddUser_getCodeCheckId;
 function AddUser_getCodeCheck(counter) {
-    if (!AddUser_IsInUserScreen()) {
-        AddUser_handleKeyBack();
-        return;
-    }
+    if (!AddUser_IsInUserScreen()) return;
 
     if (counter) {
         Main_textContent('add_user_text_counter', STR_ADD_USER_TEXT_COUNTER.replace('%d', counter));
@@ -161,10 +161,7 @@ function AddUser_getCodeCheck(counter) {
 }
 
 function AddUser_getDeviceCode() {
-    if (!AddUser_IsInUserScreen()) {
-        AddUser_handleKeyBack();
-        return;
-    }
+    if (!AddUser_IsInUserScreen()) return;
 
     AddUser_getDeviceCodeToken = null;
     var theUrl =
@@ -181,10 +178,7 @@ function AddUser_getDeviceCode() {
 
 var AddUser_getDeviceCodeToken;
 function AddUser_getDeviceCodeSuccess(resultObj) {
-    if (!AddUser_IsInUserScreen()) {
-        AddUser_handleKeyBack();
-        return;
-    }
+    if (!AddUser_IsInUserScreen()) return;
 
     var data;
     if (resultObj.status === 200) {
@@ -204,10 +198,7 @@ function AddUser_getDeviceCodeSuccess(resultObj) {
 }
 
 function AddUser_getUserToken() {
-    if (!AddUser_IsInUserScreen()) {
-        AddUser_handleKeyBack();
-        return;
-    }
+    if (!AddUser_IsInUserScreen()) return;
 
     var header = [
         [clientIdHeader, AddCode_backup_client_id],
@@ -220,10 +211,7 @@ function AddUser_getUserToken() {
 }
 
 function AddUser_getUserTokenSuccess(resultObj) {
-    if (!AddUser_IsInUserScreen()) {
-        AddUser_handleKeyBack();
-        return;
-    }
+    if (!AddUser_IsInUserScreen()) return;
 
     if (resultObj.status === 200) {
         AddUser_SaveNewUser(resultObj.responseText);
