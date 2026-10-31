@@ -93,7 +93,9 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -262,6 +264,9 @@ public class PlayerActivity extends Activity {
     private final int[] PlayerResolution = { Integer.MAX_VALUE, Integer.MAX_VALUE, 730 };
 
     private BlackListMediaCodecSelector BLACKLISTED_CODECS = null;
+    private BlackListMediaCodecSelector BLACKLISTED_CODECS_FALLBACK = null;
+    //Video decoder each player instance initialized last; players move between positions when one is reused
+    private final Map<ExoPlayer, String> VideoDecoderNames = new WeakHashMap<>();
     private String[] BLACKLISTED_QUALITIES = null;
 
     private final PlayerObj[] PlayerObj = new PlayerObj[PlayerAccountPlus];
@@ -544,10 +549,19 @@ public class PlayerActivity extends Activity {
             PlayerObj[4].player != null &&
             PreviewPlayerPlaylist != null &&
             Objects.equals(mainPlaylistString, PreviewPlayerPlaylist) &&
+            !(trackSelectorParametersPosition == 0 && PreviewOnFallbackDecoder()) &&
             (AllMainPlayerInUse() ||
                 (PlayerBitrate[PlayerObj[4].trackSelectorParametersPosition] == PlayerBitrate[trackSelectorParametersPosition] &&
                     PlayerResolution[PlayerObj[4].trackSelectorParametersPosition] == PlayerResolution[trackSelectorParametersPosition]))
         );
+    }
+
+    //A preview that fell back to a blacklisted decoder (the hardware one was in use, see SetupPlayer) would keep it
+    //as the main player, so the main player loads the stream itself instead
+    private boolean PreviewOnFallbackDecoder() {
+        String decoder = VideoDecoderNames.get(PlayerObj[4].player);
+
+        return decoder != null && BLACKLISTED_CODECS != null && BLACKLISTED_CODECS.isBlackListedVideoDecoder(decoder);
     }
 
     private void ReUsePlayer(int PlayerObjPosition) {
@@ -622,7 +636,13 @@ public class PlayerActivity extends Activity {
                 );
 
             DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(this);
-            if (BLACKLISTED_CODECS != null) renderersFactory.setMediaCodecSelector(BLACKLISTED_CODECS);
+
+            //The preview player runs alongside the main player, on devices that allow a single hardware decoder instance
+            //the hardware decoder init fails (error 4001), fall back to the next decoder, the blacklisted software ones last
+            if (PlayerObjPosition == 4) {
+                renderersFactory.setEnableDecoderFallback(true);
+                if (BLACKLISTED_CODECS_FALLBACK != null) renderersFactory.setMediaCodecSelector(BLACKLISTED_CODECS_FALLBACK);
+            } else if (BLACKLISTED_CODECS != null) renderersFactory.setMediaCodecSelector(BLACKLISTED_CODECS);
 
             PlayerObj[PlayerObjPosition].player = new ExoPlayer.Builder(this, renderersFactory)
                 .setTrackSelector(PlayerObj[PlayerObjPosition].trackSelector)
@@ -640,7 +660,7 @@ public class PlayerActivity extends Activity {
             PlayerObj[PlayerObjPosition].Listener = new PlayerEventListener(PlayerObjPosition);
             PlayerObj[PlayerObjPosition].player.addListener(PlayerObj[PlayerObjPosition].Listener);
 
-            PlayerObj[PlayerObjPosition].player.addAnalyticsListener(new AnalyticsEventListener());
+            PlayerObj[PlayerObjPosition].player.addAnalyticsListener(new AnalyticsEventListener(PlayerObj[PlayerObjPosition].player));
 
             PlayerObj[PlayerObjPosition].playerView.setPlayer(PlayerObj[PlayerObjPosition].player);
         }
@@ -3518,9 +3538,10 @@ public class PlayerActivity extends Activity {
 
         @JavascriptInterface
         public void setBlackListMediaCodec(String CodecList) {
-            BLACKLISTED_CODECS = CodecList != null && !CodecList.isEmpty()
-                ? new BlackListMediaCodecSelector(CodecList.toLowerCase(Locale.US).split(","))
-                : null;
+            String[] Codecs = CodecList != null && !CodecList.isEmpty() ? CodecList.toLowerCase(Locale.US).split(",") : null;
+
+            BLACKLISTED_CODECS = Codecs != null ? new BlackListMediaCodecSelector(Codecs, false) : null;
+            BLACKLISTED_CODECS_FALLBACK = Codecs != null ? new BlackListMediaCodecSelector(Codecs, true) : null;
         }
 
         @JavascriptInterface
@@ -3814,6 +3835,22 @@ public class PlayerActivity extends Activity {
     }
 
     private class AnalyticsEventListener implements AnalyticsListener {
+
+        private final ExoPlayer player;
+
+        AnalyticsEventListener(ExoPlayer player) {
+            this.player = player;
+        }
+
+        @Override
+        public void onVideoDecoderInitialized(
+            @NonNull EventTime eventTime,
+            @NonNull String decoderName,
+            long initializedTimestampMs,
+            long initializationDurationMs
+        ) {
+            VideoDecoderNames.put(player, decoderName);
+        }
 
         @Override
         public final void onDroppedVideoFrames(@NonNull EventTime eventTime, int count, long elapsedMs) {
