@@ -74,7 +74,7 @@ SPTVPhoneChat.App = (function () {
         unmute: 'Unmute',
         cancel: 'Cancel',
         mutedButton: 'Muted (%n)',
-        mutedEmpty: 'No muted users. Long-press a message to mute its author.'
+        mutedEmpty: 'No muted users. Tap a username or hold a message to mute its author.'
     };
 
     var ProviderLabels = {twitch: 'Twitch', bttv: 'BTTV', ffz: 'FFZ', seven_tv: '7TV'};
@@ -84,7 +84,7 @@ SPTVPhoneChat.App = (function () {
     //outside S so channel changes and disconnects never clear it
     var MutedKey = 'sptv_phone_muted';
     var MutedLimit = 500;
-    //Consecutive identical messages from the same user inside this window merge into one row with a (xN) counter
+    //Repeat messages from a user merge even when other users chat in between.
     var SpamWindowMs = 15000;
     //iOS never fires contextmenu for a touch, so message rows time their own
     //long-press; a finger drifting past the slop is a scroll, not a press
@@ -107,7 +107,8 @@ SPTVPhoneChat.App = (function () {
         ownBadges: null,
         store: null,
         localEchoes: [],
-        spam: null, //last appended chat row {login, text, time, count, row, countEl}, the merge target for repeats
+        spam: {}, //bounded latest row per login; other users cannot interrupt repeat filtering
+        spamOrder: [],
         slowMode: 0,
         lastSendTime: 0,
         composing: false,
@@ -1056,23 +1057,28 @@ SPTVPhoneChat.App = (function () {
             }
         }
 
-        if (message.id) S.store.append({id: message.id, userId: message.tags ? message.tags['user-id'] : null});
+        var entry = {id: message.id, userId: message.tags ? message.tags['user-id'] : null};
+        if (message.id) S.store.append(entry);
 
-        //Collapse a repeat of the last row from the same user into that row
-        //with a growing count, so copy-paste spam cannot flood the feed
+        //Keep one merge target per user so ordinary chat cannot break the filter.
         var receivedAt = message.receivedAt || Date.now(),
-            spam = S.spam;
+            spamKey = '$' + login,
+            spam = S.spam[spamKey];
 
         if (
             spam &&
             login &&
-            spam.login === login &&
+            !spam.deleted &&
             spam.text === message.text &&
+            spam.action === Boolean(message.action) &&
+            spam.badges === message.badges &&
+            receivedAt >= spam.time &&
             receivedAt - spam.time < SpamWindowMs &&
-            spam.row.parentNode
+            spam.row.parentNode === el('pc-messages')
         ) {
             spam.count++;
             spam.time = receivedAt;
+            entry.rowId = spam.row.getAttribute('data-id');
             spam.countEl.textContent = ' (x' + spam.count + ')';
             if (nearBottom()) scrollToBottom(); //the row grew, keep the newest content in view
             return;
@@ -1082,7 +1088,8 @@ SPTVPhoneChat.App = (function () {
             resolver = S.resolver,
             segments = Render.buildSegments(message.text, message.emotes, resolver),
             row = document.createElement('div'),
-            nameSpan = document.createElement('span'),
+            ownMessage = S.session && login === S.session.login,
+            nameSpan = document.createElement(login && !ownMessage ? 'button' : 'span'),
             textSpan = document.createElement('span'),
             countSpan = document.createElement('span');
 
@@ -1101,6 +1108,11 @@ SPTVPhoneChat.App = (function () {
 
         nameSpan.className = 'pc-user';
         nameSpan.textContent = (message.displayName || message.login) + ': ';
+        if (login && !ownMessage) {
+            nameSpan.setAttribute('type', 'button');
+            nameSpan.setAttribute('data-user-action', 'true');
+            nameSpan.setAttribute('aria-label', Strings.muteAction.replace('%s', message.displayName || login));
+        }
         if (Render.isValidUserColor(message.color)) nameSpan.style.color = message.color;
 
         textSpan.className = 'pc-text';
@@ -1114,7 +1126,19 @@ SPTVPhoneChat.App = (function () {
 
         appendRow(row);
 
-        S.spam = {login: login, text: message.text, time: receivedAt, count: 1, row: row, countEl: countSpan};
+        if (login) {
+            if (!S.spam.hasOwnProperty(spamKey)) S.spamOrder.push(spamKey);
+            S.spam[spamKey] = {
+                text: message.text,
+                action: !!message.action,
+                badges: message.badges,
+                time: receivedAt,
+                count: 1,
+                row: row,
+                countEl: countSpan
+            };
+            if (S.spamOrder.length > Render.HistoryLimit) delete S.spam[S.spamOrder.shift()];
+        }
     }
 
     function appendBadges(row, badgesTag) {
@@ -1153,11 +1177,16 @@ SPTVPhoneChat.App = (function () {
     function onClearMsg(targetMsgId) {
         if (!targetMsgId) return;
 
+        if (!S.store) S.store = Render.createStore(Render.HistoryLimit);
+        var entry = S.store.get(targetMsgId),
+            rowId = entry && entry.rowId ? entry.rowId : targetMsgId;
         S.store.markDeleted(targetMsgId);
 
-        var row = el('pc-messages').querySelector('[data-id="' + cssEscape(targetMsgId) + '"]');
+        var row = el('pc-messages').querySelector('[data-id="' + cssEscape(rowId) + '"]');
 
         if (row) {
+            var spam = S.spam['$' + row.getAttribute('data-login')];
+            if (spam && spam.row === row) spam.deleted = true;
             row.textContent = '';
             row.appendChild(document.createTextNode(Strings.deleted));
             row.className += ' pc-deleted';
@@ -1175,6 +1204,8 @@ SPTVPhoneChat.App = (function () {
             //The whole room was cleared
             while (box.firstChild) box.removeChild(box.firstChild);
             S.store = Render.createStore(Render.HistoryLimit);
+            S.spam = {};
+            S.spamOrder = [];
             appendRow(makeSystemRow(Strings.stateRoomClear, 'pc-deleted'));
             return;
         }
@@ -1828,7 +1859,7 @@ SPTVPhoneChat.App = (function () {
         var button = el('pc-muted-button');
 
         button.textContent = Strings.mutedButton.replace('%n', String(mutedLogins.length));
-        button.hidden = mutedLogins.length === 0;
+        button.hidden = false;
     }
 
     //Long-press (mobile) or right-click (desktop) on a chat message row
@@ -1974,6 +2005,8 @@ SPTVPhoneChat.App = (function () {
         S.resolver = null;
         S.providers = null;
         S.store = null;
+        S.spam = {};
+        S.spamOrder = [];
         S.broadcasterId = null;
         S.localEchoes = [];
         S.ownBadges = null;
@@ -2032,6 +2065,14 @@ SPTVPhoneChat.App = (function () {
         el('pc-jump-latest').addEventListener('click', scrollToBottom);
 
         updateMutedButton();
+
+        el('pc-messages').addEventListener('click', function (event) {
+            var target = event.target,
+                row;
+            if (!target || !target.getAttribute || target.getAttribute('data-user-action') !== 'true') return;
+            row = rowFromEventTarget(target);
+            if (row && (!S.session || row.getAttribute('data-login') !== S.session.login)) openRowMenu(row);
+        });
 
         el('pc-muted-button').addEventListener('click', openMutedPanel);
         el('pc-muted-close').addEventListener('click', closeMutedPanel);
@@ -2244,6 +2285,8 @@ SPTVPhoneChat.App = (function () {
             S.tvHistorySeq = 0;
             S.broadcasterId = null;
             S.store = null;
+            S.spam = {};
+            S.spamOrder = [];
             S.localEchoes = [];
             S.resolver = null;
             S.providers = null;

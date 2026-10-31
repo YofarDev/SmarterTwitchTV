@@ -8357,11 +8357,18 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 394, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/394/SmarterPurpleTV_3_0_394.apk',
-        WebVersion: 'October 30 2026',
-        WebTag: 772, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        publishVersionCode: 395, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/395/SmarterPurpleTV_3_0_395.apk',
+        WebVersion: 'October 31 2026',
+        WebTag: 773, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'October 31 2026 (Web 773 / APK 395)',
+                changes: [
+                    'Phone chat: tap a username to open Mute without holding; the Muted button is always visible and explains how to mute when the list is empty',
+                    'Phone chat: the automatic repeat filter now groups repeated messages from the same user even when other users chat in between; deleting any message in a repeat group removes the grouped content safely'
+                ]
+            },
             {
                 title: 'October 30 2026 (Web 772)',
                 changes: [
