@@ -445,7 +445,7 @@ function PlayerUI_Focus() {
         frame = PlayerUI_Frame(),
         target;
     if (old) old.classList.remove('player-ui-focused');
-    if (frame && frame.group !== 'bar') Main_textContent('player-ui-help', PlayerUI_HelpText(frame));
+    if (frame && frame.group !== 'bar') Main_innerHTML('player-ui-help', Navigation_KeyHintHtml(PlayerUI_HelpText(frame)));
     if (!frame || !frame.entries.length) return;
     if (frame.group === 'bar') target = Main_getElementById('player-ui-bar-' + frame.index);
     else if (frame.group === 'more') target = Main_getElementById('player-ui-row-' + frame.index);

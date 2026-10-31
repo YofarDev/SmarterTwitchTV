@@ -31,15 +31,16 @@ function en_USLang() {
         noAccount: 'No account',
         welcomeTitle: 'Your channels, together',
         welcomeCopy: 'Add an account to see who you follow, or browse live channels without one.',
-        browseHelp: 'OK · Watch    ↑ · Tabs    ← · Navigation    Hold OK · Options    Back · Return',
-        browseHelpDirect: 'OK · Watch    ↑ ↓ · Rows    ← → · Cards and Actions    Back · Return',
-        actionsHelp: 'OK · Options    ← · Card    ↑ ↓ · Browse    Back · Card / Return',
-        searchHelp: 'OK · Edit search / type    ← → · Choose type    ↑ ↓ · Form / results    Back · Return',
-        settingsNavHelp: 'OK · Select    ← → · Adjust    ↑ · Navigation    Back · Return',
-        playerHelp: '↑ ↓ · Choose    ← → · Adjust    OK · Apply    Back · Return',
-        playerHelpMenu: '↑ ↓ · Choose    OK · Open    Back · Return',
-        playerHelpList: '↑ ↓ · Choose    OK · Select    Back · Return',
-        playerHelpAction: '↑ ↓ · Choose    OK · Apply    Back · Return',
+        //Key hints: keep {ok} {up} {down} {left} {right} {back} as is, they are drawn as remote key glyphs
+        browseHelp: '{ok} Watch    {up} Tabs    Hold {up} Refresh    {left} Navigation    Hold {ok} Options    {back} Return',
+        browseHelpDirect: '{ok} Watch    {up}{down} Rows    {left}{right} Cards and Actions    {back} Return',
+        actionsHelp: '{ok} Options    {left} Card    {up}{down} Browse    {back} Card / Return',
+        searchHelp: '{ok} Edit search / type    {left}{right} Choose type    {up}{down} Form / results    {back} Return',
+        settingsNavHelp: '{ok} Select    {left}{right} Adjust    {up} Navigation    {back} Return',
+        playerHelp: '{up}{down} Choose    {left}{right} Adjust    {ok} Apply    {back} Return',
+        playerHelpMenu: '{up}{down} Choose    {ok} Open    {back} Return',
+        playerHelpList: '{up}{down} Choose    {ok} Select    {back} Return',
+        playerHelpAction: '{up}{down} Choose    {ok} Apply    {back} Return',
         loadingQualities: 'Loading qualities…',
         switchTo: 'OK switches to ',
         liveFor: 'Live for ',
@@ -376,7 +377,7 @@ function en_USLang() {
     STR_AUTO_PLAY_NEXT = 'Auto play next clip';
     STR_SIDE_PANEL_BACK_MAIN_MENU = 'Back to main menu';
     STR_UP = 'Press up';
-    STR_HOLD_UP = 'Hold UP or key 2';
+    STR_HOLD_UP = 'Hold {up} or key 2';
     STR_LIVE_FEED = 'Live Feed';
     STR_VOD_DIALOG = 'VOD start dialog';
     STR_VOD_DIALOG_SUMMARY =
@@ -610,7 +611,7 @@ function en_USLang() {
     STR_CONTROLS_MULTI_4 = 'Change audio source: D-pad right or left or media keys next previews track, hold down to audio source all videos';
     STR_CONTROLS_MULTI_5 = 'Exit multistream: Press return twice or exit through the option at the bottom of the player.';
     STR_CONTROLS_MULTI_6 = 'To close this, open 4 lives';
-    STR_PICTURE_LIVE_FEED = 'Picture in picture: Hold enter or press key 1, after use D-Pad left to move, right to resize or down to change videos';
+    STR_PICTURE_LIVE_FEED = 'Picture in picture: Hold {ok} or press key 1, after use {left} to move, {right} to resize or {down} to change videos';
     STR_MULTI_TITLE = ', Click on a thumbnail to open or replace a stream, use D-pad left/right to change audio source';
     STR_FEED_END_DIALOG = ', Press return to go back to top menu';
     STR_BACK_USER_GAMES = 'Press return to go back to';

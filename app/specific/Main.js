@@ -573,8 +573,8 @@ function Main_SetStringsSecondary() {
     Main_textContent('exit_app_minimize', STR_MINIMIZE);
     Main_textContent('main_dialog_exit_text', STR_EXIT_MESSAGE);
 
-    Main_innerHTML('dialog_controls_text', '<p>' + STR_UI.browseHelp + '</p>' + STR_CONTROLS_MAIN_0);
-    Main_innerHTML('dialog_controls_player_text', '<p>' + STR_UI.playerHelp + '</p>' + STR_CONTROLS_PLAYER_0);
+    Main_innerHTML('dialog_controls_text', '<p>' + Navigation_KeyHintHtml(STR_UI.browseHelp) + '</p>' + STR_CONTROLS_MAIN_0);
+    Main_innerHTML('dialog_controls_player_text', '<p>' + Navigation_KeyHintHtml(STR_UI.playerHelp) + '</p>' + STR_CONTROLS_PLAYER_0);
     Main_textContent('side_panel_warn_text', STR_NO + STR_LIVE_CHANNELS);
     Main_textContent('side_panel_movel_top_text', STR_LIVE_FEED);
 

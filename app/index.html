@@ -3094,6 +3094,31 @@
                 font-size: 2vh;
                 opacity: 0.85;
             }
+            /* Remote key glyphs inside the key hints (footer, player drawers, controls dialog) */
+            .navigation-key,
+            .navigation-key-divider {
+                vertical-align: middle;
+            }
+            .navigation-key {
+                margin-right: 0.3em;
+            }
+            /* OK drawn as a key cap, the same outlined shape as the card Actions button */
+            .navigation-key-ok {
+                display: inline-block;
+                padding: 0.05em 0.4em;
+                border: 0.08em solid;
+                border-radius: 0.3em;
+                font-family: 'Roboto-Bold';
+                font-size: 80%;
+                line-height: 1.2;
+            }
+            /* Between key groups, the same line as the details rule above the footer */
+            .navigation-key-divider {
+                display: inline-block;
+                height: 1em;
+                margin: 0 0.6em;
+                border-left: 1px solid #494151;
+            }
             .navigation-status {
                 position: absolute;
                 left: 9.2%;

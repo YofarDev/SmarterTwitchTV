@@ -1111,26 +1111,26 @@ function UserLiveFeed_SetFeedPicText() {
             STR_SPACE_HTML +
             STR_REFRESH +
             ':' +
-            STR_HOLD_UP +
+            Navigation_KeyHintHtml(STR_HOLD_UP) +
             STR_SPACE_HTML +
             STR_SPACE_HTML +
             '</div><div class="strokedelinebig" style="vertical-align: middle; display: inline-block;"><i class="icon-pp" style="color: #FFFFFF; font-size: 115%; "></i></div><div class="strokedelinebig" style="vertical-align: middle; display: inline-block;">' +
             STR_SPACE_HTML +
-            STR_PICTURE_LIVE_FEED +
+            Navigation_KeyHintHtml(STR_PICTURE_LIVE_FEED) +
             '</div>'
     );
 }
 
 function UserLiveFeed_Unset() {
-    Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + STR_HOLD_UP);
+    Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + Navigation_KeyHintHtml(STR_HOLD_UP));
 }
 
 function UserLiveFeed_SetMulti() {
-    Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + STR_HOLD_UP + STR_MULTI_TITLE);
+    Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + Navigation_KeyHintHtml(STR_HOLD_UP) + STR_MULTI_TITLE);
 }
 
 function UserLiveFeed_SetHoldUp() {
-    Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + STR_HOLD_UP + STR_FEED_END_DIALOG);
+    Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + Navigation_KeyHintHtml(STR_HOLD_UP) + STR_FEED_END_DIALOG);
 }
 
 function UserLiveFeed_KeyRightLeft(Adder) {

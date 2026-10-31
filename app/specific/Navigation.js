@@ -201,7 +201,30 @@ function Navigation_UpdateHint(screen) {
     else if (ScreenObj[screen] && ScreenObj[screen].posSub === Screens_SubActions) hint = STR_UI.actionsHelp;
     else if (Screens_DirectInputMode()) hint = STR_UI.browseHelpDirect;
     else hint = STR_UI.browseHelp;
-    Main_textContent('navigation-footer', hint);
+    Main_innerHTML('navigation-footer', Navigation_KeyHintHtml(hint));
+}
+
+//Remote keys in the hint strings, drawn with the bundled icon font like the rail glyphs
+var Navigation_KeyGlyphs = {
+    up: 'key-up',
+    down: 'key-down',
+    left: 'key-left',
+    right: 'key-right',
+    back: 'return'
+};
+
+/* Hint strings name keys as {ok}, {up}, {down}, {left}, {right} and {back} so translations keep plain labels;
+ * the text is escaped and each placeholder becomes its key: OK is a small key cap, the others icon glyphs.
+ * Key groups are separated by a run of spaces in the strings, drawn as a divider. */
+function Navigation_KeyHintHtml(text) {
+    return Screens_AriaEscape(text)
+        .replace(/\{(\w+)\}/g, function (match, key) {
+            if (key === 'ok') return '<span class="navigation-key navigation-key-ok" aria-hidden="true">OK</span>';
+            return Navigation_KeyGlyphs.hasOwnProperty(key)
+                ? '<i class="icon icon-' + Navigation_KeyGlyphs[key] + ' navigation-key" aria-hidden="true"></i>'
+                : match;
+        })
+        .replace(/ {3,}/g, ' <span class="navigation-key-divider" aria-hidden="true"></span> ');
 }
 
 function Navigation_Render(screen) {
