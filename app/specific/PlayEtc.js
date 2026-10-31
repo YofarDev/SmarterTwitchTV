@@ -1810,7 +1810,7 @@ function Play_handleKeyDown(e) {
                 }
                 Play_MultiAddFocus();
             } else if (!UserLiveFeed_isPreviewShowing()) {
-                UserLiveFeed_FeedPosX = AddUser_UserIsSet() ? UserLiveFeedobj_UserLivePos : UserLiveFeedobj_LivePos;
+                UserLiveFeed_ResetFeedPosX();
                 UserLiveFeed_ShowFeed();
             } else if (Play_isEndDialogVisible() || UserLiveFeed_isPreviewShowing()) {
                 Play_EndTextClear();

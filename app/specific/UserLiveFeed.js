@@ -494,6 +494,18 @@ function UserLiveFeed_ShowFeed() {
     UserLiveFeed_obj[UserLiveFeed_FeedPosX].show();
 }
 
+//Closing the feed only hides its holder, so the last opened feed div is still unhidden, hide it before moving back to live
+function UserLiveFeed_ResetFeedPosX() {
+    var pos = AddUser_UserIsSet() ? UserLiveFeedobj_UserLivePos : UserLiveFeedobj_LivePos;
+
+    if (UserLiveFeed_FeedPosX !== pos) {
+        UserLiveFeed_obj[UserLiveFeed_FeedPosX].hide();
+        //A game's list also shows the "go back to games" hint, live has none
+        Main_AddClass('icon_feed_back', 'opacity_zero');
+    }
+    UserLiveFeed_FeedPosX = pos;
+}
+
 function UserLiveFeed_ResetFeedId() {
     UserLiveFeed_clearHideFeed();
 

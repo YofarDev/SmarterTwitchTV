@@ -492,7 +492,7 @@ function PlayerUI_Channels() {
     var mode = PlayerUI_State.mode;
     PlayerUI_Close(true);
     if (!mode) return;
-    UserLiveFeed_FeedPosX = AddUser_UserIsSet() ? UserLiveFeedobj_UserLivePos : UserLiveFeedobj_LivePos;
+    UserLiveFeed_ResetFeedPosX();
     var data = UserLiveFeed_DataObj[UserLiveFeed_FeedPosX] || [],
         currentId = mode === 1 ? Play_data.data[14] : null;
     for (var i = 0; i < data.length; i++) {
