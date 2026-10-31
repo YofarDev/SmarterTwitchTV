@@ -492,6 +492,11 @@ var Settings_value = {
         set_values: [''],
         defaultValue: 1
     },
+    points_opt: {
+        values: ['None'],
+        set_values: [''],
+        defaultValue: 1
+    },
     preview_settings: {
         values: ['None'],
         set_values: [''],
@@ -663,6 +668,31 @@ var Settings_value = {
         //Migrated to dialog
         values: ['no', 'auto'],
         defaultValue: 2
+    },
+    watch_time_points: {
+        //Migrated to dialog
+        values: ['no', 'yes'],
+        defaultValue: 2
+    },
+    auto_claim_bonus: {
+        //Migrated to dialog
+        values: ['no', 'yes'],
+        defaultValue: 1
+    },
+    auto_claim_drops: {
+        //Migrated to dialog
+        values: ['no', 'yes'],
+        defaultValue: 1
+    },
+    auto_claim_notify_bonus: {
+        //Migrated to dialog
+        values: ['no', 'yes'],
+        defaultValue: 1
+    },
+    auto_claim_notify_drops: {
+        //Migrated to dialog
+        values: ['no', 'yes'],
+        defaultValue: 1
     },
     show_chatters: {
         //Migrated to dialog
@@ -1033,6 +1063,7 @@ function Settings_SetSettings() {
     div += Settings_Content('preview_settings', [STR_ENTER_TO_OPEN], STR_SIDE_PANEL_PLAYER, null);
     div += Settings_Content('vod_seek', [STR_ENTER_TO_OPEN], STR_VOD_SEEK, null);
     div += Settings_Content('playerend_opt', [STR_ENTER_TO_OPEN], STR_END_DIALOG_OPT, null);
+    div += Settings_Content('points_opt', [STR_ENTER_TO_OPEN], STR_POINTS_OPT, null);
 
     Main_innerHTML('settings_main', div);
     Settings_positions_length = Settings_value_keys.length;
@@ -1473,6 +1504,7 @@ function Settings_SetDefault(position) {
     else if (position === 'vod_seek_max') Settings_check_max_seek();
     else if (position === 'auto_minimize_inactive') Settings_SetAutoMinimizeTimeout();
     else if (position === 'sync_enabled') Settings_DialogBackupSyncRefresh();
+    else if (position === 'watch_time_points' || position === 'auto_claim_bonus' || position === 'auto_claim_drops') Settings_DialogPointsRefresh();
     else if (
         position === 'block_qualities_43' ||
         position === 'block_qualities_21' ||
@@ -2115,6 +2147,7 @@ function Settings_handleKeyDown(event) {
 
 function Settings_KeyEnter(click) {
     if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'playerend_opt')) Settings_PlayerEnd(click);
+    else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'points_opt')) Settings_DialogShowPoints(click);
     else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'blocked_codecs')) Settings_CodecsShow(click);
     else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'player_extracodecs')) Settings_DialogShowExtraCodecs(click);
     else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'player_bitrate')) Settings_DialogShowBitrate(click);
@@ -3224,6 +3257,93 @@ function Settings_PlayerEnd(click) {
         }
     };
     Settings_DialogShow(obj, STR_END_DIALOG_OPT, click);
+}
+
+function Settings_DialogShowPoints(click) {
+    var yes_no = [STR_NO, STR_YES];
+    Settings_value.watch_time_points.values = yes_no;
+    Settings_value.auto_claim_bonus.values = yes_no;
+    Settings_value.auto_claim_drops.values = yes_no;
+    Settings_value.auto_claim_notify_bonus.values = yes_no;
+    Settings_value.auto_claim_notify_drops.values = yes_no;
+
+    var obj = {
+        watch_time_points: {
+            defaultValue: Settings_value.watch_time_points.defaultValue,
+            values: Settings_value.watch_time_points.values,
+            title: STR_POINTS_WATCH,
+            summary: STR_POINTS_WATCH_SUMMARY
+        },
+        auto_claim_bonus: {
+            defaultValue: Settings_value.auto_claim_bonus.defaultValue,
+            values: Settings_value.auto_claim_bonus.values,
+            title: STR_POINTS_BONUS,
+            summary: STR_POINTS_BONUS_SUMMARY
+        },
+        auto_claim_notify_bonus: {
+            defaultValue: Settings_value.auto_claim_notify_bonus.defaultValue,
+            values: Settings_value.auto_claim_notify_bonus.values,
+            title: STR_POINTS_NOTIFY_BONUS,
+            summary: STR_POINTS_NOTIFY_BONUS_SUMMARY
+        },
+        auto_claim_drops: {
+            defaultValue: Settings_value.auto_claim_drops.defaultValue,
+            values: Settings_value.auto_claim_drops.values,
+            title: STR_POINTS_DROPS,
+            summary: STR_POINTS_DROPS_SUMMARY
+        },
+        auto_claim_notify_drops: {
+            defaultValue: Settings_value.auto_claim_notify_drops.defaultValue,
+            values: Settings_value.auto_claim_notify_drops.values,
+            title: STR_POINTS_NOTIFY_DROPS,
+            summary: STR_POINTS_NOTIFY_DROPS_SUMMARY
+        }
+    };
+
+    Settings_DialogShow(obj, STR_POINTS_OPT, click);
+    Settings_DialogPointsRefresh();
+}
+
+var Settings_DialogPointsKeys = ['watch_time_points', 'auto_claim_bonus', 'auto_claim_notify_bonus', 'auto_claim_drops', 'auto_claim_notify_drops'];
+
+function Settings_DialogPointsRefresh() {
+    //Twitch only offers bonus points while it counts the minutes watched
+    Settings_DialogPointsRow('auto_claim_bonus', Settings_Obj_default('watch_time_points'));
+    //Each notice only applies to its own auto claim
+    Settings_DialogPointsRow('auto_claim_notify_bonus', Settings_Obj_default('auto_claim_bonus'));
+    Settings_DialogPointsRow('auto_claim_notify_drops', Settings_Obj_default('auto_claim_drops'));
+}
+
+//A dependent row: hidden and turned off while what it depends on is off
+function Settings_DialogPointsRow(key, available) {
+    var div = Main_getElementById(key + '_div'),
+        index = Settings_DialogValue.indexOf(key),
+        position = 0,
+        i = 0;
+
+    if (!available && Settings_Obj_default(key)) {
+        Settings_value[key].defaultValue = 0;
+        Main_setItem(key, 1);
+    }
+
+    if (!div) return;
+
+    Main_textContent(key, Settings_Obj_values(key));
+
+    if (available && index === -1) {
+        Main_RemoveClassWithEle(div, 'hideimp');
+
+        //Back in its dialog position, after the visible rows listed before it
+        for (i; Settings_DialogPointsKeys[i] !== key; i++) {
+            if (Settings_DialogValue.indexOf(Settings_DialogPointsKeys[i]) > -1) position++;
+        }
+
+        Settings_DialogValue.splice(position, 0, key);
+    } else if (!available) {
+        Main_AddClassWithEle(div, 'hideimp');
+
+        if (index > -1) Settings_DialogValue.splice(index, 1);
+    }
 }
 
 function Settings_DialogBackupSyncRefresh() {

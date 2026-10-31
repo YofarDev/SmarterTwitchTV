@@ -775,6 +775,20 @@ function en_USLang() {
         'When the watched streamer raids another channel, switch the player to the raided channel. Works in single-stream live playback and requires being logged in.';
     STR_RAID_AUTO = 'Switch automatically';
     STR_RAID_SWITCHING = ' is raiding, switching to ';
+    STR_POINTS_OPT = 'Channel points and drops';
+    STR_POINTS_WATCH = 'Earn channel points from watch time';
+    STR_POINTS_WATCH_SUMMARY = "Let Twitch know you are watching so you earn channel points. Time paused doesn't count. Requires being logged in.";
+    STR_POINTS_BONUS = 'Auto claim bonus channel points';
+    STR_POINTS_BONUS_SUMMARY = 'Claim bonus points automatically as you watch. Available while watch time points are on. Requires being logged in.';
+    STR_POINTS_DROPS = 'Auto claim drops';
+    STR_POINTS_DROPS_SUMMARY = 'Automatically claim drops you have finished earning, checked every few minutes. Requires being logged in.';
+    STR_POINTS_NOTIFY_BONUS = 'Show a notice when bonus points are claimed';
+    STR_POINTS_NOTIFY_BONUS_SUMMARY = 'Show a toast message when bonus channel points are claimed. Available while bonus points auto claim is on.';
+    STR_POINTS_NOTIFY_DROPS = 'Show a notice when a drop is claimed';
+    STR_POINTS_NOTIFY_DROPS_SUMMARY = 'Show a toast message when a drop is claimed. Available while drops auto claim is on.';
+    STR_POINTS_BONUS_CLAIMED = 'Bonus channel points claimed: +%x';
+    STR_POINTS_BONUS_CLAIMED_NO_COUNT = 'Bonus channel points claimed';
+    STR_POINTS_DROP_CLAIMED = 'Drop claimed: %x';
     STR_ALWAYS_STAY = 'Always stay with the player opened after a live ends';
     STR_PING_WARNING = "Show 'Ping to Twitch fail' warning";
     STR_PING_WARNING_SUMMARY =
