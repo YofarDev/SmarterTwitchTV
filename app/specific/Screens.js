@@ -185,6 +185,7 @@ function Screens_first_init() {
 
     if (live_channel_call) {
         Main_values.Play_WasPlaying = 1;
+        Main_GoBefore = Main_onNewIntentGetScreen(obj);
 
         Play_data = JSON.parse(JSON.stringify(Play_data_base));
         Play_data.data = ScreensObj_LiveCellArray(obj.obj);
@@ -200,6 +201,7 @@ function Screens_first_init() {
         StartUser = false;
         Main_values.Main_gameSelected = Play_data.data[3];
         Main_values.Main_gameSelected_id = Play_data.data[18];
+        Main_SetChannelGameOrigin();
     } else if (screen_channel_call) {
         Main_GoBefore = Main_onNewIntentGetScreen(obj);
         Main_values.Play_WasPlaying = 0;

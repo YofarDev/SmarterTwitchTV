@@ -339,19 +339,6 @@ public final class ChannelsUtils {
         return -1L;
     }
 
-    private static boolean getChannelIsBrowsable(Context context, long channelId) {
-        try (Cursor cursor = context.getContentResolver().query(TvContractCompat.buildChannelUri(channelId), null, null, null, null)) {
-            if (cursor != null && cursor.moveToNext()) {
-                Channel channel = Channel.fromCursor(cursor);
-                return channel.isBrowsable();
-            }
-        } catch (Exception e) {
-            Tools.recordException(TAG, "getChannelIsBrowsable ", e);
-        }
-
-        return false;
-    }
-
     public static void scheduleSyncingChannel(Context context) {
         try {
             JobScheduler scheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
@@ -463,22 +450,19 @@ public final class ChannelsUtils {
 
         String lang = Tools.getString(Constants.PREF_USER_LANGUAGE, null, appPreferences);
 
-        List<ChannelContentObj> content = null;
         long channelId = getChannelIdFromTvProvider(context, Constants.CHANNELS_NAMES[Constants.CHANNEL_TYPE_LIVE]);
 
-        //this is the default channel add content without check for getChannelIsBrowsable
-        if (channelId == -1L || getChannelIsBrowsable(context, channelId)) {
-            content = GetLiveContent(
-                "https://api.twitch.tv/helix/streams?first=100" + (lang != null ? "&language=" + lang : ""),
-                "data",
-                true,
-                Constants.CHANNEL_TYPE_LIVE,
-                context,
-                UserId,
-                appPreferences,
-                true
-            );
-        }
+        //Content is loaded even when the channel is not browsable, see SetUserLive
+        List<ChannelContentObj> content = GetLiveContent(
+            "https://api.twitch.tv/helix/streams?first=100" + (lang != null ? "&language=" + lang : ""),
+            "data",
+            true,
+            Constants.CHANNEL_TYPE_LIVE,
+            context,
+            UserId,
+            appPreferences,
+            true
+        );
 
         StartChannel(
             context,
@@ -494,28 +478,26 @@ public final class ChannelsUtils {
         long channelId = getChannelIdFromTvProvider(context, Constants.CHANNELS_NAMES[Constants.CHANNEL_TYPE_USER_LIVE]);
 
         if (userId != null) {
-            if (channelId != -1L && getChannelIsBrowsable(context, channelId)) {
-                JsonArray Streams = NotificationUtils.GetLiveStreamsList(userId, appPreferences);
+            //Load even when the channel is not browsable, only the system launcher sets that flag,
+            //custom launchers like Projectivy show the channel while it stays not browsable
+            JsonArray Streams = NotificationUtils.GetLiveStreamsList(userId, appPreferences);
 
-                if (Streams != null) {
-                    StartUserLive(
+            if (Streams != null) {
+                StartUserLive(
+                    context,
+                    ProcessLiveArray(
+                        Streams, //Get the follows array
+                        true,
+                        Constants.CHANNEL_TYPE_USER_LIVE,
                         context,
-                        ProcessLiveArray(
-                            Streams, //Get the follows array
-                            true,
-                            Constants.CHANNEL_TYPE_USER_LIVE,
-                            context,
-                            new HashSet<String>()
-                        ),
-                        channelId,
-                        CHANNELS_NAMES
-                    );
-                }
-
-                return;
+                        new HashSet<String>()
+                    ),
+                    channelId,
+                    CHANNELS_NAMES
+                );
+            } else if (channelId == -1L) {
+                StartUserLive(context, null, channelId, CHANNELS_NAMES);
             }
-
-            StartUserLive(context, null, channelId, CHANNELS_NAMES);
         } else {
             List<ChannelContentObj> content = new ArrayList<>();
             content.add(getNoUserContent(context));
@@ -585,17 +567,14 @@ public final class ChannelsUtils {
         if (!Tools.isConnected(context)) return;
 
         long channelId = getChannelIdFromTvProvider(context, Constants.CHANNELS_NAMES[Constants.CHANNEL_TYPE_GAMES]);
-        List<ChannelContentObj> content = null;
+        //Content is loaded even when the channel is not browsable, see SetUserLive
+        List<ChannelContentObj> content = GetGamesContent(context, UserId, appPreferences);
 
-        if (channelId != -1L && getChannelIsBrowsable(context, channelId)) {
-            content = GetGamesContent(context, UserId, appPreferences);
+        if (content != null) {
+            int contentSize = content.size();
 
-            if (content != null) {
-                int contentSize = content.size();
-
-                if (contentSize > 1) {
-                    Collections.sort(content.subList(1, contentSize), compareViewers);
-                }
+            if (contentSize > 1) {
+                Collections.sort(content.subList(1, contentSize), compareViewers);
             }
         }
 
