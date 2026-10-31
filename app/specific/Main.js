@@ -3427,18 +3427,25 @@ function Main_onNewIntent(mobj) {
         Play_showBufferDialog();
         Main_CheckResume(true);
 
+        //Navigation_ExitCurrent also exits Add User, Search and Settings, which have no ScreenObj exit
+        var covered = true;
+
         if (Main_isScene2DocVisible()) {
             Main_onNewIntentClearPlay();
         } else if (Sidepannel_isShowingMenus()) {
             Sidepannel_Hide(false);
         } else if (Sidepannel_isShowingUserLiveSide()) {
             Sidepannel_Hide(true);
-        } else if (ScreenObj[Main_values.Main_Go].exit_fun) ScreenObj[Main_values.Main_Go].exit_fun();
+        } else {
+            Navigation_ExitCurrent();
+            covered = false;
+        }
 
-        //Closing the stream returns to the channel's screen (Browse > Live or Following), not the last one used
+        //Closing the stream returns to the channel's screen (Browse > Live or Following), not the last one used;
+        //a screen left under the player or a side panel only exits when that changes
         var liveScreen = Main_onNewIntentGetScreen(obj);
 
-        if (Main_values.Main_Go !== liveScreen && ScreenObj[Main_values.Main_Go].exit_fun) ScreenObj[Main_values.Main_Go].exit_fun();
+        if (covered && Main_values.Main_Go !== liveScreen) Navigation_ExitCurrent();
         Main_values.Main_Go = liveScreen;
 
         Play_data = JSON.parse(JSON.stringify(Play_data_base));
@@ -3459,7 +3466,7 @@ function Main_onNewIntent(mobj) {
             Sidepannel_Hide(false);
         }
 
-        if (ScreenObj[Main_values.Main_Go].exit_fun) ScreenObj[Main_values.Main_Go].exit_fun();
+        Navigation_ExitCurrent();
         Main_values.Main_Before = Main_values.Main_Go;
 
         AddUser_init();
@@ -3488,7 +3495,7 @@ function Main_onNewIntent(mobj) {
                 Sidepannel_Hide(false);
             }
 
-            Main_ExitCurrent(Main_values.Main_Go);
+            Navigation_ExitCurrent();
             Main_values.Main_Go = Main_aGame;
 
             Main_values.Main_gameSelected = Play_data.data[3];
@@ -3510,7 +3517,7 @@ function Main_onNewIntent(mobj) {
         var goTo = Main_onNewIntentGetScreen(obj);
 
         if (Main_values.Main_Go !== goTo) {
-            if (ScreenObj[Main_values.Main_Go].exit_fun) ScreenObj[Main_values.Main_Go].exit_fun();
+            Navigation_ExitCurrent();
             Main_values.Main_Before = goTo;
         }
         Main_values.Main_Go = goTo;

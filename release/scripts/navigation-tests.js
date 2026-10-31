@@ -173,4 +173,72 @@ check(s.Navigation_State.destination === 'browse' && s.Navigation_State.tab === 
 check(s.Main_values.Main_BeforeAgame === s.Main_games && s.Main_values.Main_BeforeAgameisSet, 'channel game Back returns to Categories');
 check(!s.Main_values.Games_return, 'channel game Back does not return to a stale search');
 check(s.ScreenObj[s.Main_aGame].BeforeAgame === s.Main_games, 'channel game drops a stale Blocked origin');
+
+// Home screen items exit the current screen once through Navigation_ExitCurrent, which also covers Add User,
+// Search and Settings (no ScreenObj exit), before the stream, game or screen opens.
+for (const name of ['Main_onNewIntent', 'Main_onNewIntentGetScreen', 'Main_ExitCurrent'])
+    require('vm').runInContext(
+        require('fs')
+            .readFileSync('app/specific/Main.js', 'utf8')
+            .match(new RegExp('^function ' + name + '\\([^)]*\\) \\{[\\s\\S]*?^\\}', 'm'))[0],
+        s
+    );
+const steps = [];
+let playerOpen = false,
+    showing = {};
+Object.assign(s, {
+    Main_A_equals_B: (a, b) => a === b,
+    Play_showBufferDialog: () => {},
+    Main_CheckResume: () => {},
+    Main_isScene2DocVisible: () => playerOpen,
+    Main_onNewIntentClearPlay: () => steps.push('player'),
+    Sidepannel_isShowingMenus: () => false,
+    Sidepannel_isShowingUserLiveSide: () => false,
+    Main_hideScene2Doc: () => {},
+    Main_showScene1Doc: () => {},
+    Main_isElementShowing: id => Boolean(showing[id]),
+    Settings_isVisible: () => Boolean(showing.settings_holder),
+    AddUser_exit: () => (steps.push('adduser'), (s.Main_values.Main_Go = s.Main_values.Main_Before)),
+    Search_exit: () => (steps.push('search'), (s.Main_values.Main_Go = s.Main_Live)),
+    Settings_exit: () => steps.push('settings'),
+    AddUser_UserHasToken: () => true,
+    AddUser_init: () => (steps.push('adduser-init'), (s.Main_values.Main_Go = s.Main_addUser)),
+    Play_data_base: {data: []},
+    ScreensObj_LiveCellArray: () => [],
+    Main_openStream: () => steps.push('stream'),
+    Main_ReStartScreens: () => steps.push('restart')
+});
+for (const screen of [s.Main_Live, s.Main_Featured]) s.ScreenObj[screen] = {exit_fun: () => steps.push('exit:' + screen)};
+function homeItem(type, channel, on, state) {
+    steps.length = 0;
+    playerOpen = Boolean(state && state.player);
+    showing = (state && state.showing) || {};
+    s.Main_values = {Main_Go: on, Main_Before: s.Main_Featured};
+    s.Main_onNewIntent(JSON.stringify({type: type, screen: channel, obj: {name: 'game', id: '1'}}));
+    return steps.join();
+}
+const addUserUp = {showing: {add_user_scroll: true}},
+    searchUp = {showing: {search_scroll: true}};
+check(homeItem('LIVE', 1, s.Main_addUser, addUserUp) === 'adduser,stream', 'live item on Add User exits it and opens the stream');
+check(s.Main_values.Main_Go === s.Main_Live, 'closing that stream returns to Browse > Live');
+check(homeItem('LIVE', 1, s.Main_Featured) === 'exit:' + s.Main_Featured + ',stream', 'live item exits a grid screen once');
+check(homeItem('LIVE', 2, s.Main_Search, searchUp) === 'search,stream' && s.Main_values.Main_Go === s.Main_UserLive, 'live item on Search exits it');
+check(homeItem('LIVE', 1, s.Main_Featured, {showing: {settings_holder: true}}) === 'settings,stream', 'live item over Settings closes Settings');
+check(
+    homeItem('LIVE', 1, s.Main_Featured, {player: true}) === 'player,exit:' + s.Main_Featured + ',stream',
+    'live item over the player exits the screen under it when that changes'
+);
+check(homeItem('LIVE', 1, s.Main_Live, {player: true}) === 'player,stream', 'and keeps it when it stays the same');
+check(
+    homeItem('USER', 2, s.Main_Search, searchUp) === 'search,adduser-init' && s.Main_values.Main_Before === s.Main_Live,
+    'user item on Search opens Add User'
+);
+check(
+    homeItem('GAME', 4, s.Main_addUser, addUserUp) === 'adduser,restart' && s.Main_values.Main_Go === s.Main_aGame,
+    'game item on Add User exits it'
+);
+check(
+    homeItem('SCREEN', 1, s.Main_addUser, addUserUp) === 'adduser,restart' && s.Main_values.Main_Go === s.Main_Live,
+    'screen item on Add User exits it'
+);
 console.log(checks + ' production navigation checks passed');
