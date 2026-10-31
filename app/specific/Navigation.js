@@ -378,6 +378,8 @@ function Navigation_Close(restore) {
         // Settings and the search form keep their own focus treatment; the grid behind must not take it.
         if (obj && obj.addFocus && obj.itemsCount && !Navigation_Onboarding && !Settings_isVisible() && Main_values.Main_Go !== Main_Search)
             Screens_addFocus(true, Main_values.Main_Go);
+        // Users keeps its own grid and cursor outside the Screens objects.
+        if (Main_values.Main_Go === Main_Users && !Navigation_Onboarding && Users_status) Users_addFocus();
         if (obj && obj.emptyContent && Main_values.Main_Go === Main_UserLive && !Navigation_Onboarding)
             Main_getElementById('navigation-retry').focus();
     }

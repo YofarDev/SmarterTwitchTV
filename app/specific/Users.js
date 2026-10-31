@@ -489,6 +489,10 @@ function Users_handleKeyDown(event) {
                         break;
                     }
                 }
+            } else {
+                // First row: Up moves to the Account tabs (Switch account, Add User, My Channel, Blocked), like the grid screens.
+                Users_removeFocus();
+                Navigation_Open(Users_handleKeyDown, 'tabs');
             }
             break;
         case KEY_DOWN:
