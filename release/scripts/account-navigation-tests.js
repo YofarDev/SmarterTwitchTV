@@ -137,19 +137,25 @@ check(addUserKey(s.KEY_RETURN) === 'exit,switch', 'Back with an account returns 
  * screen must stop the flow instead of acting as Back there: no rail over that screen, no switch away from it. */
 vm.runInContext(fs.readFileSync('app/specific/AddUser.js', 'utf8'), s); // the real exit this time
 const requests = [];
+const failures = [];
 const timers = [];
 Object.assign(s, {
     STR_ADD_ERROR: 'error',
+    STR_ADD_USER_TEXT_COUNTER_NOW: 'now',
     AddCode_Url: '',
+    AddCode_UrlToken: '',
     AddCode_Scopes: [],
     AddCode_backup_client_id: '',
     Main_isTV: true,
     Main_IsOn_OSInterface: false,
     Main_removeEventListener: () => {},
     Main_HideLoadDialog: () => {},
-    Main_showWarningDialog: () => {},
+    Main_showWarningDialog: () => calls.push('warning'),
     Main_textContent: () => {},
-    FullxmlHttpGet: (url, headers, success) => requests.push(success),
+    FullxmlHttpGet: (url, headers, success, error) => {
+        requests.push(success);
+        failures.push(error);
+    },
     Main_setTimeout: fn => timers.push(fn),
     Main_clearTimeout: id => {
         if (id) timers[id - 1] = null;
@@ -160,6 +166,7 @@ function onAddUser(account) {
     s.Main_values.Main_Before = s.Main_Users;
     s.Main_values.Main_Go = s.Main_addUser;
     requests.length = 0;
+    failures.length = 0;
 }
 // Ids are 1-based positions in timers; this is the wait the last error started.
 function errorWait() {
@@ -190,12 +197,26 @@ for (const account of [false, true]) {
         who + 'late countdown, poll and user answers stop too'
     );
 
+    // Both requests also fail through AddUser_getCodeError, so a failure can land after leaving as well.
+    onAddUser(account);
+    s.AddUser_getCode();
+    s.AddUser_getCodeCheck(0); // the poll is out too
+    s.AddUser_exit();
+    s.Main_values.Main_Go = next;
+    calls.length = 0;
+    const waits = timers.length;
+    failures.forEach(fail => fail());
+    check(failures.length === 2 && !calls.length && timers.length === waits, who + 'requests failing after leaving show no error and start no wait');
+
     // An error goes Back after a wait while Add User is still up, never after the user left.
     onAddUser(account);
-    let wait = errorWait();
     calls.length = 0;
+    let wait = errorWait();
     timers[wait]();
-    check(calls.join(',') === (account ? 'switch' : 'open:rail:adduser'), who + 'an error on Add User still goes Back after the wait');
+    check(
+        calls.join(',') === 'warning,' + (account ? 'switch' : 'open:rail:adduser'),
+        who + 'an error on Add User still shows and goes Back after the wait'
+    );
     onAddUser(account);
     wait = errorWait();
     s.AddUser_exit();

@@ -129,6 +129,9 @@ function AddUser_getCodeSuccess(resultObj) {
 
 var AddUser_getCodeErrorId;
 function AddUser_getCodeError() {
+    //Also the requests' error callback, so it can land after leaving: the error is Add User's, not the next screen's
+    if (!AddUser_IsInUserScreen()) return;
+
     Main_HideLoadDialog();
     Main_showWarningDialog(STR_ADD_ERROR, 7500, true);
     AddUser_getCodeErrorId = Main_setTimeout(
