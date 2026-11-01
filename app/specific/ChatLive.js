@@ -162,6 +162,18 @@ var ChatLive_ROOMSTATE_Regex = /emote-only=(\d+).*followers-only=(-1|\d+).*r9k=(
 var ChatLive_Base_BTTV_url = 'https://cdn.betterttv.net/emote/';
 //Variable initialization end
 
+//True when the slot is joined and the open socket is for this exact channel, so a same
+//channel player reload (ad escape, quality restore) can keep the chat instead of re-joining
+function ChatLive_IsOnChannel(chat_number, Channel_id) {
+    return !!(
+        Channel_id &&
+        ChatLive_loaded[chat_number] &&
+        ChatLive_socket[chat_number] &&
+        ChatLive_socket[chat_number].readyState === 1 &&
+        Main_A_equals_B(ChatLive_selectedChannel_id[chat_number], Channel_id)
+    );
+}
+
 function ChatLive_Init(chat_number, SkipClear) {
     try {
         if (!SkipClear) {

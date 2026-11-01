@@ -23,9 +23,15 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 395, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/395/SmarterPurpleTV_3_0_395.apk',
-    WebVersion: 'October 31 2026',
-    WebTag: 773, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'November 1 2026',
+    WebTag: 774, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 1 2026 (Web 774)',
+            changes: [
+                'Chat: an ad break escape (or the quality restore after it) no longer clears the live chat — the chat connection is independent of the video, so a reload of the same channel keeps it and its history running instead of re-joining and starting empty'
+            ]
+        },
         {
             title: 'October 31 2026 (Web 773 / APK 395)',
             changes: [

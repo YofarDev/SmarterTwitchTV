@@ -19,6 +19,7 @@ const names = [
     'Chat_tagCSS',
     'ChatLive_loadBadgesChannel',
     'ChatLive_loadBadgesChannelSuccess',
+    'ChatLive_IsOnChannel',
     'ChatLive_Init',
     'ChatLive_InitCleanup',
     'ChatLive_ClearIds',
@@ -98,6 +99,7 @@ function environment(target) {
         ChatLive_LineAddCounter: [0, 0],
         ChatLive_Messages: [[], []],
         ChatLive_loaded: [false, true],
+        ChatLive_socket: [{readyState: 0}, {readyState: 0}],
         Main_clearTimeout: id => effects.push('clear-timeout:' + id),
         Main_clearInterval: id => effects.push('clear-interval:' + id),
         ChatLive_CheckClear: () => {},
@@ -111,6 +113,7 @@ function environment(target) {
         PlayHLS_AdRetryStates: {},
         PlayHLS_AdRestoreScheduled: false,
         Main_A_includes_B: (a, b) => a.indexOf(b) !== -1,
+        Main_A_equals_B: (a, b) => a === b,
         ChatLive_SpamLast: [null, null],
         ChatLive_Individual_Background_flip: [],
         ChatLive_Channel_Regex_Search: [],
@@ -314,6 +317,23 @@ function runChecks(factory, check) {
         check(nativeCount(h) === 1 && h.effects.includes('chat-connected:0'), 'corrupt cache cannot prevent native or chat startup');
         check(h.requests.filter(r => r.url.endsWith('badges/global')).length === 1, 'corrupt cache requests a repair');
         check(!h.logs.some(x => x.includes('initialization failed')), 'cache recovery does not need exception boundary');
+    }
+    {
+        // An ad escape/quality restore reload of the same channel keeps the live chat
+        const h = factory();
+        h.s.ChatLive_loaded[0] = true;
+        h.s.ChatLive_socket[0] = {readyState: 1};
+        playlist(h);
+        check(nativeCount(h) === 1 && !h.effects.includes('chat-connected:0'), 'same channel reload restarts playback without re-joining chat');
+        check(!h.effects.includes('close:0') && !h.effects.includes('pins:0'), 'running chat connection and history survive the reload');
+    }
+    for (const stale of ['other-channel', 'closed-socket']) {
+        const h = factory();
+        h.s.ChatLive_loaded[0] = true;
+        if (stale === 'other-channel') h.s.ChatLive_selectedChannel_id[0] = '200';
+        else h.s.ChatLive_socket[0] = {readyState: 3};
+        playlist(h);
+        check(h.effects.includes('chat-connected:0') && nativeCount(h) === 1, 'reload re-joins chat when the connection is stale: ' + stale);
     }
     for (const state of ['old-generation', 'cleared', 'departed', 'invalid-slot', 'missing-channel']) {
         const h = factory();

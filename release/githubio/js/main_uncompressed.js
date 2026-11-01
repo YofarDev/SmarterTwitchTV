@@ -8359,9 +8359,15 @@
         VersionBase: '3.0',
         publishVersionCode: 395, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/395/SmarterPurpleTV_3_0_395.apk',
-        WebVersion: 'October 31 2026',
-        WebTag: 773, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebVersion: 'November 1 2026',
+        WebTag: 774, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 1 2026 (Web 774)',
+                changes: [
+                    'Chat: an ad break escape (or the quality restore after it) no longer clears the live chat — the chat connection is independent of the video, so a reload of the same channel keeps it and its history running instead of re-joining and starting empty'
+                ]
+            },
             {
                 title: 'October 31 2026 (Web 773 / APK 395)',
                 changes: [
@@ -13238,6 +13244,18 @@
 
     var ChatLive_Base_BTTV_url = 'https://cdn.betterttv.net/emote/';
     //Variable initialization end
+
+    //True when the slot is joined and the open socket is for this exact channel, so a same
+    //channel player reload (ad escape, quality restore) can keep the chat instead of re-joining
+    function ChatLive_IsOnChannel(chat_number, Channel_id) {
+        return !!(
+            Channel_id &&
+            ChatLive_loaded[chat_number] &&
+            ChatLive_socket[chat_number] &&
+            ChatLive_socket[chat_number].readyState === 1 &&
+            Main_A_equals_B(ChatLive_selectedChannel_id[chat_number], Channel_id)
+        );
+    }
 
     function ChatLive_Init(chat_number, SkipClear) {
         try {
@@ -24528,9 +24546,9 @@
     }
 
     function Play_UpdateMainStream(startChat, refreshInfo) {
-        if (startChat) {
-            ChatLive_Init(0);
-        }
+        //A same channel reload (ad escape, quality restore) keeps the running chat, its history
+        //included, instead of clearing and re-joining the exact same IRC channel
+        if (startChat && !ChatLive_IsOnChannel(0, Play_data.data[14])) ChatLive_Init(0);
 
         Play_CheckFollow(Play_data.data[14]);
         Play_UpdateMainStreamDiv();
