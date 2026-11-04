@@ -34,6 +34,7 @@ node release/scripts/phonechat-collector-tests.js
 node release/scripts/chat-badge-tests.js        # badge HTTP contracts/cache and playback recovery; add --built for generated definitions
 node release/scripts/chat-optimization-tests.js # TV scheduler/cache with fake clock
 node release/scripts/grid-window-tests.js        # browse grid row window; add --built for generated bundle
+node release/scripts/vod-nosub-tests.js          # sub-only VOD fallback URL/playlist checks
 node release/scripts/ad-filter-tests.js          # ad playlist filter (JDK 8+) and web ad probe chain
 node release/scripts/request-dispatcher-tests.js # production dispatcher, JDK 8+ (--release 8)
 node release/scripts/phonechat-server-tests.js   # local server integration, JDK 17+ and Android SDK 35
