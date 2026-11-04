@@ -536,9 +536,9 @@ function Play_UpdateMainStreamDiv() {
 }
 
 function Play_UpdateMainStream(startChat, refreshInfo) {
-    if (startChat) {
-        ChatLive_Init(0);
-    }
+    //A same channel reload (ad escape, quality restore) keeps the running chat, its history
+    //included, instead of clearing and re-joining the exact same IRC channel
+    if (startChat && !ChatLive_IsOnChannel(0, Play_data.data[14])) ChatLive_Init(0);
 
     Play_CheckFollow(Play_data.data[14]);
     Play_UpdateMainStreamDiv();

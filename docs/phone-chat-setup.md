@@ -52,6 +52,25 @@ chat; connection and account warnings continue to appear above both views.
 These changes require APK 388 because the local phone page is bundled in the
 APK. After updating the TV, scan its QR again and reload the phone page.
 
+## Muting and repeat filtering (APK 395)
+
+Tap another user's underlined name to open **Mute**, or hold their message for
+half a second. Desktop right-click also opens the same actions. **Muted (0)**
+is always available in the header; open it to see instructions or unmute users.
+Muting removes that user's existing and future messages in both tabs on this
+phone. The list survives page reloads in the same browser at the same TV address.
+
+Repeat filtering is always enabled. An identical message repeated by the same
+user within fifteen seconds is grouped into one row with an **(xN)** counter,
+even when other users chat in between. Different messages from that user, expired
+windows, and different authors remain separate. This groups repeated text and
+emotes; it does not classify all unwanted messages or automatically mute bots.
+Moderator deletions and timeouts still remove grouped content.
+
+The phone page is bundled in the **APK**, independently of the downloaded TV
+web app. Install APK 395 or newer, then reload the phone page (or scan the TV QR
+again) to receive these changes. Updating only the TV web version is insufficient.
+
 ## Locked-phone history (APK 390)
 
 Opening the TV QR starts an independent anonymous IRC collector for the primary
@@ -123,6 +142,22 @@ node release/scripts/phonechat-tests.js
 node release/scripts/phonechat-tests.js --built
 node release/scripts/phonechat-server-tests.js
 ```
+
+Optional browser regressions require Playwright and an installed Chrome browser:
+
+```sh
+node release/scripts/phonechat-browser-tests.js
+node release/scripts/phonechat-browser-tests.js --source
+node release/scripts/phonechat-browser-tests.js --android
+```
+
+The Android check uses a running emulator with Chrome. Set
+`SPTV_PLAYWRIGHT_PATH` to reuse an existing Playwright installation and
+`SPTV_ANDROID_SERIAL` to select a test emulator. The harness boots the real source
+page or generated phone bundle with mocked Twitch requests and IRC events; it
+never signs into Twitch or sends real messages. It checks tap/keyboard actions,
+long-press and scroll gestures, muting across tabs and reloads, repeat filtering,
+moderator deletion of a grouped message, and narrow-screen layout.
 
 The Node maker generates `release/phonechat-assets/phonechat/{index.html,
 PhoneChat.js,phonechat.min.css}`. Gradle includes that directory as an asset source

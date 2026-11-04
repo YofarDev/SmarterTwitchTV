@@ -307,7 +307,7 @@ SPTVPhoneChat.Render = (function () {
 
                     if (duplicate) return {appended: false, duplicate: true, pruned: 0};
 
-                    byId[entry.id] = true;
+                    byId[entry.id] = entry;
                     trackId(entry.id);
                 }
 
@@ -324,6 +324,10 @@ SPTVPhoneChat.Render = (function () {
             //to suppress duplicates and replays of removed messages
             has: function (id) {
                 return byId.hasOwnProperty(id);
+            },
+            //Merged messages retain their displayed row id for moderation.
+            get: function (id) {
+                return byId.hasOwnProperty(id) ? byId[id] || null : null;
             },
             //Mark a message id as deleted (tombstone). Works before delivery too.
             markDeleted: function (id) {

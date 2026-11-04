@@ -1877,6 +1877,33 @@ asyncSections.push(async () => {
     eq(feed.childElementCount, 1, 'spam: post-timeout message is a fresh row');
     ok(feed.textContent.indexOf('(x') === -1, 'spam: fresh row has no counter');
 
+    //A busy conversation must not defeat the repeat filter.
+    socket.onmessage({data: '@id=human;user-id=human;badges= :human!human@host PRIVMSG #twitchdev :hello\r\n'});
+    socket.onmessage(spamMsg('s8', 'https://spam.link'));
+    eq(feed.childElementCount, 2, 'spam: interleaved users do not create another repeated row');
+    ok(feed.querySelector('[data-id="s7"]').textContent.indexOf('(x2)') !== -1, 'spam: interleaved repeat counted on its author row');
+    ok(feed.querySelector('[data-id="human"]').textContent.indexOf('hello') !== -1, 'spam: other users remain visible');
+    socket.onmessage(spamMsg('s8', 'https://spam.link'));
+    ok(feed.textContent.indexOf('(x3)') === -1, 'spam: replayed merged id does not inflate the count');
+
+    //Moderation of any merged id removes its displayed content too.
+    socket.onmessage({data: '@target-msg-id=s8 :tmi.twitch.tv CLEARMSG #twitchdev :https://spam.link\r\n'});
+    eq(feed.querySelector('[data-id="s7"]').textContent, 'message deleted', 'spam: deleting a merged id removes the grouped content');
+    socket.onmessage(spamMsg('s9', 'https://spam.link'));
+    ok(feed.querySelector('[data-id="s9"]') !== null, 'spam: deleted group cannot swallow a fresh message');
+    socket.onmessage({data: '@target-msg-id=s9 :tmi.twitch.tv CLEARMSG #twitchdev :https://spam.link\r\n'});
+    socket.onmessage(spamMsg('s10', 'https://spam.link'));
+    ok(feed.querySelector('[data-id="s10"]') !== null, 'spam: deleting the first id also breaks its merge target');
+
+    app.sandbox.__skewClock(-30000);
+    socket.onmessage(spamMsg('older', 'https://spam.link'));
+    app.sandbox.__skewClock(0);
+    ok(feed.querySelector('[data-id="older"]') !== null, 'spam: older catch-up messages cannot merge into a newer row');
+
+    //Same text from a different author is normal conversation, not a repeat.
+    socket.onmessage({data: '@id=other;user-id=other;badges= :other!other@host PRIVMSG #twitchdev :https://spam.link\r\n'});
+    ok(feed.querySelector('[data-id="other"]') !== null, 'spam: different authors keep their own messages');
+
     app.App().disconnect();
     eq(feed.childElementCount, 0, 'spam: disconnect clears the feed');
 });
@@ -2242,7 +2269,10 @@ asyncSections.push(async () => {
     app.fireTimers(16); // Flush coalesced live row maintenance.
     eq(feed.children.filter(row => row.getAttribute('data-priority') === 'true').length, 0, 'history: qualifying rows expire after twenty minutes');
     const frames = [];
-    app.sandbox.requestAnimationFrame = fn => {frames.push(fn); return frames.length;};
+    app.sandbox.requestAnimationFrame = fn => {
+        frames.push(fn);
+        return frames.length;
+    };
     app.sandbox.cancelAnimationFrame = () => {};
     app.sandbox.document.hidden = true;
     receive('hidden-frame-fallback', 'vip/1');
@@ -2270,7 +2300,13 @@ asyncSections.push(async () => {
     click('pc-chat-priority');
     app.App().disconnect();
     let reads = 0;
-    Object.defineProperty(feed, 'scrollHeight', {configurable: true, get: () => {reads++; return height;}});
+    Object.defineProperty(feed, 'scrollHeight', {
+        configurable: true,
+        get: () => {
+            reads++;
+            return height;
+        }
+    });
     frames.shift()();
     eq(reads, 0, 'frames: canceled callback cannot maintain the next session');
     eq(ids.get('pc-chat-empty').hidden, false, 'filter: disconnect clears feed and updates empty state');
@@ -2379,20 +2415,25 @@ asyncSections.push(async () => {
     app.sandbox.SPTVPhoneChat.Local.stop();
 });
 
-
 asyncSections.push(async () => {
-    let events = [], channel = 'fixture';
+    let events = [],
+        channel = 'fixture';
     const now = Date.now();
     const app = loadAppSandbox(s => {
         s.__configOverrides = {clientId: 'test_client_id'};
         s.location = {origin: 'http://192.168.1.42:8978', pathname: '/chat/', hash: '#pair=' + 'b'.repeat(64), search: ''};
-        s.__fetchRouter = (url, options) => url === '/chat/state'
-            ? jsonResponse(200, {channel, history: {now, events}}) : fullSuccessRouter(url, options);
+        s.__fetchRouter = (url, options) =>
+            url === '/chat/state' ? jsonResponse(200, {channel, history: {now, events}}) : fullSuccessRouter(url, options);
     });
     await flushAsync();
     const feed = app.ids.get('pc-messages');
     let scrollReads = 0;
-    Object.defineProperty(feed, 'scrollHeight', {get: () => {scrollReads++; return 1000;}});
+    Object.defineProperty(feed, 'scrollHeight', {
+        get: () => {
+            scrollReads++;
+            return 1000;
+        }
+    });
     const event = (seq, time, id) => ({seq, time, type: 'message', message: {id, login: 'human', badges: 'vip/1', text: id, tags: {'user-id': 'u'}}});
     events = [event(1, now - 500, 'newer'), event(2, now - 1000, 'older'), event(3, now - 500, 'equal')];
     for (let i = 0; i < 1000; i++) events.push(event(i + 4, now + i, 'replay' + i));
@@ -2400,11 +2441,20 @@ asyncSections.push(async () => {
     app.fireTimers(2000);
     await flushAsync();
     eq(scrollReads, 1, 'batch: 1004 replay events read scroll height once');
-    eq(feed.children.slice(0, 3).map(row => row.getAttribute('data-id')).join(','), 'older,newer,equal', 'batch: stable out-of-order and equal timestamps');
+    eq(
+        feed.children
+            .slice(0, 3)
+            .map(row => row.getAttribute('data-id'))
+            .join(','),
+        'older,newer,equal',
+        'batch: stable out-of-order and equal timestamps'
+    );
     eq(feed.querySelector('[data-id="replay0"]').textContent, 'message deleted', 'batch: moderation sees earlier rows immediately');
     eq(feed.children.length, 1003, 'batch: priority rows have no ordinary-history cap');
-    channel = 'replacement'; events = [];
-    app.fireTimers(2000); await flushAsync();
+    channel = 'replacement';
+    events = [];
+    app.fireTimers(2000);
+    await flushAsync();
     eq(feed.children.length, 0, 'batch: channel reset clears replay rows');
     app.sandbox.SPTVPhoneChat.Local.stop();
 });
@@ -2458,7 +2508,11 @@ asyncSections.push(async () => {
         return feed.querySelector('[data-id="' + id + '"]');
     };
 
-    eq(ids.get('pc-muted-button').hidden, true, 'mute: header button hidden while the list is empty');
+    eq(ids.get('pc-muted-button').hidden, false, 'mute: header button discoverable while the list is empty');
+    eq(ids.get('pc-muted-button').textContent, 'Muted (0)', 'mute: empty list count shown');
+    click('pc-muted-button');
+    ok(ids.get('pc-muted-list').textContent.indexOf('Tap a username') !== -1, 'mute: empty panel explains the tap action');
+    click('pc-muted-close');
 
     //A channel bot with a VIP badge reaches the feed with its author recorded
     socket.onmessage({
@@ -2468,6 +2522,13 @@ asyncSections.push(async () => {
     ok(botRow !== null, 'mute: bot message renders before muting');
     eq(botRow.getAttribute('data-login'), 'soundalerts', 'mute: row carries the author login');
     eq(botRow.getAttribute('data-name'), 'SoundAlerts', 'mute: row carries the author display name');
+    const username = botRow.children.find(child => child.getAttribute('data-user-action') === 'true');
+    eq(username.tagName, 'BUTTON', 'mute: username is a keyboard and touch accessible button');
+    eq(username.getAttribute('aria-label'), 'Mute SoundAlerts', 'mute: username announces its action');
+    feed.listeners.click[0]({target: username});
+    eq(ids.get('pc-row-menu').hidden, false, 'mute: tapping the username opens actions without a long-press');
+    eq(ids.get('pc-row-menu-title').textContent, 'Mute SoundAlerts', 'mute: tap targets the right author');
+    click('pc-row-menu-cancel');
 
     //Own rows never open the action sheet
     ok(receive('own1', 'myuser') !== null, 'mute: own message rendered');
@@ -2503,7 +2564,8 @@ asyncSections.push(async () => {
     const unmuteButton = ids.get('pc-muted-list').children[0].children[1];
     eq(unmuteButton.getAttribute('data-unmute'), 'soundalerts', 'mute: panel lists the muted login');
     ids.get('pc-muted-list').listeners.click[0]({target: unmuteButton});
-    eq(ids.get('pc-muted-button').hidden, true, 'mute: unmute empties the header button again');
+    eq(ids.get('pc-muted-button').hidden, false, 'mute: unmute keeps the empty list discoverable');
+    eq(ids.get('pc-muted-button').textContent, 'Muted (0)', 'mute: unmute resets the header count');
     deepEq(JSON.parse(storage.getItem('sptv_phone_muted') || '[]'), [], 'mute: unmute saved to storage');
     click('pc-muted-close');
     eq(ids.get('pc-muted-panel').hidden, true, 'mute: close button hides the panel');
@@ -2561,7 +2623,7 @@ asyncSections.push(async () => {
         );
     });
     await flushAsync();
-    eq(app.ids.get('pc-muted-button').hidden, true, 'mute: corrupt stored list ignored at boot');
+    eq(app.ids.get('pc-muted-button').textContent, 'Muted (0)', 'mute: corrupt stored list ignored at boot');
 });
 
 asyncSections.push(async () => {

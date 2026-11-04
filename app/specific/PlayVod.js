@@ -409,7 +409,11 @@ function PlayVod_loadDataCheckSub() {
         //returns a token without restricted qualities when the user is subbed to the channel
         PlayVod_loadDataId = new Date().getTime();
         PlayHLS_GetPlayListAsync(false, Main_values.ChannelVod_vodId, PlayVod_loadDataId, null, PlayVod_loadDataResultSub, true);
-    } else PlayVod_WarnEnd(STR_IS_SUB_ONLY + STR_IS_SUB_NOOAUTH);
+    } else {
+        PlayVodNoSub_Try(function () {
+            PlayVod_WarnEnd(STR_IS_SUB_ONLY + STR_IS_SUB_NOOAUTH);
+        });
+    }
 }
 
 function PlayVod_NotSub() {
@@ -419,17 +423,26 @@ function PlayVod_NotSub() {
 //Result of the sub only VOD retry done with the user OAuth token: only an ok playlist means
 //Twitch granted access, anything else means the user has no sub to this channel
 function PlayVod_loadDataResultSub(response) {
-    if (PlayVod_isOn && response) {
-        var responseObj = JSON.parse(response);
+    if (!PlayVod_isOn) return;
 
-        if (responseObj.checkResult > 0 && responseObj.checkResult === PlayVod_loadDataId && responseObj.status === 200) {
+    //A null response comes from a failed token request, which carries no checkResult to
+    //validate, so still try the fallback for the current VOD
+    if (!response) {
+        PlayVodNoSub_Try(PlayVod_NotSub);
+        return;
+    }
+
+    var responseObj = JSON.parse(response);
+
+    if (responseObj.checkResult > 0 && responseObj.checkResult === PlayVod_loadDataId) {
+        if (responseObj.status === 200) {
             PlayVod_autoUrl = responseObj.url;
             PlayVod_loadDataSuccessEnd(responseObj.responseText);
             return;
         }
-    }
 
-    PlayVod_NotSub();
+        PlayVodNoSub_Try(PlayVod_NotSub);
+    }
 }
 
 var PlayVod_WarnEndId;

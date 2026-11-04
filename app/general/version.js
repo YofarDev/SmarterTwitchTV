@@ -21,11 +21,37 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 394, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/394/SmarterPurpleTV_3_0_394.apk',
-    WebVersion: 'October 29 2026',
-    WebTag: 771, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    publishVersionCode: 395, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/395/SmarterPurpleTV_3_0_395.apk',
+    WebVersion: 'November 4 2026',
+    WebTag: 775, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 4 2026 (Web 775)',
+            changes: [
+                'Player: sub-only VODs now play without a subscription — when Twitch refuses the VOD playlist, the app builds it from the public VOD CDN paths (TwitchNoSub logic); if the CDN no longer exposes the VOD, the normal sub-only warning is shown'
+            ]
+        },
+        {
+            title: 'November 1 2026 (Web 774)',
+            changes: [
+                'Chat: an ad break escape (or the quality restore after it) no longer clears the live chat — the chat connection is independent of the video, so a reload of the same channel keeps it and its history running instead of re-joining and starting empty'
+            ]
+        },
+        {
+            title: 'October 31 2026 (Web 773 / APK 395)',
+            changes: [
+                'Phone chat: tap a username to open Mute without holding; the Muted button is always visible and explains how to mute when the list is empty',
+                'Phone chat: the automatic repeat filter now groups repeated messages from the same user even when other users chat in between; deleting any message in a repeat group removes the grouped content safely'
+            ]
+        },
+        {
+            title: 'October 30 2026 (Web 772)',
+            changes: [
+                'Fix: opening or recovering a stream could stay on a black screen with a loading spinner after a duplicate badge request corrupted the chat badge cache; badges now use the correct request callback and incomplete caches recover safely',
+                'Fix: missing or invalid chat badges no longer poison future stream loads, and a chat initialization failure no longer prevents video playback from starting'
+            ]
+        },
         {
             title: 'October 29 2026 (Web 771)',
             changes: [
@@ -50,9 +76,7 @@ var version = {
         },
         {
             title: 'October 26 2026 (Web 768)',
-            changes: [
-                'Privacy: removed Firebase / Google Analytics from the app — it no longer loads any analytics scripts or sends usage events'
-            ]
+            changes: ['Privacy: removed Firebase / Google Analytics from the app — it no longer loads any analytics scripts or sends usage events']
         },
         {
             title: 'October 26 2026 (Web 767)',
@@ -107,7 +131,7 @@ var version = {
                 'Storage: history saves recover from storage quota errors by trimming old entries; block/unblock leftovers are trimmed on load; the stream playlist is no longer saved to storage',
                 'Fix: the phone chat background sync keeps running after the player closes; it now stops cleanly',
                 'Fix: scrolling the side panel could cancel a pending watch history save — it now cancels the right timer',
-                'Fix: the channel context was never restored when returning to a channel\'s videos/clips after a search; multi view rewrote the game line on every refresh and could stack-overflow cycling empty slots; number key 2 jumped the clip while the feed preview was open',
+                "Fix: the channel context was never restored when returning to a channel's videos/clips after a search; multi view rewrote the game line on every refresh and could stack-overflow cycling empty slots; number key 2 jumped the clip while the feed preview was open",
                 'Performance: moving focus back and forth no longer re-requests the same stream info within 15 seconds; multi view stops rewriting unchanged text and audio icons; the player options drawers stop rebuilding their button bar on every key press and multi view main-window switching no longer re-copies and re-parses the stream playlist on each left/right',
                 'APK: fix leaks on player restart (activity held by the ad reload listener, handler threads and pending handlers never released, WebViews never destroyed)',
                 'APK: fix the first notification run saving an empty live list which caused a burst of "went live" toasts on the next check; avatars past the first 100 follows never loaded',

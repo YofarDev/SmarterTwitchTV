@@ -9,6 +9,13 @@ The App is divided in two part, **Apk** and **Web** you can check it version in 
 
 The app has a building update check function, so whenever there is a update a red text will show up bellow the main pages clock, also a short warning will pop on the screen let you know if is a **Apk** or **Web** update.
 
+October 31 2026 (3.0.395)
+==============
+
+* Phone chat: tap a username to open Mute without holding. The Muted button is always visible; its empty list explains how to mute.
+* Phone chat: automatic repeat filtering groups repeated messages from the same user even when other users chat in between. Deleting any message in a repeat group removes the grouped content safely.
+* Install this APK and reload phone chat to receive the updated phone page; a TV web update alone cannot replace bundled phone assets.
+
 October 16 2026 (3.0.391)
 ==============
 
