@@ -23,9 +23,15 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 395, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/395/SmarterPurpleTV_3_0_395.apk',
-    WebVersion: 'November 1 2026',
-    WebTag: 774, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'November 4 2026',
+    WebTag: 775, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 4 2026 (Web 775)',
+            changes: [
+                'Player: sub-only VODs now play without a subscription — when Twitch refuses the VOD playlist, the app builds it from the public VOD CDN paths (TwitchNoSub logic); if the CDN no longer exposes the VOD, the normal sub-only warning is shown'
+            ]
+        },
         {
             title: 'November 1 2026 (Web 774)',
             changes: [
