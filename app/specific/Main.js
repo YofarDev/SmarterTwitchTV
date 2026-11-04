@@ -213,6 +213,7 @@ function Main_StartApp() {
                     Play_ShowVideoQuality: Play_ShowVideoQuality,
                     Play_PlayPauseChange: Play_PlayPauseChange,
                     PlayVod_loadDataResult: PlayVod_loadDataResult,
+                    PlayVodNoSub_ProbeResult: PlayVodNoSub_ProbeResult,
                     PlayExtra_ResumeResult: PlayExtra_ResumeResult,
                     Play_loadDataResult: Play_loadDataResult,
                     PlayClip_CheckIfIsLiveResult: PlayClip_CheckIfIsLiveResult,
