@@ -539,6 +539,9 @@ public class DefaultHttpDataSource extends BaseDataSource implements HttpDataSou
                 }
 
                 if (filteredPlaylist != null) {
+                    //Close before dropping the stream: a gzip response is wrapped in our GZIPInputStream,
+                    //whose native Inflater only close() ends (disconnect() cannot reach it)
+                    Util.closeQuietly(inputStream);
                     inputStream = null;
                     closeConnectionQuietly();
                     readPosition = 0;
