@@ -3718,6 +3718,7 @@ function Settings_DialogShow(obj, title, click, scroll) {
     );
 
     Settings_DialogScrollCenter = scroll ? scroll : 0;
+    Settings_DialogScrollY = 0;
     Settings_DialogPos = 0;
     Main_AddClass(Settings_DialogValue[0], 'settings_value_focus');
     Main_AddClass(Settings_DialogValue[0] + '_div', 'settings_div_focus');
@@ -3817,21 +3818,30 @@ function Settings_DialoghandleKeyDown(event) {
     }
 }
 
+//Scroll just enough to keep the focused option in view. Options with a summary are two or three
+//lines tall, so a fixed number of rows can't tell when the focus leaves the visible area
+var Settings_DialogScrollY = 0;
 function Settings_ScrollConatiner(div, pos) {
     if (!Settings_DialogScrollCenter) {
         return;
     }
 
-    var center = Settings_DialogScrollCenter,
-        doc = Main_getElementById(div),
-        value = 0,
-        offset = 0;
+    var doc = Main_getElementById(div),
+        view = doc.parentNode.clientHeight,
+        row = Main_getElementById(Settings_DialogValue[pos] + '_div'),
+        style = window.getComputedStyle(row),
+        //The focus outline is drawn outside the row, keep it inside the clipped area too
+        edge = Math.ceil((parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
+        //Position inside the list, the same whatever translate (or translate animation) is applied
+        top = row.getBoundingClientRect().top - doc.getBoundingClientRect().top - edge,
+        bottom = top + row.offsetHeight + edge * 2;
 
-    if (pos > center) {
-        value = Main_getElementById(Settings_DialogValue[pos - center - offset] + '_div').offsetTop;
-    }
+    if (top < Settings_DialogScrollY) Settings_DialogScrollY = Math.max(0, top);
+    else if (bottom > Settings_DialogScrollY + view) Settings_DialogScrollY = bottom - view;
+    else return;
 
-    doc.style.transform = 'translateY(-' + value / BodyfontSize + 'em)';
+    //px, the list font is smaller than BodyfontSize so an em value would scroll short
+    doc.style.transform = 'translateY(-' + Settings_DialogScrollY + 'px)';
 }
 
 function Settings_DialogUpDown(offset) {
