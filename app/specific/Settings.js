@@ -438,6 +438,10 @@ var Settings_value = {
         values: ['no', 'yes'],
         defaultValue: 2
     },
+    hide_live_seek_bar: {
+        values: ['no', 'yes'],
+        defaultValue: 1
+    },
     enable_mature: {
         values: ['no', 'yes'],
         defaultValue: 2
@@ -1009,6 +1013,8 @@ function Settings_SetSettings() {
     div += Settings_Content('ad_filter', array_no_yes, STR_AD_FILTER, STR_AD_FILTER_SUMMARY);
 
     div += Settings_Content('debug_logs', array_no_yes, STR_DEBUG_LOG, STR_DEBUG_LOG_SUMMARY);
+
+    div += Settings_Content('hide_live_seek_bar', array_no_yes, STR_HIDE_LIVE_SEEK_BAR, STR_HIDE_LIVE_SEEK_BAR_SUMMARY);
 
     div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
 
@@ -1984,65 +1990,54 @@ function Settings_HideElem(elem, hide) {
     else Main_RemoveClass(elem, 'opacity_zero');
 }
 
-var Settings_CurY = 0;
-
-function Settings_ScrollDown() {
-    Settings_Do_ScrollDown('settings_scroll');
-}
-
-function Settings_ScrollUp() {
-    Settings_Do_ScrollUp('settings_scroll');
-}
-
-function Settings_Do_ScrollDown(docId) {
-    var doc = Main_getElementById(docId);
-    doc.scrollTop = doc.scrollHeight;
-    if (Settings_Obj_default('app_animations')) {
-        var position = doc.scrollTop;
-        doc.scrollTop = 0;
-        scrollTo(doc, position, 200);
-    }
-}
-
-function Settings_Do_ScrollUp(docId) {
-    var doc = Main_getElementById(docId);
-    if (Settings_Obj_default('app_animations')) scrollTo(doc, 0, 200);
-    else doc.scrollTop = 0;
-}
-
+//Rows have device dependent heights (text size offset, summaries), so the scroll target comes
+//from the focused row itself; the old fixed flip index left rows unreachable between the two pages
 function Settings_ScrollTable() {
-    var scrolPos = 14,
-        offset = 1; //!Main_isTV || !Main_IsOn_OSInterface ? 1 : 0;
+    var row = Main_getElementById(Settings_value_keys[Settings_cursorY] + '_div'),
+        view = Main_getElementById('settings_scroll'),
+        target = null;
 
-    if (Settings_CurY < Settings_cursorY && Settings_cursorY === scrolPos + offset) {
-        Settings_ScrollDown();
-    } else if (Settings_CurY > Settings_cursorY && Settings_cursorY === scrolPos - 1 + offset) {
-        Settings_ScrollUp();
+    if (row && view) {
+        var rowRect = row.getBoundingClientRect(),
+            viewRect = view.getBoundingClientRect();
+
+        if (rowRect.top < viewRect.top) target = view.scrollTop + (rowRect.top - viewRect.top);
+        else if (rowRect.bottom > viewRect.bottom) target = view.scrollTop + (rowRect.bottom - viewRect.bottom);
+
+        if (target !== null) {
+            target = Math.max(0, Math.min(target, view.scrollHeight - view.clientHeight));
+            Settings_ScrollTo(target);
+        }
     }
+}
 
-    Settings_CurY = Settings_cursorY;
+var Settings_ScrollAnimToken = 0;
+
+function Settings_ScrollTo(target) {
+    var doc = Main_getElementById('settings_scroll');
+
+    //A new key press cancels the animation of the previous one before it ends
+    var token = ++Settings_ScrollAnimToken;
+
+    if (Settings_Obj_default('app_animations')) {
+        var start = doc.scrollTop,
+            change = target - start,
+            currentTime = 0,
+            increment = 3;
+
+        var animateScroll = function () {
+            if (token !== Settings_ScrollAnimToken) return;
+            currentTime += increment;
+            doc.scrollTop = Math.easeInOutQuad(currentTime, start, change, 200);
+            if (currentTime < 200) setTimeout(animateScroll, increment);
+        };
+        animateScroll();
+    } else doc.scrollTop = target;
 }
 
 function Settings_ScrollTableReset() {
+    Settings_ScrollAnimToken++;
     Main_getElementById('settings_scroll').scrollTop = 0;
-    Settings_CurY = 0;
-}
-
-function scrollTo(element, to, duration) {
-    var start = element.scrollTop,
-        change = to - start,
-        currentTime = 0,
-        increment = 3;
-
-    var animateScroll = function () {
-        currentTime += increment;
-        var val = Math.easeInOutQuad(currentTime, start, change, duration);
-        element.scrollTop = val;
-        if (currentTime < duration) {
-            setTimeout(animateScroll, increment);
-        }
-    };
-    animateScroll();
 }
 
 //t = current time

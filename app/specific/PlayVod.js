@@ -714,6 +714,7 @@ function PlayVod_qualityReset() {
 function PlayVod_showPanel(autoHide) {
     if (Play_getQualitiesFail) Play_getQualities(2, true);
 
+    Play_LiveSeekBarSync();
     PlayVod_SetChapters();
     PlayVod_RefreshProgressBarrStart(autoHide, 1);
     Play_CleanHideExit();

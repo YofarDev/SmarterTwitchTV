@@ -21,11 +21,18 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 395, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/395/SmarterPurpleTV_3_0_395.apk',
+    publishVersionCode: 396, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/396/SmarterPurpleTV_3_0_396.apk',
     WebVersion: 'November 5 2026',
-    WebTag: 776, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 777, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 5 2026 (Web 777 / APK 396)',
+            changes: [
+                'Settings: the list now scrolls row by row keeping the focused setting on screen — it used to flip between the top and the bottom of the page, which left settings permanently invisible on screens that fit fewer rows',
+                'Player: new setting "Hide live seek bar" (Settings › Player related) — live streams no longer show the seek bar and its once a second updates while the menu is open, which can stop frame drops on slower TVs; VODs and clips keep their bar'
+            ]
+        },
         {
             title: 'November 5 2026 (Web 776)',
             changes: [

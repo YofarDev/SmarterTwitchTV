@@ -1670,6 +1670,17 @@ function Play_qualityReset() {
     if (!Main_A_includes_B(Play_data.qualityPlaying, 'Auto')) Play_SetHtmlQuality(Play_info_quality);
 }
 
+function Play_LiveSeekBarHidden() {
+    //Live only; VODs and clips always keep their timeline
+    return Play_isOn && Settings_Obj_default('hide_live_seek_bar') === 1;
+}
+
+function Play_LiveSeekBarSync() {
+    //Hide/show the timeline row so it stops painting (and the drawer sits lower) while hidden
+    Play_BottonIcons_Progress.style.display = Play_LiveSeekBarHidden() ? 'none' : '';
+    if (PlayerUI_State.frames.length) PlayerUI_TimelineClass();
+}
+
 function Play_showPanel() {
     Play_updateStreamInfo();
 
@@ -1677,7 +1688,9 @@ function Play_showPanel() {
         Play_getQualities(1, true);
     }
 
-    if (!Play_StayDialogVisible()) {
+    Play_LiveSeekBarSync();
+
+    if (!Play_StayDialogVisible() && !Play_LiveSeekBarHidden()) {
         PlayVod_RefreshProgressBarrStart(true, 0);
     } else {
         PlayVod_PanelY = 2;

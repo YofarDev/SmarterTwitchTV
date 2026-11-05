@@ -681,6 +681,9 @@ function en_USLang() {
     STR_DEBUG_LOG = 'Debug logs';
     STR_DEBUG_LOG_SUMMARY =
         'When enabled, the app saves its own logs and serves them over the local network (http port 8977), so they can be read from a computer on the same network to help diagnose issues. Only this app logs are exposed, and only inside your network.';
+    STR_HIDE_LIVE_SEEK_BAR = 'Hide live seek bar';
+    STR_HIDE_LIVE_SEEK_BAR_SUMMARY =
+        'When enabled, live streams no longer show the seek bar (timeline) while the player menu is open, and its once a second updates stop — this can remove frame drops on slower TVs. VODs and clips keep their bar.';
     STR_PLAYER_LAG = "Player is lagging, quality changed to 'Auto mode'";
     STR_PLAYER_SOURCE = 'Player is lagging, quality was lowered';
     STR_TOO_ERRORS = 'or too many errors';

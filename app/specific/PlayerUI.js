@@ -274,7 +274,8 @@ function PlayerUI_QualityPick(index) {
 
 function PlayerUI_TimelineClass() {
     var timeline = Main_getElementById('progress_pause_holder');
-    if (timeline.offsetHeight > 0) Main_AddClass('player-ui', 'player-ui-has-timeline');
+    //A hidden live seek bar collapses the timeline row; the drawer then sits lower
+    if (timeline.offsetHeight > 0 && !Play_LiveSeekBarHidden()) Main_AddClass('player-ui', 'player-ui-has-timeline');
     else Main_RemoveClass('player-ui', 'player-ui-has-timeline');
 }
 
@@ -531,6 +532,12 @@ function PlayerUI_Handle(event, up) {
             if (code === KEY_LEFT || code === KEY_RIGHT)
                 frame.index = Math.max(0, Math.min(frame.entries.length - 1, frame.index + (code === KEY_LEFT ? -1 : 1)));
             else if (code === KEY_UP) {
+                if (PlayerUI_State.mode === 1 && Play_LiveSeekBarHidden()) {
+                    //No timeline row to hand navigation to; keep the bar
+                    PlayerUI_Focus();
+                    PlayerUI_ScheduleHide();
+                    return true;
+                }
                 // Hand timeline navigation back to its existing mode handler.
                 PlayerUI_Close(false);
                 PlayVod_PanelY = 0;

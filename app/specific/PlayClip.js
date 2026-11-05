@@ -607,6 +607,7 @@ function PlayClip_qualityReset() {
 }
 
 function PlayClip_showPanel() {
+    Play_LiveSeekBarSync();
     PlayVod_RefreshProgressBarrStart(false, 2);
     Play_CleanHideExit();
     Play_ForceShowPannel();

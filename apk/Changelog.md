@@ -9,6 +9,13 @@ The App is divided in two part, **Apk** and **Web** you can check it version in 
 
 The app has a building update check function, so whenever there is a update a red text will show up bellow the main pages clock, also a short warning will pop on the screen let you know if is a **Apk** or **Web** update.
 
+November 5 2026 (3.0.396)
+==============
+
+* Settings: the list scrolls row by row keeping the focused setting on screen — it used to flip between the top and the bottom of the page, which left settings permanently invisible on screens that fit fewer rows.
+* Player: new setting "Hide live seek bar" (Settings › Player related) — live streams hide the seek bar and its once a second updates while the menu is open, which can stop frame drops on slower TVs; VODs and clips keep their bar.
+* Both changes are web side; the web part updates on app restart, no new APK needed.
+
 October 31 2026 (3.0.395)
 ==============
 
