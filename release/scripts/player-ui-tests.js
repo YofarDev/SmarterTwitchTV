@@ -84,6 +84,9 @@ const s = {
     Main_HideElement: id => effects.push('hide:' + id),
     Main_AddClass: (id, cls) => element(id).classList.add(cls),
     Main_RemoveClass: (id, cls) => element(id).classList.remove(cls),
+    Main_AddClassWithEle: (ele, cls) => ele.classList.add(cls),
+    Main_RemoveClassWithEle: (ele, cls) => ele.classList.remove(cls),
+    Play_info_div: element('playerinfo'),
     Main_addEventListener() {},
     Main_removeEventListener() {},
     Main_isScene2DocVisible: () => true,
@@ -103,6 +106,7 @@ const s = {
     Main_clearTimeout: id => timers.delete(id),
     Play_isEndDialogVisible: () => false,
     Play_StayDialogVisible: () => false,
+    Play_LiveSeekBarHidden: () => false,
     Play_isChatShown: () => s.Play_ChatEnable,
     Play_showChat: () => {
         s.Play_ChatEnable = true;
@@ -373,4 +377,56 @@ check(
     effects.some(x => Array.isArray(x) && x[0] === 'hidePanel' && x[1] === 1),
     'bar timeout delegates existing hide policy'
 );
+/* Timeline focus, then Back: the hide path resets focus to the buttons after hiding the panel, which must not
+ * reopen the bar over the hidden panel (no timeline). Production focus bridge from PlayEtc. */
+for (const name of ['Play_BottomIconsFocus', 'Play_BottonIconsResetFocus'])
+    ast.walk(
+        new UglifyJS.TreeWalker(node => {
+            if (node instanceof UglifyJS.AST_Defun && node.name.name === name) vm.runInContext(node.print_to_string(), s);
+        })
+    );
+let panelShowing = false;
+s.Play_isPanelShowing = () => (panelShowing ? 1 : 0);
+s.PlayerUI_State.frames = [];
+s.PlayerUI_State.suspended = false;
+s.PlayVod_PanelY = 0;
+s.Play_BottonIconsResetFocus(true);
+check(s.PlayVod_PanelY === 1 && s.PlayerUI_State.frames.length === 0, 'focus reset after hiding the panel leaves the bar closed');
+panelShowing = true;
+s.PlayVod_PanelY = 0;
+s.Play_BottonIconsResetFocus(true);
+check(s.PlayerUI_State.frames.length === 1, 'focus back to the buttons over a shown panel opens the bar');
+s.UIFocus_Pop(false);
+/* Up from the bar focuses the timeline, which hides the stream info; Down goes straight back to the bar through the
+ * Play_handleKeyDown shortcut, and the info must come back with it. Production focus/key functions from PlayEtc. */
+for (const name of ['Play_BottomIconsFocus', 'Play_BottonIconsHide', 'Play_handleKeyDown'])
+    ast.walk(
+        new UglifyJS.TreeWalker(node => {
+            if (node instanceof UglifyJS.AST_Defun && node.name.name === name) vm.runInContext(node.print_to_string(), s);
+        })
+    );
+Object.assign(s, {
+    Main_HideElementWithEle() {},
+    Play_BottomIconsFocusClear() {},
+    Play_IconsRemoveFocus() {},
+    Play_isPanelShowing: () => 1,
+    UserLiveFeed_isPreviewShowing: () => false,
+    Play_pause_next_div: element('pause_next_div'),
+    Play_Controls_Holder: element('controls_holder'),
+    Play_BottonIcons_Progress: element('progress_bar_div'),
+    Play_BottonIcons_Progress_Steps: element('progress_bar_steps'),
+    Play_side_info_div: element('playsideinfo'),
+    Play_BottonIcons_Focus_Class: 'progress_bar_div_focus',
+    Play_Status_Visible: 2,
+    PlayClip_EnterPos: 0,
+    PlayVod_addToJump: 0
+});
+const info = s.Play_info_div.classList.classes;
+s.PlayerUI_State.frames = [];
+s.PlayerUI_Show(1);
+s.PlayerUI_Handle({keyCode: s.KEY_UP}, false);
+check(info.has('opacity_zero') && s.PlayerUI_State.frames.length === 0, 'Up from the bar focuses the timeline and hides the stream info');
+s.Play_handleKeyDown({keyCode: s.KEY_DOWN});
+check(!info.has('opacity_zero') && s.PlayerUI_State.frames.length === 1, 'Down from the timeline reopens the bar with the stream info');
+s.UIFocus_Pop(false);
 console.log(checks + ' production player action checks passed');

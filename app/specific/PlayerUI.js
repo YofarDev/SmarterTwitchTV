@@ -106,6 +106,8 @@ function PlayerUI_Show(mode) {
     }
     PlayerUI_State.mode = mode;
     PlayerUI_State.frames = [{group: 'bar', index: 0}];
+    // Focusing the timeline hides the stream info (Play_BottonIconsHide); every way back to the bar comes through here.
+    Main_RemoveClassWithEle(Play_info_div, 'opacity_zero');
     Play_clearHidePanel();
     UIFocus_Push({
         id: 'player',
