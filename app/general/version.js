@@ -21,11 +21,21 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 397, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/397/SmarterPurpleTV_3_0_397.apk',
+    publishVersionCode: 398, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/398/SmarterPurpleTV_3_0_398.apk',
     WebVersion: 'November 5 2026',
-    WebTag: 778, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 779, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 5 2026 (Web 779 / APK 398)',
+            changes: [
+                'Chat: busy live chats insert their new lines together at most twice a second — every single insert re-laid out and re-rasterized the whole chat box, a real CPU cost on slower TVs (by @Dryness, #22)',
+                'Chat: value-less IRC tags from the message history no longer take their own name as their value, which could drop the chat history on join (by @Dryness, #5)',
+                'Player: the timeline no longer carries a drop-shadow filter — the GPU re-applied it on every animated frame while the menu was open, stalling the video on weak TVs (by @Dryness, #16)',
+                'Settings: section headings appear together with their first option while scrolling, the focus outline stays inside the list, the screen sits on the same elevated surface as the navigation rail, and closing the rail returns the focus to the row (by @Dryness, #7)',
+                'APK: the ad-filtered playlist stream is closed so its gzip inflater is freed after each ad check instead of leaking (by @Dryness, #21)'
+            ]
+        },
         {
             title: 'November 5 2026 (Web 778 / APK 397)',
             changes: [

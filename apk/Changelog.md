@@ -9,6 +9,14 @@ The App is divided in two part, **Apk** and **Web** you can check it version in 
 
 The app has a building update check function, so whenever there is a update a red text will show up bellow the main pages clock, also a short warning will pop on the screen let you know if is a **Apk** or **Web** update.
 
+November 5 2026 (3.0.398)
+==============
+
+* APK: the ad-filtered playlist stream is closed so its gzip inflater is freed after each ad check instead of leaking (by @Dryness, #21).
+* Chat: busy live chats insert their new lines together at most twice a second, cutting WebView CPU on slower TVs; value-less IRC tags from the message history no longer break the chat history on join (by @Dryness, #22, #5).
+* Player: the timeline no longer carries a drop-shadow filter that stalled the video on weak TVs while the menu was open (by @Dryness, #16).
+* Settings: headings scroll in with their first option, the focus outline stays inside the list, the screen uses the elevated surface, and closing the rail returns the focus to the row (by @Dryness, #7).
+
 November 5 2026 (3.0.397)
 ==============
 

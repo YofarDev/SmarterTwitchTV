@@ -8371,11 +8371,21 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 397, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/397/SmarterPurpleTV_3_0_397.apk',
+        publishVersionCode: 398, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/398/SmarterPurpleTV_3_0_398.apk',
         WebVersion: 'November 5 2026',
-        WebTag: 778, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 779, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 5 2026 (Web 779 / APK 398)',
+                changes: [
+                    'Chat: busy live chats insert their new lines together at most twice a second — every single insert re-laid out and re-rasterized the whole chat box, a real CPU cost on slower TVs (by @Dryness, #22)',
+                    'Chat: value-less IRC tags from the message history no longer take their own name as their value, which could drop the chat history on join (by @Dryness, #5)',
+                    'Player: the timeline no longer carries a drop-shadow filter — the GPU re-applied it on every animated frame while the menu was open, stalling the video on weak TVs (by @Dryness, #16)',
+                    'Settings: section headings appear together with their first option while scrolling, the focus outline stays inside the list, the screen sits on the same elevated surface as the navigation rail, and closing the rail returns the focus to the row (by @Dryness, #7)',
+                    'APK: the ad-filtered playlist stream is closed so its gzip inflater is freed after each ad check instead of leaking (by @Dryness, #21)'
+                ]
+            },
             {
                 title: 'November 5 2026 (Web 778 / APK 397)',
                 changes: [
@@ -13388,6 +13398,10 @@
         //element can end up merged into a line that now belongs to the other chat
         var fragment = document.createDocumentFragment();
 
+        //Lines still waiting for their batched insert move with their chat too
+        ChatLive_InsertFlush(0);
+        ChatLive_InsertFlush(1);
+
         while (Chat_div[1].firstChild) fragment.appendChild(Chat_div[1].firstChild);
         while (Chat_div[0].firstChild) Chat_div[1].appendChild(Chat_div[0].firstChild);
         Chat_div[0].appendChild(fragment);
@@ -15489,6 +15503,49 @@
         return ++ChatLive_AniRateCount[chat_number] <= ChatLive_AniRateMax ? ChatLive_chat_line_class : 'chat_line_holder';
     }
 
+    //Every insert lays out and rasters the whole chat box again (about 80 ms of CPU on a TV),
+    //however many lines it adds, so a busy chat inserts its new lines together at most once
+    //per ChatLive_InsertInterval ms; a line after a quiet period is still inserted at once
+    var ChatLive_InsertInterval = 500;
+    var ChatLive_InsertPending = [];
+    var ChatLive_InsertTimer = [];
+    var ChatLive_InsertLast = [];
+
+    function ChatLive_InsertLine(chat_number, element) {
+        if (!ChatLive_InsertPending[chat_number]) ChatLive_InsertPending[chat_number] = document.createDocumentFragment();
+        ChatLive_InsertPending[chat_number].appendChild(element);
+
+        if (ChatLive_InsertTimer[chat_number]) return;
+
+        var wait = (ChatLive_InsertLast[chat_number] || 0) + ChatLive_InsertInterval - Date.now();
+
+        if (wait > 0) {
+            ChatLive_InsertTimer[chat_number] = Main_setTimeout(function () {
+                ChatLive_InsertFlush(chat_number);
+            }, wait);
+        } else {
+            ChatLive_InsertFlush(chat_number);
+        }
+    }
+
+    function ChatLive_InsertFlush(chat_number) {
+        var pending = ChatLive_InsertPending[chat_number];
+
+        ChatLive_InsertClear(chat_number);
+
+        if (pending) {
+            ChatLive_InsertLast[chat_number] = Date.now();
+            Chat_div[chat_number].appendChild(pending);
+        }
+    }
+
+    //Drop the lines not inserted yet, they belong to the chat being cleared
+    function ChatLive_InsertClear(chat_number) {
+        Main_clearTimeout(ChatLive_InsertTimer[chat_number]);
+        ChatLive_InsertTimer[chat_number] = null;
+        ChatLive_InsertPending[chat_number] = null;
+    }
+
     function ChatLive_ElementAdd(messageObj) {
         var style = '',
             classname = 'chat_line';
@@ -15548,7 +15605,7 @@
             //and above ChatLive_AniRateMax lines per second to spare the renderer
             chat_line_holder.className = ChatLive_AniClassName(messageObj.chat_number);
             ChatLive_ElementAddCheckExtra(messageObj);
-            Chat_div[messageObj.chat_number].appendChild(chat_line_holder);
+            ChatLive_InsertLine(messageObj.chat_number, chat_line_holder);
         } else {
             chat_line_holder.className = 'chat_line_holder';
             Chat_div[messageObj.chat_number].insertBefore(chat_line_holder, Chat_div[messageObj.chat_number].childNodes[0]);
@@ -15613,6 +15670,7 @@
 
     function ChatLive_ClearIds(chat_number, keepSender) {
         ChatLive_DelayClear(chat_number);
+        ChatLive_InsertClear(chat_number);
         ChatLive_CheckClear(chat_number);
         if (!keepSender) Main_clearTimeout(ChatLive_socketSendCheckID);
         Main_clearTimeout(ChatLive_loadBadgesChannelId);
@@ -21642,9 +21700,11 @@
         else Main_HideElement('navigation-details');
         Main_ShowElement('navigation-shell');
         if (Settings_isVisible()) {
+            Main_AddClass('scene1', 'navigation-settings');
             Main_HideElement('navigation-tabs');
             Main_HideElement('navigation-refresh');
         } else {
+            Main_RemoveClass('scene1', 'navigation-settings');
             Main_ShowElement('navigation-tabs');
             Main_ShowElement('navigation-refresh');
         }
@@ -21754,6 +21814,8 @@
             // Settings and the search form keep their own focus treatment; the grid behind must not take it.
             if (obj && obj.addFocus && obj.itemsCount && !Navigation_Onboarding && !Settings_isVisible() && Main_values.Main_Go !== Main_Search)
                 Screens_addFocus(true, Main_values.Main_Go);
+            // Settings drops its row focus when Up opens the rail, give it back with the input.
+            if (Settings_isVisible() && !Navigation_Onboarding) Settings_inputFocus(Settings_cursorY);
             if (obj && obj.emptyContent && Main_values.Main_Go === Main_UserLive && !Navigation_Onboarding)
                 Main_getElementById('navigation-retry').focus();
         }
@@ -46885,6 +46947,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_ShowElement('settings_holder');
         Main_IconLoad('label_thumb', 'icon-return', STR_GOBACK);
         Main_HideElement('label_refresh');
+        //Settings is a single list, drop the page counter left by the previous grid screen
+        Main_CounterDialogRst();
         Settings_cursorY = 0;
         Settings_inputFocus(Settings_cursorY);
         Navigation_Render(Main_values.Main_Go);
@@ -46900,6 +46964,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_ShowElement('label_refresh');
         Settings_RemoveInputFocus();
         Main_HideElement('settings_holder');
+        Main_RemoveClass('scene1', 'navigation-settings');
     }
 
     function Settings_isVisible() {
@@ -47962,10 +48027,19 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         if (row && view) {
             var rowRect = row.getBoundingClientRect(),
-                viewRect = view.getBoundingClientRect();
+                viewRect = view.getBoundingClientRect(),
+                style = window.getComputedStyle(row),
+                //The focus outline is drawn outside the row, keep it inside the clipped area too
+                edge = Math.ceil((parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
+                top = rowRect.top - edge,
+                bottom = rowRect.bottom + edge,
+                title = row.previousElementSibling;
 
-            if (rowRect.top < viewRect.top) target = view.scrollTop + (rowRect.top - viewRect.top);
-            else if (rowRect.bottom > viewRect.bottom) target = view.scrollTop + (rowRect.bottom - viewRect.bottom);
+            //Show the section title together with the first option below it
+            if (title && title.classList.contains('settings_section')) top = Math.min(top, title.getBoundingClientRect().top);
+
+            if (top < viewRect.top) target = view.scrollTop + (top - viewRect.top);
+            else if (bottom > viewRect.bottom) target = view.scrollTop + (bottom - viewRect.bottom);
 
             if (target !== null) {
                 target = Math.max(0, Math.min(target, view.scrollHeight - view.clientHeight));
@@ -50327,13 +50401,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             '#navigation-shell,#navigation-onboarding,#player-ui{color:' +
             TextColor +
             ';}' +
-            '#navigation-shell .navigation-rail,#player-ui .player-ui-bar,#player-ui .player-ui-drawer,#player-ui-paused{background:' +
+            '#navigation-shell .navigation-rail,#player-ui .player-ui-bar,#player-ui .player-ui-drawer,#player-ui-paused,.navigation-settings #settings_holder{background:' +
             surface +
             ';}' +
             '#navigation-onboarding,#navigation-shell #navigation-status{background:' +
             background +
             ';}' +
-            '#navigation-shell .navigation-focused,#player-ui .player-ui-focused,#progress_bar_div.progress_bar_div_focus{outline-color:' +
+            '#navigation-shell .navigation-focused,#player-ui .player-ui-focused,#progress_bar_div.progress_bar_div_focus,#settings_main .settings_div_focus,#settings_main .settings_value_focus{outline-color:' +
             focusColor +
             ' !important;background:' +
             focusSurface +
@@ -55792,9 +55866,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             for (i; i < len; i++) {
                 // Tags delimited by an equals sign are key=value tags.
                 // If there's no equals, we assign the tag a value of true.
+                // Values may contain '=', so only the first one splits; with no '=' at all, substring would return the whole tag.
                 var tag = rawTags[i];
-                var pair = tag.split('=');
-                message.tags[pair[0]] = tag.substring(tag.indexOf('=') + 1) || true;
+                var equals = tag.indexOf('=');
+                if (equals === -1) message.tags[tag] = true;
+                else message.tags[tag.substring(0, equals)] = tag.substring(equals + 1) || true;
             }
 
             position = nextspace + 1;
