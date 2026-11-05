@@ -3370,6 +3370,12 @@
                 left: 6.3%;
                 width: 87.4%;
             }
+            /* No .shadow_text filter on the timeline: it wraps the composited progress bars, so the
+             * GPU re-applies it on every frame the panel draws (each second), which stalls the video
+             * on weak TVs. The timers keep their strokedeline outline and the bars their borders. */
+            #progress_pause_holder {
+                filter: none;
+            }
 
             /* Drawer orientation: origin underline on the bar button that opened the drawer,
              * the rest of the bar recedes, the diagnostics HUD steps aside. */
