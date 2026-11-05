@@ -214,6 +214,8 @@
         STR_RESTORE_PLAYBACK_SUMMARY,
         STR_CHAT_FONT,
         STR_CHAT_LINE_ANIMATION,
+        STR_CHAT_ANIMATED_EMOTES,
+        STR_CHAT_ANIMATED_EMOTES_SUMMARY,
         STR_OAUTH_FAIL_USER,
         STR_VIDEOS_ANIMATION,
         STR_SIDE_PANEL,
@@ -510,6 +512,20 @@
         STR_RAID_FOLLOW_SUMMARY,
         STR_RAID_AUTO,
         STR_RAID_SWITCHING,
+        STR_POINTS_OPT,
+        STR_POINTS_WATCH,
+        STR_POINTS_WATCH_SUMMARY,
+        STR_POINTS_BONUS,
+        STR_POINTS_BONUS_SUMMARY,
+        STR_POINTS_DROPS,
+        STR_POINTS_DROPS_SUMMARY,
+        STR_POINTS_NOTIFY_BONUS,
+        STR_POINTS_NOTIFY_BONUS_SUMMARY,
+        STR_POINTS_NOTIFY_DROPS,
+        STR_POINTS_NOTIFY_DROPS_SUMMARY,
+        STR_POINTS_BONUS_CLAIMED,
+        STR_POINTS_BONUS_CLAIMED_NO_COUNT,
+        STR_POINTS_DROP_CLAIMED,
         STR_PING_WARNING,
         STR_PING_WARNING_SUMMARY,
         STR_SHOW_FEED_PLAYER_SUMMARY,
@@ -1448,15 +1464,16 @@
             noAccount: 'No account',
             welcomeTitle: 'Your channels, together',
             welcomeCopy: 'Add an account to see who you follow, or browse live channels without one.',
-            browseHelp: 'OK · Watch    ↑ · Tabs    ← · Navigation    Hold OK · Options    Back · Return',
-            browseHelpDirect: 'OK · Watch    ↑ ↓ · Rows    ← → · Cards and Actions    Back · Return',
-            actionsHelp: 'OK · Options    ← · Card    ↑ ↓ · Browse    Back · Card / Return',
-            searchHelp: 'OK · Edit search / type    ← → · Choose type    ↑ ↓ · Form / results    Back · Return',
-            settingsNavHelp: 'OK · Select    ← → · Adjust    ↑ · Navigation    Back · Return',
-            playerHelp: '↑ ↓ · Choose    ← → · Adjust    OK · Apply    Back · Return',
-            playerHelpMenu: '↑ ↓ · Choose    OK · Open    Back · Return',
-            playerHelpList: '↑ ↓ · Choose    OK · Select    Back · Return',
-            playerHelpAction: '↑ ↓ · Choose    OK · Apply    Back · Return',
+            //Key hints: keep {ok} {up} {down} {left} {right} {back} as is, they are drawn as remote key glyphs
+            browseHelp: '{ok} Watch    {up} Tabs    Hold {up} Refresh    {left} Navigation    Hold {ok} Options    {back} Return',
+            browseHelpDirect: '{ok} Watch    {up}{down} Rows    {left}{right} Cards and Actions    {back} Return',
+            actionsHelp: '{ok} Options    {left} Card    {up}{down} Browse    {back} Card / Return',
+            searchHelp: '{ok} Edit search / type    {left}{right} Choose type    {up}{down} Form / results    {back} Return',
+            settingsNavHelp: '{ok} Select    {left}{right} Adjust    {up} Navigation    {back} Return',
+            playerHelp: '{up}{down} Choose    {left}{right} Adjust    {ok} Apply    {back} Return',
+            playerHelpMenu: '{up}{down} Choose    {ok} Open    {back} Return',
+            playerHelpList: '{up}{down} Choose    {ok} Select    {back} Return',
+            playerHelpAction: '{up}{down} Choose    {ok} Apply    {back} Return',
             loadingQualities: 'Loading qualities…',
             switchTo: 'OK switches to ',
             liveFor: 'Live for ',
@@ -1797,7 +1814,7 @@
         STR_AUTO_PLAY_NEXT = 'Auto play next clip';
         STR_SIDE_PANEL_BACK_MAIN_MENU = 'Back to main menu';
         STR_UP = 'Press up';
-        STR_HOLD_UP = 'Hold UP or key 2';
+        STR_HOLD_UP = 'Hold {up} or key 2';
         STR_LIVE_FEED = 'Live Feed';
         STR_VOD_DIALOG = 'VOD start dialog';
         STR_VOD_DIALOG_SUMMARY =
@@ -2032,7 +2049,7 @@
         STR_CONTROLS_MULTI_5 = 'Exit multistream: Press return twice or exit through the option at the bottom of the player.';
         STR_CONTROLS_MULTI_6 = 'To close this, open 4 lives';
         STR_PICTURE_LIVE_FEED =
-            'Picture in picture: Hold enter or press key 1, after use D-Pad left to move, right to resize or down to change videos';
+            'Picture in picture: Hold {ok} or press key 1, after use {left} to move, {right} to resize or {down} to change videos';
         STR_MULTI_TITLE = ', Click on a thumbnail to open or replace a stream, use D-pad left/right to change audio source';
         STR_FEED_END_DIALOG = ', Press return to go back to top menu';
         STR_BACK_USER_GAMES = 'Press return to go back to';
@@ -2173,6 +2190,9 @@
             "Modes are 'disable', 'enable' (auto), Bright, or Darker. In auto mode, messages alternate between darker and lighter accents if the chat is above the stream; otherwise, the background is bright.";
         STR_CHAT_INDIVIDUAL_LINE = 'Insert a line to separate individual chat messages';
         STR_CHAT_LINE_ANIMATION = 'Animated scrolling when adding a new chat message';
+        STR_CHAT_ANIMATED_EMOTES = 'Animated emotes';
+        STR_CHAT_ANIMATED_EMOTES_SUMMARY =
+            'While an animated emote is on screen the app keeps redrawing, which uses a lot of processor time on slower TVs. No shows them as still images.';
         STR_CHAT_LOGGING = 'Logging in the chat with the current user';
         STR_CHAT_LOGGING_SUMMARY =
             "When an authorization key is provided, the app logs into chat as the current user unless chat is disabled in the player's controls. If this is net to NO, it logs in anonymously, allowing messages but hiding bans and ROOMSTATE.";
@@ -2201,6 +2221,23 @@
             'When the watched streamer raids another channel, switch the player to the raided channel. Works in single-stream live playback and requires being logged in.';
         STR_RAID_AUTO = 'Switch automatically';
         STR_RAID_SWITCHING = ' is raiding, switching to ';
+        STR_POINTS_OPT = 'Channel points and drops';
+        STR_POINTS_WATCH = 'Earn channel points from watch time';
+        STR_POINTS_WATCH_SUMMARY =
+            "Let Twitch know you are watching so you earn channel points. Time paused doesn't count. Requires being logged in.";
+        STR_POINTS_BONUS = 'Auto claim bonus channel points';
+        STR_POINTS_BONUS_SUMMARY =
+            'Claim bonus points automatically as you watch. Available while watch time points are on. Requires being logged in.';
+        STR_POINTS_DROPS = 'Auto claim drops';
+        STR_POINTS_DROPS_SUMMARY = 'Automatically claim drops you have finished earning, checked every few minutes. Requires being logged in.';
+        STR_POINTS_NOTIFY_BONUS = 'Show a notice when bonus points are claimed';
+        STR_POINTS_NOTIFY_BONUS_SUMMARY =
+            'Show a toast message when bonus channel points are claimed. Available while bonus points auto claim is on.';
+        STR_POINTS_NOTIFY_DROPS = 'Show a notice when a drop is claimed';
+        STR_POINTS_NOTIFY_DROPS_SUMMARY = 'Show a toast message when a drop is claimed. Available while drops auto claim is on.';
+        STR_POINTS_BONUS_CLAIMED = 'Bonus channel points claimed: +%x';
+        STR_POINTS_BONUS_CLAIMED_NO_COUNT = 'Bonus channel points claimed';
+        STR_POINTS_DROP_CLAIMED = 'Drop claimed: %x';
         STR_ALWAYS_STAY = 'Always stay with the player opened after a live ends';
         STR_PING_WARNING = "Show 'Ping to Twitch fail' warning";
         STR_PING_WARNING_SUMMARY =
@@ -8373,11 +8410,24 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 399, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/399/SmarterPurpleTV_3_0_399.apk',
+        publishVersionCode: 400, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/400/SmarterPurpleTV_3_0_400.apk',
         WebVersion: 'November 5 2026',
-        WebTag: 780, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 781, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 5 2026 (Web 781 / APK 400)',
+                changes: [
+                    'Channel points: watching a live stream now reports watch time, so channel points, drop campaign progress and the bonus chest accrue like on the Twitch site (by @Dryness, #13)',
+                    'Channel points: new settings dialog with auto claim — the bonus chest and finished drops can be claimed automatically (off by default, Settings › Channel points), with optional toast notices (by @Dryness, #14)',
+                    'Chat: new Animated emotes option — still images instead of animations, a big processor saving on slower TVs (by @Dryness, #23)',
+                    'Interface: key hints (the footer, player drawer help lines and the controls dialog) draw the remote keys as glyphs with group dividers, and the footer now advertises Hold Up Refresh (by @Dryness, #8)',
+                    'Remote: holding OK on a card or an account can no longer pick an option in the dialog it opens through key auto-repeat (by @Dryness, #9)',
+                    'Account: user cards are no longer clipped under the tabs, the tabs and rail are reachable again, the leftover page counter is gone, and Add User no longer lets a late answer act as Back on the next screen (by @Dryness, #10)',
+                    'Welcome screen: the buttons show a single highlight, and Left reaches the navigation rail (by @Dryness, #11)',
+                    'Home screen: User Live and Games fill in on custom TV launchers, and items opened from the home channels open in their own section — a game shows under Browse › Categories (by @Dryness, #12; the channel loading part is APK side)'
+                ]
+            },
             {
                 title: 'November 5 2026 (Web 780 / APK 399)',
                 changes: [
@@ -9210,6 +9260,8 @@
         Navigation_Render(Main_addUser);
         ScreensObj_SetTopLable(STR_USER_ADD);
         Main_HideWarningDialog();
+        // No grid here: drop the page counter left by the previous screen.
+        Main_CounterDialogRst();
         Main_showLoadDialog();
         Main_ShowElement('add_user_scroll');
         Main_HideElement('add_user_text_holder');
@@ -9225,11 +9277,14 @@
         Main_HideElement('add_user_scroll');
         Main_HideLoadDialog();
         Main_clearTimeout(AddUser_getCodeCheckId);
+        Main_clearTimeout(AddUser_getCodeErrorId);
     }
 
     function AddUser_handleKeyBack() {
         if (Main_isAboutDialogVisible()) Main_HideAboutDialog();
         else if (Main_isControlsDialogVisible()) Main_HideControlsDialog();
+        // Without an account this is the Account destination itself, so Back opens the navigation like the other destinations.
+        else if (!AddUser_IsUserSet()) Navigation_Open(AddUser_handleKeyDown, 'rail');
         else {
             AddUser_exit();
             Main_SwitchScreen();
@@ -9244,6 +9299,12 @@
             case KEY_RETURN:
                 AddUser_handleKeyBack();
                 break;
+            case KEY_LEFT:
+                Navigation_Open(AddUser_handleKeyDown, 'rail');
+                break;
+            case KEY_UP:
+                Navigation_Open(AddUser_handleKeyDown, 'tabs');
+                break;
             default:
                 break;
         }
@@ -9255,11 +9316,11 @@
         AddUser_getCode();
     }
 
+    //The code flow's requests and timers outlive the screen. Leaving it (Back, the rail or the tabs) runs AddUser_exit,
+    //so each step only stops once another screen took over; running Back there would act on that screen.
     function AddUser_getCode() {
-        if (!AddUser_IsInUserScreen()) {
-            AddUser_handleKeyBack();
-            return;
-        }
+        if (!AddUser_IsInUserScreen()) return;
+
         AddUser_DeviceCode = null;
         var theUrl = AddCode_Url + 'device?scopes=' + encodeURIComponent(AddCode_Scopes.join(' ')) + '&client_id=' + AddCode_backup_client_id;
 
@@ -9269,10 +9330,7 @@
     var AddUser_DeviceCode = null;
     var AddUser_DeviceCodeTimeout = 5;
     function AddUser_getCodeSuccess(resultObj) {
-        if (!AddUser_IsInUserScreen()) {
-            AddUser_handleKeyBack();
-            return;
-        }
+        if (!AddUser_IsInUserScreen()) return;
 
         if (resultObj.status === 200) {
             var data = JSON.parse(resultObj.responseText);
@@ -9300,20 +9358,25 @@
     //     return str.substr(0, index) + value + str.substr(index);
     // }
 
+    var AddUser_getCodeErrorId;
     function AddUser_getCodeError() {
+        //Also the requests' error callback, so it can land after leaving: the error is Add User's, not the next screen's
+        if (!AddUser_IsInUserScreen()) return;
+
         Main_HideLoadDialog();
         Main_showWarningDialog(STR_ADD_ERROR, 7500, true);
-        Main_setTimeout(function () {
-            AddUser_handleKeyBack();
-        }, 3000);
+        AddUser_getCodeErrorId = Main_setTimeout(
+            function () {
+                if (AddUser_IsInUserScreen()) AddUser_handleKeyBack();
+            },
+            3000,
+            AddUser_getCodeErrorId
+        );
     }
 
     var AddUser_getCodeCheckId;
     function AddUser_getCodeCheck(counter) {
-        if (!AddUser_IsInUserScreen()) {
-            AddUser_handleKeyBack();
-            return;
-        }
+        if (!AddUser_IsInUserScreen()) return;
 
         if (counter) {
             Main_textContent('add_user_text_counter', STR_ADD_USER_TEXT_COUNTER.replace('%d', counter));
@@ -9332,10 +9395,7 @@
     }
 
     function AddUser_getDeviceCode() {
-        if (!AddUser_IsInUserScreen()) {
-            AddUser_handleKeyBack();
-            return;
-        }
+        if (!AddUser_IsInUserScreen()) return;
 
         AddUser_getDeviceCodeToken = null;
         var theUrl =
@@ -9352,10 +9412,7 @@
 
     var AddUser_getDeviceCodeToken;
     function AddUser_getDeviceCodeSuccess(resultObj) {
-        if (!AddUser_IsInUserScreen()) {
-            AddUser_handleKeyBack();
-            return;
-        }
+        if (!AddUser_IsInUserScreen()) return;
 
         var data;
         if (resultObj.status === 200) {
@@ -9375,10 +9432,7 @@
     }
 
     function AddUser_getUserToken() {
-        if (!AddUser_IsInUserScreen()) {
-            AddUser_handleKeyBack();
-            return;
-        }
+        if (!AddUser_IsInUserScreen()) return;
 
         var header = [
             [clientIdHeader, AddCode_backup_client_id],
@@ -9391,10 +9445,7 @@
     }
 
     function AddUser_getUserTokenSuccess(resultObj) {
-        if (!AddUser_IsInUserScreen()) {
-            AddUser_handleKeyBack();
-            return;
-        }
+        if (!AddUser_IsInUserScreen()) return;
 
         if (resultObj.status === 200) {
             AddUser_SaveNewUser(resultObj.responseText);
@@ -13272,6 +13323,8 @@
     var ChatLive_selectedChannel = [];
     var ChatLive_sub_replace = new RegExp('\\\\s', 'gi');
     var ChatLive_chat_line_class = '';
+    //Chat option "Animated emotes"; off swaps animated emotes for their static image (see emoteDiv)
+    var ChatLive_AnimatedEmotes = true;
 
     var KnowBots = {
         Nightbot: 1,
@@ -13509,6 +13562,7 @@
         ChatLive_Channel_Regex_Replace[chat_number] = new RegExp('@' + ChatLive_selectedChannel[chat_number], 'gi');
 
         ChatLive_chat_line_class = (Settings_value.chat_line_animation.defaultValue ? 'chat_line_animation ' : '') + 'chat_line_holder';
+        ChatLive_AnimatedEmotes = Boolean(Settings_value.chat_animated_emotes.defaultValue);
 
         if (ChatLive_User_Set) {
             ChatLive_User_Regex_Search = new RegExp('@' + AddUser_UsernameArray[0].name + '(?=\\s|$)', 'i');
@@ -14029,19 +14083,21 @@
     }
 
     function ChatLive_loadEmotesbttvChannel(data, chat_number) {
-        var url, srcset, chat_div, id;
+        var url, srcset, chat_div, chat_div_static, id;
 
         try {
             data.forEach(function (emote) {
                 srcset = ChatLive_bttv_srcset(emote.id);
                 url = ChatLive_Base_BTTV_url + emote.id + '/3x';
                 chat_div = emoteTemplate(url, srcset);
+                chat_div_static = ChatLive_bttv_static(emote);
                 id = emote.code + emote.id;
 
                 extraEmotes[chat_number][emote.code] = {
                     code: emote.code,
                     id: id,
                     chat_div: chat_div,
+                    chat_div_static: chat_div_static,
                     '4x': url,
                     srcset: srcset
                 };
@@ -14050,6 +14106,7 @@
                     code: emote.code,
                     id: id,
                     chat_div: chat_div,
+                    chat_div_static: chat_div_static,
                     '4x': url,
                     srcset: srcset
                 };
@@ -14070,6 +14127,15 @@
         }
 
         return srcset.length ? srcset.slice(0, -1) : srcset;
+    }
+
+    //Still image of an animated BTTV emote; BTTV serves /static/ only for animated emotes
+    function ChatLive_bttv_static(emote) {
+        if (!emote.animated) return null;
+
+        var base = ChatLive_Base_BTTV_url + emote.id + '/static/';
+
+        return emoteTemplate(base + '3x.webp', base + '1x.webp 1x,' + base + '2x.webp 2x,' + base + '3x.webp 3x');
     }
 
     function ChatLive_loadCheersChannel(chat_number, id) {
@@ -14094,10 +14160,12 @@
                 cheers[ChatLive_selectedChannel_id[chat_number]][action.prefix] = {};
 
                 action.tiers.forEach(function (tier) {
-                    cheers[ChatLive_selectedChannel_id[chat_number]][action.prefix][tier.min_bits] = emoteTemplate(
-                        tier.images.dark.animated['4'],
-                        ChatLive_ffz_srcset(tier.images.dark.animated)
-                    );
+                    cheers[ChatLive_selectedChannel_id[chat_number]][action.prefix][tier.min_bits] = {
+                        chat_div: emoteTemplate(tier.images.dark.animated['4'], ChatLive_ffz_srcset(tier.images.dark.animated)),
+                        chat_div_static: tier.images.dark.static
+                            ? emoteTemplate(tier.images.dark.static['4'], ChatLive_ffz_srcset(tier.images.dark.static))
+                            : null
+                    };
                 });
             });
 
@@ -14114,6 +14182,7 @@
                 code: obj[property].code,
                 id: obj[property].id,
                 chat_div: obj[property].chat_div,
+                chat_div_static: obj[property].chat_div_static,
                 chat_div_zero: obj[property].chat_div_zero,
                 '4x': obj[property]['4x'],
                 srcset: obj[property].srcset
@@ -14263,7 +14332,7 @@
             extraEmotesDone.seven_tv[ChatLive_selectedChannel_id[chat_number]] = {};
         }
 
-        var url, srcset, chat_div, chat_div_zero, id, emoteUrls, baseEmoteUrl, emote;
+        var url, srcset, chat_div, chat_div_static, chat_div_zero, id, emoteUrls, baseEmoteUrl, emote;
 
         try {
             emotes.forEach(function (seven_tv_emote) {
@@ -14288,6 +14357,7 @@
 
                 srcset = ChatLive_seven_tv_srcset(baseEmoteUrl, emoteUrls);
                 chat_div = emoteTemplate(url, srcset);
+                chat_div_static = emote.animated ? ChatLive_seven_tv_static(baseEmoteUrl, emoteUrls) : null;
                 id = emote.name + emote.id;
                 chat_div_zero = emote.flags === 256 ? chat_div.replace('emoticon', 'emoticon zero-width-emote') : null;
 
@@ -14295,6 +14365,7 @@
                     code: emote.name,
                     id: id,
                     chat_div: chat_div,
+                    chat_div_static: chat_div_static,
                     chat_div_zero: chat_div_zero,
 
                     '4x': url,
@@ -14307,6 +14378,7 @@
                         code: emote.name,
                         id: id,
                         chat_div: chat_div,
+                        chat_div_static: chat_div_static,
                         chat_div_zero: chat_div_zero,
 
                         '4x': url,
@@ -14317,6 +14389,7 @@
                         code: emote.name,
                         id: id,
                         chat_div: chat_div,
+                        chat_div_static: chat_div_static,
                         chat_div_zero: chat_div_zero,
 
                         '4x': url,
@@ -14353,11 +14426,26 @@
 
         for (i; i < len; i++) {
             emote = array[i];
-            emoteSize = emote.name.split('.')[0]; // name is 1x.webp
+            emoteSize = emote.name.split(/[._]/)[0]; // name is 1x.webp, or 1x_static.webp for the still image
             srcset += ChatLive_seven_tv_getEmoteUrl(emoteUrl, emote) + ' ' + emoteSize + ',';
         }
 
         return srcset.length ? srcset.slice(0, -1) : srcset;
+    }
+
+    //Still image of an animated 7TV emote, from the files' static_name (1x_static.webp...)
+    function ChatLive_seven_tv_static(emoteUrl, files) {
+        var stills = [],
+            i = 0,
+            len = files.length;
+
+        for (i; i < len; i++) {
+            if (files[i].static_name) stills.push({name: files[i].static_name});
+        }
+
+        if (!stills.length) return null;
+
+        return emoteTemplate(ChatLive_seven_tv_getEmoteUrl(emoteUrl, stills[stills.length - 1]), ChatLive_seven_tv_srcset(emoteUrl, stills));
     }
 
     function ChatLive_PreLoadChat(chat_number, id) {
@@ -17258,19 +17346,21 @@
     function Chat_loadEmotesbttvGlobal(data) {
         extraEmotesDone.bttvGlobal = {};
 
-        var url, srcset, chat_div, id;
+        var url, srcset, chat_div, chat_div_static, id;
 
         try {
             data.forEach(function (emote) {
                 srcset = ChatLive_bttv_srcset(emote.id);
                 url = ChatLive_Base_BTTV_url + emote.id + '/3x';
                 chat_div = emoteTemplate(url, srcset);
+                chat_div_static = ChatLive_bttv_static(emote);
                 id = emote.code + emote.id;
 
                 extraEmotes[0][emote.code] = {
                     code: emote.code,
                     id: id,
                     chat_div: chat_div,
+                    chat_div_static: chat_div_static,
                     '4x': url,
                     srcset: srcset
                 };
@@ -17279,6 +17369,7 @@
                     code: emote.code,
                     id: id,
                     chat_div: chat_div,
+                    chat_div_static: chat_div_static,
                     '4x': url,
                     srcset: srcset
                 };
@@ -17287,6 +17378,7 @@
                     code: emote.code,
                     id: id,
                     chat_div: chat_div,
+                    chat_div_static: chat_div_static,
                     '4x': url,
                     srcset: srcset
                 };
@@ -18392,8 +18484,8 @@
         Main_textContent('exit_app_minimize', STR_MINIMIZE);
         Main_textContent('main_dialog_exit_text', STR_EXIT_MESSAGE);
 
-        Main_innerHTML('dialog_controls_text', '<p>' + STR_UI.browseHelp + '</p>' + STR_CONTROLS_MAIN_0);
-        Main_innerHTML('dialog_controls_player_text', '<p>' + STR_UI.playerHelp + '</p>' + STR_CONTROLS_PLAYER_0);
+        Main_innerHTML('dialog_controls_text', '<p>' + Navigation_KeyHintHtml(STR_UI.browseHelp) + '</p>' + STR_CONTROLS_MAIN_0);
+        Main_innerHTML('dialog_controls_player_text', '<p>' + Navigation_KeyHintHtml(STR_UI.playerHelp) + '</p>' + STR_CONTROLS_PLAYER_0);
         Main_textContent('side_panel_warn_text', STR_NO + STR_LIVE_CHANNELS);
         Main_textContent('side_panel_movel_top_text', STR_LIVE_FEED);
 
@@ -21159,6 +21251,8 @@
         for (key in UIFocus_SuppressedKeys) delete UIFocus_SuppressedKeys[key];
         Main_clearTimeout(Screens_KeyEnterID);
         Main_clearTimeout(ChannelContent_KeyEnterID);
+        Users_handleKeyUp(); // a lost key-up must not leave Users ignoring OK
+        Screens_ThumbOptionCanKeyEnter = true; // nor the card options
         if (Main_values.Main_Go === Main_ChannelContent) {
             if (Main_GridOwnsInput()) {
                 Main_removeEventListener('keyup', ChannelContent_handleKeyUp);
@@ -21251,13 +21345,26 @@
             Play_showBufferDialog();
             Main_CheckResume(true);
 
+            //Navigation_ExitCurrent also exits Add User, Search and Settings, which have no ScreenObj exit
+            var covered = true;
+
             if (Main_isScene2DocVisible()) {
                 Main_onNewIntentClearPlay();
             } else if (Sidepannel_isShowingMenus()) {
                 Sidepannel_Hide(false);
             } else if (Sidepannel_isShowingUserLiveSide()) {
                 Sidepannel_Hide(true);
-            } else if (ScreenObj[Main_values.Main_Go].exit_fun) ScreenObj[Main_values.Main_Go].exit_fun();
+            } else {
+                Navigation_ExitCurrent();
+                covered = false;
+            }
+
+            //Closing the stream returns to the channel's screen (Browse > Live or Following), not the last one used;
+            //a screen left under the player or a side panel only exits when that changes
+            var liveScreen = Main_onNewIntentGetScreen(obj);
+
+            if (covered && Main_values.Main_Go !== liveScreen) Navigation_ExitCurrent();
+            Main_values.Main_Go = liveScreen;
 
             Play_data = JSON.parse(JSON.stringify(Play_data_base));
             Play_data.data = ScreensObj_LiveCellArray(obj.obj);
@@ -21276,7 +21383,7 @@
                 Sidepannel_Hide(false);
             }
 
-            if (ScreenObj[Main_values.Main_Go].exit_fun) ScreenObj[Main_values.Main_Go].exit_fun();
+            Navigation_ExitCurrent();
             Main_values.Main_Before = Main_values.Main_Go;
 
             AddUser_init();
@@ -21286,6 +21393,8 @@
             Play_data = JSON.parse(JSON.stringify(Play_data_base));
             Play_data.data[3] = obj.obj.name;
             Play_data.data[18] = obj.obj.id;
+
+            Main_SetChannelGameOrigin();
 
             if (Main_isScene2DocVisible()) {
                 var PlayVodClip = 1;
@@ -21303,18 +21412,7 @@
                     Sidepannel_Hide(false);
                 }
 
-                if (!Main_values.Main_BeforeAgameisSet && Main_values.Main_Go !== Main_AGameVod && Main_values.Main_Go !== Main_AGameClip) {
-                    Main_values.Main_BeforeAgame =
-                        Main_values.Main_BeforeChannelisSet &&
-                        Main_values.Main_Go !== Main_ChannelContent &&
-                        Main_values.Main_Go !== Main_ChannelVod &&
-                        Main_values.Main_Go !== Main_ChannelClip
-                            ? Main_values.Main_BeforeChannel
-                            : Main_values.Main_Go;
-                    Main_values.Main_BeforeAgameisSet = true;
-                }
-
-                Main_ExitCurrent(Main_values.Main_Go);
+                Navigation_ExitCurrent();
                 Main_values.Main_Go = Main_aGame;
 
                 Main_values.Main_gameSelected = Play_data.data[3];
@@ -21336,7 +21434,7 @@
             var goTo = Main_onNewIntentGetScreen(obj);
 
             if (Main_values.Main_Go !== goTo) {
-                if (ScreenObj[Main_values.Main_Go].exit_fun) ScreenObj[Main_values.Main_Go].exit_fun();
+                Navigation_ExitCurrent();
                 Main_values.Main_Before = goTo;
             }
             Main_values.Main_Go = goTo;
@@ -21345,6 +21443,16 @@
         } else {
             Main_CheckResume();
         }
+    }
+
+    //A game from the home screen Games channel (top categories) opens as if picked in Browse > Categories,
+    //its header and Back use that instead of whatever screen the app was last on
+    function Main_SetChannelGameOrigin() {
+        Main_values.Main_BeforeAgame = Main_games;
+        Main_values.Main_BeforeAgameisSet = true;
+        Main_values.Games_return = false;
+        if (ScreenObj[Main_aGame]) ScreenObj[Main_aGame].BeforeAgame = Main_games;
+        Navigation_Enter(Main_games);
     }
 
     function Main_onNewIntentGetScreen(obj) {
@@ -21644,7 +21752,30 @@
         else if (ScreenObj[screen] && ScreenObj[screen].posSub === Screens_SubActions) hint = STR_UI.actionsHelp;
         else if (Screens_DirectInputMode()) hint = STR_UI.browseHelpDirect;
         else hint = STR_UI.browseHelp;
-        Main_textContent('navigation-footer', hint);
+        Main_innerHTML('navigation-footer', Navigation_KeyHintHtml(hint));
+    }
+
+    //Remote keys in the hint strings, drawn with the bundled icon font like the rail glyphs
+    var Navigation_KeyGlyphs = {
+        up: 'key-up',
+        down: 'key-down',
+        left: 'key-left',
+        right: 'key-right',
+        back: 'return'
+    };
+
+    /* Hint strings name keys as {ok}, {up}, {down}, {left}, {right} and {back} so translations keep plain labels;
+     * the text is escaped and each placeholder becomes its key: OK is a small key cap, the others icon glyphs.
+     * Key groups are separated by a run of spaces in the strings, drawn as a divider. */
+    function Navigation_KeyHintHtml(text) {
+        return Screens_AriaEscape(text)
+            .replace(/\{(\w+)\}/g, function (match, key) {
+                if (key === 'ok') return '<span class="navigation-key navigation-key-ok" aria-hidden="true">OK</span>';
+                return Navigation_KeyGlyphs.hasOwnProperty(key)
+                    ? '<i class="icon icon-' + Navigation_KeyGlyphs[key] + ' navigation-key" aria-hidden="true"></i>'
+                    : match;
+            })
+            .replace(/ {3,}/g, ' <span class="navigation-key-divider" aria-hidden="true"></span> ');
     }
 
     function Navigation_Render(screen) {
@@ -21762,10 +21893,11 @@
     }
 
     function Navigation_Focus() {
-        var shell = Main_getElementById('navigation-shell'),
-            old = shell.querySelector('.navigation-focused'),
-            id;
-        if (old) old.classList.remove('navigation-focused');
+        // The onboarding buttons sit outside the shell, so clear the treatment in both, as the close cleanup does.
+        var old = document.querySelectorAll('#navigation-shell .navigation-focused, #navigation-onboarding .navigation-focused'),
+            id,
+            i;
+        for (i = 0; i < old.length; i++) old[i].classList.remove('navigation-focused');
         if (Navigation_Region === 'rail')
             id =
                 Navigation_Position < 7
@@ -21830,6 +21962,8 @@
                 Screens_addFocus(true, Main_values.Main_Go);
             // Settings drops its row focus when Up opens the rail, give it back with the input.
             if (Settings_isVisible() && !Navigation_Onboarding) Settings_inputFocus(Settings_cursorY);
+            // Users keeps its own grid and cursor outside the Screens objects.
+            if (Main_values.Main_Go === Main_Users && !Navigation_Onboarding && Users_status) Users_addFocus();
             if (obj && obj.emptyContent && Main_values.Main_Go === Main_UserLive && !Navigation_Onboarding)
                 Main_getElementById('navigation-retry').focus();
         }
@@ -21907,7 +22041,11 @@
                 }
             }
         } else if (Navigation_Region === 'recovery') {
-            if (code === KEY_LEFT || code === KEY_RIGHT) Navigation_Position = code === KEY_LEFT ? 0 : 1;
+            if (code === KEY_LEFT && !Navigation_Position) {
+                // Left from the first button opens the rail, as Back does here and Left does from the first tab.
+                Navigation_Region = 'rail';
+                Main_AddClass('navigation-rail', 'navigation-expanded');
+            } else if (code === KEY_LEFT || code === KEY_RIGHT) Navigation_Position = code === KEY_LEFT ? 0 : 1;
             else if (code === KEY_UP) {
                 Navigation_Region = 'tabs';
                 Navigation_Position = 0;
@@ -25376,6 +25514,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         Play_SetFullScreen(Play_isFullScreen);
         Play_Playing = true;
+        PlayChannelPoints_Start();
         Play_SkipStartAuto = false;
 
         Play_SetControlsVisibilityPlayer(1);
@@ -25533,6 +25672,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
     function Play_PreshutdownStream(closePlayer) {
         //Main_Log('Play_PreshutdownStream ' + closePlayer);
+
+        if (closePlayer) {
+            PlayChannelPoints_Stop();
+        }
 
         if (Main_IsOn_OSInterface) {
             if (closePlayer) {
@@ -26448,6 +26591,401 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         PlayVod_jumpStart(position, Play_DurationSeconds);
         PlayVod_ProgressBaroffset = 2500;
         Play_setHidePanel();
+    }
+    /*
+     * Copyright (c) 2017–present Felipe de Leon <fglfgl27@gmail.com>
+     *
+     * This file is part of SmartTwitchTV <https://github.com/fgl27/SmartTwitchTV>
+     *
+     * SmartTwitchTV is free software: you can redistribute it and/or modify
+     * it under the terms of the GNU General Public License as published by
+     * the Free Software Foundation, either version 3 of the License, or
+     * (at your option) any later version.
+     *
+     * SmartTwitchTV is distributed in the hope that it will be useful,
+     * but WITHOUT ANY WARRANTY; without even the implied warranty of
+     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+     * GNU General Public License for more details.
+     *
+     * You should have received a copy of the GNU General Public License
+     * along with SmartTwitchTV. If not, see <https://github.com/fgl27/SmartTwitchTV/blob/master/LICENSE>.
+     *
+     */
+
+    //Auto claim of bonus channel points and drops while a live stream plays, driven by the PlayChannelPoints minute tick.
+    //Based on BetterTTV's Auto Claim settings (Bonus Channel Points, Drops). The drops inventory query, claim mutation and
+    //eligibility rules are adapted from BetterTTV src/modules/auto_claim/index.js <https://github.com/night/betterttv>,
+    //Copyright (c) 2023 NightDev, LLC, MIT License <https://github.com/night/betterttv/blob/master/LICENSE>.
+    //Uses Twitch's undocumented GraphQL API, which may change without notice; any failure here is silent and only skips a claim.
+    var PlayAutoClaim_Generation = 0;
+    var PlayAutoClaim_Ticks = 0;
+    //Drops take minutes to hours, check them less often than the channel bonus
+    var PlayAutoClaim_DropsEvery = 5;
+    var PlayAutoClaim_DropNames = {};
+    var PlayAutoClaim_DropKey = 0;
+    //Some Android versions replace a showing toast with the next one, so notices close together share one toast
+    var PlayAutoClaim_Notices = [];
+    var PlayAutoClaim_NoticeId = null;
+    var PlayAutoClaim_NoticeShownAt = 0;
+    //Wait for the other claims of the same tick
+    var PlayAutoClaim_NoticeWaitMs = 1000;
+    //Toast.LENGTH_LONG
+    var PlayAutoClaim_ToastMs = 3500;
+
+    var PlayAutoClaim_InventoryQuery =
+        'query Inventory { currentUser { id inventory { dropCampaignsInProgress { id timeBasedDrops { id name requiredMinutesWatched ' +
+        'self { isClaimed currentMinutesWatched dropInstanceID hasPreconditionsMet } } } } } }';
+    var PlayAutoClaim_ClaimDropMutation = 'mutation ClaimDrop($input: ClaimDropRewardsInput!) { claimDropRewards(input: $input) { status } }';
+
+    function PlayAutoClaim_Reset() {
+        PlayAutoClaim_Generation++;
+        PlayAutoClaim_Ticks = 0;
+        PlayAutoClaim_DropNames = {};
+    }
+
+    //Called once per minute of live playback (paused, buffering and background minutes are skipped)
+    function PlayAutoClaim_Tick(channelId) {
+        if (Settings_Obj_default('auto_claim_bonus')) PlayAutoClaim_BonusCheck(channelId);
+        if (Settings_Obj_default('auto_claim_drops') && PlayAutoClaim_Ticks % PlayAutoClaim_DropsEvery === 0) PlayAutoClaim_DropsCheck();
+
+        PlayAutoClaim_Ticks++;
+    }
+
+    function PlayAutoClaim_Gql(body, callback, key) {
+        FullxmlHttpGet(PlayClip_BaseUrl, Main_OAuth_User_Headers, callback, noop_fun, key, PlayAutoClaim_Generation, 'POST', JSON.stringify(body));
+    }
+
+    function PlayAutoClaim_Data(obj, id) {
+        if (id !== PlayAutoClaim_Generation || obj.status !== 200) return null;
+
+        try {
+            return JSON.parse(obj.responseText).data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    //settingKey = the notice toggle of that claim type
+    function PlayAutoClaim_Notify(settingKey, text) {
+        if (!Settings_Obj_default(settingKey)) return;
+
+        PlayAutoClaim_Notices.push(text);
+
+        if (PlayAutoClaim_NoticeId !== null) return;
+
+        //After the wait, and never over a toast still on screen
+        PlayAutoClaim_NoticeId = Main_setTimeout(
+            PlayAutoClaim_NotifyShow,
+            Math.max(PlayAutoClaim_NoticeWaitMs, PlayAutoClaim_NoticeShownAt + PlayAutoClaim_ToastMs - new Date().getTime())
+        );
+    }
+
+    function PlayAutoClaim_NotifyShow() {
+        PlayAutoClaim_NoticeId = null;
+
+        if (!PlayAutoClaim_Notices.length) return;
+
+        //One line per claim
+        OSInterface_showToast(PlayAutoClaim_Notices.join('\n'));
+        PlayAutoClaim_Notices = [];
+        PlayAutoClaim_NoticeShownAt = new Date().getTime();
+    }
+
+    function PlayAutoClaim_BonusCheck(channelId) {
+        PlayAutoClaim_Gql(
+            {query: 'query { user(id: "' + channelId + '") { id channel { self { communityPoints { balance availableClaim { id } } } } } }'},
+            PlayAutoClaim_BonusCheckSuccess,
+            0
+        );
+    }
+
+    function PlayAutoClaim_BonusCheckSuccess(obj, key, id) {
+        var data = PlayAutoClaim_Data(obj, id),
+            user = data && data.user,
+            points = user && user.channel && user.channel.self && user.channel.self.communityPoints;
+
+        //Only claim on the channel still being watched
+        if (!points || !points.availableClaim || !Main_A_equals_B(user.id, PlayChannelPoints_ChannelId)) return;
+
+        PlayAutoClaim_Gql(
+            {
+                query:
+                    'mutation { claimCommunityPoints(input: {channelID: "' +
+                    user.id +
+                    '", claimID: "' +
+                    points.availableClaim.id +
+                    '"}) { currentPoints error { code } } }'
+            },
+            PlayAutoClaim_BonusClaimSuccess,
+            points.balance || 0
+        );
+    }
+
+    //key = balance before the claim
+    function PlayAutoClaim_BonusClaimSuccess(obj, key, id) {
+        var data = PlayAutoClaim_Data(obj, id),
+            result = data && data.claimCommunityPoints;
+
+        if (!result || result.error || !result.currentPoints) return;
+
+        var earned = result.currentPoints - (key || 0);
+
+        PlayAutoClaim_Notify(
+            'auto_claim_notify_bonus',
+            earned > 0 ? STR_POINTS_BONUS_CLAIMED.replace('%x', earned) : STR_POINTS_BONUS_CLAIMED_NO_COUNT
+        );
+    }
+
+    function PlayAutoClaim_DropsCheck() {
+        PlayAutoClaim_Gql({query: PlayAutoClaim_InventoryQuery}, PlayAutoClaim_DropsCheckSuccess, 0);
+    }
+
+    function PlayAutoClaim_DropsCheckSuccess(obj, key, id) {
+        var data = PlayAutoClaim_Data(obj, id),
+            user = data && data.currentUser,
+            campaigns = user && user.inventory && user.inventory.dropCampaignsInProgress;
+
+        if (!campaigns) return;
+
+        var i = 0,
+            j,
+            len = campaigns.length,
+            drops,
+            drop;
+
+        for (i; i < len; i++) {
+            drops = campaigns[i].timeBasedDrops || [];
+
+            for (j = 0; j < drops.length; j++) {
+                drop = drops[j];
+
+                if (
+                    !drop.self ||
+                    drop.self.isClaimed ||
+                    drop.self.currentMinutesWatched < drop.requiredMinutesWatched ||
+                    !drop.self.hasPreconditionsMet
+                ) {
+                    continue;
+                }
+
+                PlayAutoClaim_DropKey++;
+                PlayAutoClaim_DropNames[PlayAutoClaim_DropKey] = drop.name;
+
+                PlayAutoClaim_Gql(
+                    {
+                        query: PlayAutoClaim_ClaimDropMutation,
+                        variables: {input: {dropInstanceID: drop.self.dropInstanceID || user.id + '#' + campaigns[i].id + '#' + drop.id}}
+                    },
+                    PlayAutoClaim_DropClaimSuccess,
+                    PlayAutoClaim_DropKey
+                );
+            }
+        }
+    }
+
+    //key = PlayAutoClaim_DropNames key of the claimed drop
+    function PlayAutoClaim_DropClaimSuccess(obj, key, id) {
+        var data = PlayAutoClaim_Data(obj, id),
+            name = PlayAutoClaim_DropNames[key];
+
+        delete PlayAutoClaim_DropNames[key];
+
+        //Claimed: ELIGIBLE_FOR_ALL (seen on device) or ELIGIBLE_FOR_SOME, anything else is a refusal
+        if (!data || !data.claimDropRewards || (data.claimDropRewards.status + '').indexOf('ELIGIBLE_FOR_') !== 0) return;
+
+        PlayAutoClaim_Notify('auto_claim_notify_drops', STR_POINTS_DROP_CLAIMED.replace('%x', name || ''));
+    }
+    /*
+     * Copyright (c) 2017–present Felipe de Leon <fglfgl27@gmail.com>
+     *
+     * This file is part of SmartTwitchTV <https://github.com/fgl27/SmartTwitchTV>
+     *
+     * SmartTwitchTV is free software: you can redistribute it and/or modify
+     * it under the terms of the GNU General Public License as published by
+     * the Free Software Foundation, either version 3 of the License, or
+     * (at your option) any later version.
+     *
+     * SmartTwitchTV is distributed in the hope that it will be useful,
+     * but WITHOUT ANY WARRANTY; without even the implied warranty of
+     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+     * GNU General Public License for more details.
+     *
+     * You should have received a copy of the GNU General Public License
+     * along with SmartTwitchTV. If not, see <https://github.com/fgl27/SmartTwitchTV/blob/master/LICENSE>.
+     *
+     */
+
+    //Reports live watch time the way the Twitch site player does, so Twitch can credit channel points.
+    //The channel page, its settings script and the minute-watched event are undocumented Twitch site internals,
+    //they may change without notice; any failure here is silent and only stops the reporting.
+    var PlayChannelPoints_IntervalId = null;
+    var PlayChannelPoints_SpadeUrl = null;
+    //Remaining endpoints to try when the current one can't be reached
+    var PlayChannelPoints_SpadeUrlFallbacks = [];
+    //spade_url first: verified to credit points, and beacon.twitch.tv is on common DNS tracker blocklists
+    var PlayChannelPoints_SpadeUrlKeys = ['spade_url', 'beacon_url'];
+    var PlayChannelPoints_ChannelId = null;
+    var PlayChannelPoints_BroadcastId = null;
+    var PlayChannelPoints_ChannelLogin = null;
+    var PlayChannelPoints_DiscoveryId = 0;
+    var PlayChannelPoints_IntervalMs = 60000;
+
+    function PlayChannelPoints_CanRun() {
+        return (
+            Play_isOn &&
+            Play_data &&
+            Play_data.data &&
+            Play_data.data.length &&
+            AddUser_UserHasToken() &&
+            AddUser_UsernameArray[0].id &&
+            Play_data.data[6] &&
+            Play_data.data[7] &&
+            Play_data.data[14]
+        );
+    }
+
+    function PlayChannelPoints_Start() {
+        PlayChannelPoints_Stop();
+
+        if (!PlayChannelPoints_CanRun()) return;
+
+        PlayChannelPoints_ChannelLogin = Play_data.data[6] + '';
+        PlayChannelPoints_BroadcastId = Play_data.data[7] + '';
+        PlayChannelPoints_ChannelId = Play_data.data[14] + '';
+
+        //The endpoint isn't tied to the channel: found once, then kept across streams until no endpoint is left (SendSuccess)
+        if (PlayChannelPoints_ReportEnabled() && !PlayChannelPoints_SpadeUrl) PlayChannelPoints_DiscoverSpadeUrl();
+        PlayChannelPoints_IntervalId = Main_setInterval(
+            PlayChannelPoints_SendMinuteWatched,
+            PlayChannelPoints_IntervalMs,
+            PlayChannelPoints_IntervalId
+        );
+    }
+
+    function PlayChannelPoints_Stop() {
+        Main_clearInterval(PlayChannelPoints_IntervalId);
+
+        PlayChannelPoints_IntervalId = null;
+        PlayChannelPoints_ChannelId = null;
+        PlayChannelPoints_BroadcastId = null;
+        PlayChannelPoints_ChannelLogin = null;
+        PlayChannelPoints_DiscoveryId++;
+        PlayAutoClaim_Reset();
+    }
+
+    function PlayChannelPoints_ReportEnabled() {
+        return Boolean(Settings_Obj_default('watch_time_points'));
+    }
+
+    function PlayChannelPoints_IsCurrentStream() {
+        return (
+            PlayChannelPoints_CanRun() &&
+            Main_A_equals_B(PlayChannelPoints_ChannelLogin, Play_data.data[6]) &&
+            Main_A_equals_B(PlayChannelPoints_BroadcastId, Play_data.data[7]) &&
+            Main_A_equals_B(PlayChannelPoints_ChannelId, Play_data.data[14])
+        );
+    }
+
+    function PlayChannelPoints_DiscoverSpadeUrl() {
+        if (!PlayChannelPoints_IsCurrentStream()) return;
+
+        var requestId = ++PlayChannelPoints_DiscoveryId;
+
+        FullxmlHttpGet(
+            'https://www.twitch.tv/' + encodeURIComponent(PlayChannelPoints_ChannelLogin),
+            null,
+            PlayChannelPoints_PageSuccess,
+            noop_fun,
+            0,
+            requestId,
+            null,
+            null
+        );
+    }
+
+    function PlayChannelPoints_PageSuccess(obj, key, id) {
+        if (id !== PlayChannelPoints_DiscoveryId || !PlayChannelPoints_IsCurrentStream() || obj.status !== 200) return;
+
+        key = key || 0;
+
+        var match = obj.responseText.match(/https:\/\/[\w.-]+\/config\/settings\.[\w.-]+\.js/);
+
+        if (!match) return;
+
+        FullxmlHttpGet(match[0], null, PlayChannelPoints_SettingsSuccess, noop_fun, 0, id, null, null);
+    }
+
+    function PlayChannelPoints_SettingsSuccess(obj, key, id) {
+        if (id !== PlayChannelPoints_DiscoveryId || !PlayChannelPoints_IsCurrentStream() || obj.status !== 200) return;
+
+        key = key || 0;
+
+        var urls = [],
+            match,
+            i = 0,
+            len = PlayChannelPoints_SpadeUrlKeys.length;
+
+        for (i; i < len; i++) {
+            match = obj.responseText.match(new RegExp('"' + PlayChannelPoints_SpadeUrlKeys[i] + '":"(.*?)"'));
+
+            if (match && match[1]) urls.push(match[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/'));
+        }
+
+        PlayChannelPoints_SpadeUrl = urls.length ? urls.shift() : null;
+        PlayChannelPoints_SpadeUrlFallbacks = urls;
+    }
+
+    function PlayChannelPoints_SendMinuteWatched() {
+        if (!PlayChannelPoints_IsCurrentStream()) {
+            PlayChannelPoints_Stop();
+            return;
+        }
+
+        //Only report minutes that are actually playing: not paused, buffering or with the app in the background
+        if (!Play_Playing || Main_isStopped || !Play_isPlaying()) return;
+
+        PlayAutoClaim_Tick(PlayChannelPoints_ChannelId);
+
+        if (!PlayChannelPoints_ReportEnabled()) return;
+
+        if (!PlayChannelPoints_SpadeUrl) {
+            PlayChannelPoints_DiscoverSpadeUrl();
+            return;
+        }
+
+        var payload = {
+            event: 'minute-watched',
+            properties: {
+                channel_id: PlayChannelPoints_ChannelId,
+                broadcast_id: PlayChannelPoints_BroadcastId,
+                player: 'site',
+                user_id: parseInt(AddUser_UsernameArray[0].id, 10),
+                live: true,
+                channel: PlayChannelPoints_ChannelLogin
+            }
+        };
+
+        FullxmlHttpGet(
+            PlayChannelPoints_SpadeUrl,
+            [['Content-Type', 'application/x-www-form-urlencoded']],
+            PlayChannelPoints_SendSuccess,
+            noop_fun,
+            0,
+            PlayChannelPoints_DiscoveryId,
+            'POST',
+            'data=' + encodeURIComponent(btoa(JSON.stringify(payload)))
+        );
+    }
+
+    function PlayChannelPoints_SendSuccess(obj, key, id) {
+        if (id !== PlayChannelPoints_DiscoveryId || !PlayChannelPoints_IsCurrentStream()) return;
+
+        key = key || 0;
+
+        //0 = no response (blocked host, DNS or network failure), 404/410 = endpoint gone: try the next one, rediscover when none is left
+        if (obj.status === 0 || obj.status === 404 || obj.status === 410) {
+            PlayChannelPoints_SpadeUrl = PlayChannelPoints_SpadeUrlFallbacks.length ? PlayChannelPoints_SpadeUrlFallbacks.shift() : null;
+        }
     }
     /*
      * Copyright (c) 2017–present Felipe de Leon <fglfgl27@gmail.com>
@@ -37491,7 +38029,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             frame = PlayerUI_Frame(),
             target;
         if (old) old.classList.remove('player-ui-focused');
-        if (frame && frame.group !== 'bar') Main_textContent('player-ui-help', PlayerUI_HelpText(frame));
+        if (frame && frame.group !== 'bar') Main_innerHTML('player-ui-help', Navigation_KeyHintHtml(PlayerUI_HelpText(frame)));
         if (!frame || !frame.entries.length) return;
         if (frame.group === 'bar') target = Main_getElementById('player-ui-bar-' + frame.index);
         else if (frame.group === 'more') target = Main_getElementById('player-ui-row-' + frame.index);
@@ -37843,6 +38381,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         if (live_channel_call) {
             Main_values.Play_WasPlaying = 1;
+            Main_GoBefore = Main_onNewIntentGetScreen(obj);
 
             Play_data = JSON.parse(JSON.stringify(Play_data_base));
             Play_data.data = ScreensObj_LiveCellArray(obj.obj);
@@ -37858,6 +38397,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             StartUser = false;
             Main_values.Main_gameSelected = Play_data.data[3];
             Main_values.Main_gameSelected_id = Play_data.data[18];
+            Main_SetChannelGameOrigin();
         } else if (screen_channel_call) {
             Main_GoBefore = Main_onNewIntentGetScreen(obj);
             Main_values.Play_WasPlaying = 0;
@@ -39966,9 +40506,16 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         //Main_Log('Screens_handleKeyUp e.keyCode ' + e.keyCode + ' key ' + key);
 
         if (e.keyCode === KEY_ENTER) {
-            Screens_handleKeyUpClear(key);
-            if (!Screens_clear) {
-                ScreenObj[key].key_play();
+            Screens_ThumbOptionCanKeyEnter = true;
+            if (Main_isElementShowingWithEle(Screens_dialog_thumb_div)) {
+                // The hold opened the options dialog, which owns key-down now; re-arming the grid would leave it live behind later screens.
+                Main_clearTimeout(Screens_KeyEnterID);
+                Main_removeEventListener('keyup', ScreenObj[key].key_up);
+            } else {
+                Screens_handleKeyUpClear(key);
+                if (!Screens_clear) {
+                    ScreenObj[key].key_play();
+                }
             }
         } else if (e.keyCode === KEY_UP && !Screens_DirectInputMode()) {
             Main_clearTimeout(Screens_KeyEnterID);
@@ -40214,6 +40761,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 Main_removeEventListener('keydown', ScreenObj[key].key_fun);
                 Main_addEventListener('keyup', ScreenObj[key].key_up);
                 Screens_clear = false;
+                Screens_ThumbOptionCanKeyEnter = false;
                 Screens_KeyEnterID = Main_setTimeout(
                     function () {
                         Screens_ThumbOptionStart(key, false);
@@ -41160,6 +41708,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     var Screens_ThumbOptionCanKeyLeft = true;
+    // False while the OK press that opened the dialog is still held, so auto-repeat can't pick an option.
+    var Screens_ThumbOptionCanKeyEnter = true;
     function Screens_ThumbOptionhandleKeyDown(key, event) {
         //Main_Log('Screens_ThumbOptionhandleKeyDown ' + event.keyCode);
 
@@ -41181,7 +41731,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 Screens_ThumbOptionDialogKeyUpDown(key, Screens_ThumbOptionPosY, 1);
                 break;
             case KEY_ENTER:
-                Screens_ThumbOptionDialogKeyEnter(key);
+                if (Screens_ThumbOptionCanKeyEnter) Screens_ThumbOptionDialogKeyEnter(key);
                 break;
             default:
                 break;
@@ -46562,6 +47112,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             set_values: [''],
             defaultValue: 1
         },
+        points_opt: {
+            values: ['None'],
+            set_values: [''],
+            defaultValue: 1
+        },
         preview_settings: {
             values: ['None'],
             set_values: [''],
@@ -46734,6 +47289,31 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             values: ['no', 'auto'],
             defaultValue: 2
         },
+        watch_time_points: {
+            //Migrated to dialog
+            values: ['no', 'yes'],
+            defaultValue: 2
+        },
+        auto_claim_bonus: {
+            //Migrated to dialog
+            values: ['no', 'yes'],
+            defaultValue: 1
+        },
+        auto_claim_drops: {
+            //Migrated to dialog
+            values: ['no', 'yes'],
+            defaultValue: 1
+        },
+        auto_claim_notify_bonus: {
+            //Migrated to dialog
+            values: ['no', 'yes'],
+            defaultValue: 1
+        },
+        auto_claim_notify_drops: {
+            //Migrated to dialog
+            values: ['no', 'yes'],
+            defaultValue: 1
+        },
         show_chatters: {
             //Migrated to dialog
             values: ['no', 'chatters', 'viewers'],
@@ -46743,6 +47323,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             //Migrated to dialog
             values: ['no', 'yes'],
             defaultValue: 1
+        },
+        chat_animated_emotes: {
+            //Migrated to dialog
+            values: ['no', 'yes'],
+            defaultValue: 2
         },
         individual_lines: {
             //Migrated to dialog
@@ -47113,6 +47698,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         div += Settings_Content('preview_settings', [STR_ENTER_TO_OPEN], STR_SIDE_PANEL_PLAYER, null);
         div += Settings_Content('vod_seek', [STR_ENTER_TO_OPEN], STR_VOD_SEEK, null);
         div += Settings_Content('playerend_opt', [STR_ENTER_TO_OPEN], STR_END_DIALOG_OPT, null);
+        div += Settings_Content('points_opt', [STR_ENTER_TO_OPEN], STR_POINTS_OPT, null);
 
         Main_innerHTML('settings_main', div);
         Settings_positions_length = Settings_value_keys.length;
@@ -47553,6 +48139,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         else if (position === 'vod_seek_max') Settings_check_max_seek();
         else if (position === 'auto_minimize_inactive') Settings_SetAutoMinimizeTimeout();
         else if (position === 'sync_enabled') Settings_DialogBackupSyncRefresh();
+        else if (position === 'watch_time_points' || position === 'auto_claim_bonus' || position === 'auto_claim_drops')
+            Settings_DialogPointsRefresh();
         else if (
             position === 'block_qualities_43' ||
             position === 'block_qualities_21' ||
@@ -48193,6 +48781,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
     function Settings_KeyEnter(click) {
         if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'playerend_opt')) Settings_PlayerEnd(click);
+        else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'points_opt')) Settings_DialogShowPoints(click);
         else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'blocked_codecs')) Settings_CodecsShow(click);
         else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'player_extracodecs')) Settings_DialogShowExtraCodecs(click);
         else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'player_bitrate')) Settings_DialogShowBitrate(click);
@@ -49305,6 +49894,99 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Settings_DialogShow(obj, STR_END_DIALOG_OPT, click);
     }
 
+    function Settings_DialogShowPoints(click) {
+        var yes_no = [STR_NO, STR_YES];
+        Settings_value.watch_time_points.values = yes_no;
+        Settings_value.auto_claim_bonus.values = yes_no;
+        Settings_value.auto_claim_drops.values = yes_no;
+        Settings_value.auto_claim_notify_bonus.values = yes_no;
+        Settings_value.auto_claim_notify_drops.values = yes_no;
+
+        var obj = {
+            watch_time_points: {
+                defaultValue: Settings_value.watch_time_points.defaultValue,
+                values: Settings_value.watch_time_points.values,
+                title: STR_POINTS_WATCH,
+                summary: STR_POINTS_WATCH_SUMMARY
+            },
+            auto_claim_bonus: {
+                defaultValue: Settings_value.auto_claim_bonus.defaultValue,
+                values: Settings_value.auto_claim_bonus.values,
+                title: STR_POINTS_BONUS,
+                summary: STR_POINTS_BONUS_SUMMARY
+            },
+            auto_claim_notify_bonus: {
+                defaultValue: Settings_value.auto_claim_notify_bonus.defaultValue,
+                values: Settings_value.auto_claim_notify_bonus.values,
+                title: STR_POINTS_NOTIFY_BONUS,
+                summary: STR_POINTS_NOTIFY_BONUS_SUMMARY
+            },
+            auto_claim_drops: {
+                defaultValue: Settings_value.auto_claim_drops.defaultValue,
+                values: Settings_value.auto_claim_drops.values,
+                title: STR_POINTS_DROPS,
+                summary: STR_POINTS_DROPS_SUMMARY
+            },
+            auto_claim_notify_drops: {
+                defaultValue: Settings_value.auto_claim_notify_drops.defaultValue,
+                values: Settings_value.auto_claim_notify_drops.values,
+                title: STR_POINTS_NOTIFY_DROPS,
+                summary: STR_POINTS_NOTIFY_DROPS_SUMMARY
+            }
+        };
+
+        Settings_DialogShow(obj, STR_POINTS_OPT, click);
+        Settings_DialogPointsRefresh();
+    }
+
+    var Settings_DialogPointsKeys = [
+        'watch_time_points',
+        'auto_claim_bonus',
+        'auto_claim_notify_bonus',
+        'auto_claim_drops',
+        'auto_claim_notify_drops'
+    ];
+
+    function Settings_DialogPointsRefresh() {
+        //Twitch only offers bonus points while it counts the minutes watched
+        Settings_DialogPointsRow('auto_claim_bonus', Settings_Obj_default('watch_time_points'));
+        //Each notice only applies to its own auto claim
+        Settings_DialogPointsRow('auto_claim_notify_bonus', Settings_Obj_default('auto_claim_bonus'));
+        Settings_DialogPointsRow('auto_claim_notify_drops', Settings_Obj_default('auto_claim_drops'));
+    }
+
+    //A dependent row: hidden and turned off while what it depends on is off
+    function Settings_DialogPointsRow(key, available) {
+        var div = Main_getElementById(key + '_div'),
+            index = Settings_DialogValue.indexOf(key),
+            position = 0,
+            i = 0;
+
+        if (!available && Settings_Obj_default(key)) {
+            Settings_value[key].defaultValue = 0;
+            Main_setItem(key, 1);
+        }
+
+        if (!div) return;
+
+        Main_textContent(key, Settings_Obj_values(key));
+
+        if (available && index === -1) {
+            Main_RemoveClassWithEle(div, 'hideimp');
+
+            //Back in its dialog position, after the visible rows listed before it
+            for (i; Settings_DialogPointsKeys[i] !== key; i++) {
+                if (Settings_DialogValue.indexOf(Settings_DialogPointsKeys[i]) > -1) position++;
+            }
+
+            Settings_DialogValue.splice(position, 0, key);
+        } else if (!available) {
+            Main_AddClassWithEle(div, 'hideimp');
+
+            if (index > -1) Settings_DialogValue.splice(index, 1);
+        }
+    }
+
     function Settings_DialogBackupSyncRefresh() {
         var divArray = ['sync_users', 'sync_history', 'sync_settings'],
             element,
@@ -49498,6 +50180,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Settings_value.individual_lines.values = yes_no;
         Settings_value.chat_nickcolor.values = yes_no;
         Settings_value.chat_line_animation.values = yes_no;
+        Settings_value.chat_animated_emotes.values = yes_no;
         Settings_value.chat_timestamp.values = yes_no;
         Settings_value.chat_showUserNotice.values = yes_no;
         Settings_value.clear_chat.values = [STR_NO, STR_YES, STR_CHAT_CLEAR_MSG_GREY];
@@ -49521,6 +50204,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 values: Settings_value.chat_line_animation.values,
                 title: STR_CHAT_LINE_ANIMATION,
                 summary: null
+            },
+            chat_animated_emotes: {
+                defaultValue: Settings_value.chat_animated_emotes.defaultValue,
+                values: Settings_value.chat_animated_emotes.values,
+                title: STR_CHAT_ANIMATED_EMOTES,
+                summary: STR_CHAT_ANIMATED_EMOTES_SUMMARY
             },
             individual_lines: {
                 defaultValue: Settings_value.individual_lines.defaultValue,
@@ -53093,26 +53782,26 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 STR_SPACE_HTML +
                 STR_REFRESH +
                 ':' +
-                STR_HOLD_UP +
+                Navigation_KeyHintHtml(STR_HOLD_UP) +
                 STR_SPACE_HTML +
                 STR_SPACE_HTML +
                 '</div><div class="strokedelinebig" style="vertical-align: middle; display: inline-block;"><i class="icon-pp" style="color: #FFFFFF; font-size: 115%; "></i></div><div class="strokedelinebig" style="vertical-align: middle; display: inline-block;">' +
                 STR_SPACE_HTML +
-                STR_PICTURE_LIVE_FEED +
+                Navigation_KeyHintHtml(STR_PICTURE_LIVE_FEED) +
                 '</div>'
         );
     }
 
     function UserLiveFeed_Unset() {
-        Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + STR_HOLD_UP);
+        Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + Navigation_KeyHintHtml(STR_HOLD_UP));
     }
 
     function UserLiveFeed_SetMulti() {
-        Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + STR_HOLD_UP + STR_MULTI_TITLE);
+        Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + Navigation_KeyHintHtml(STR_HOLD_UP) + STR_MULTI_TITLE);
     }
 
     function UserLiveFeed_SetHoldUp() {
-        Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + STR_HOLD_UP + STR_FEED_END_DIALOG);
+        Main_IconLoad('icon_feed_refresh', 'icon-refresh', STR_REFRESH + ':' + Navigation_KeyHintHtml(STR_HOLD_UP) + STR_FEED_END_DIALOG);
     }
 
     function UserLiveFeed_KeyRightLeft(Adder) {
@@ -55389,6 +56078,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var Users_status = false;
     var Users_loadingData = true;
     var Users_Lang = '';
+    // Key code of an OK press that opened a dialog and is still held, so its auto-repeat can't pick an option.
+    var Users_HeldKey = 0;
     //Variable initialization end
 
     function Users_init() {
@@ -55757,6 +56448,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         } else Users_keyEnter();
     }
 
+    function Users_handleKeyUp(event) {
+        if (event && event.keyCode !== Users_HeldKey) return;
+        Users_HeldKey = 0;
+        Main_removeEventListener('keyup', Users_handleKeyUp);
+    }
+
     function Users_handleKeyDown(event) {
         //Main_Log('Users_handleKeyDown ' + event.keyCode);
 
@@ -55843,6 +56540,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                             break;
                         }
                     }
+                } else {
+                    // First row: Up moves to the Account tabs (Switch account, Add User, My Channel, Blocked), like the grid screens.
+                    Users_removeFocus();
+                    Navigation_Open(Users_handleKeyDown, 'tabs');
                 }
                 break;
             case KEY_DOWN:
@@ -55865,7 +56566,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             case KEY_PLAYPAUSE:
             case KEY_KEYBOARD_SPACE:
             case KEY_ENTER:
+                if (Users_HeldKey) break;
                 Users_handleKeyEnter();
+                if (Users_isUserDialogShown() || Users_isRemoveDialogShown()) {
+                    Users_HeldKey = event.keyCode;
+                    Main_addEventListener('keyup', Users_handleKeyUp);
+                }
                 break;
             case KEY_2:
                 Main_ReloadScreen();
@@ -56054,7 +56760,91 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var badgeURLSize;
 
     function emoteURL(id) {
-        return 'https://static-cdn.jtvnw.net/emoticons/v2/' + id + '/default/dark/' + emoteURLSize;
+        //default is the animated image when the emote has one, every emote also has a static one
+        var base = 'https://static-cdn.jtvnw.net/emoticons/v2/' + id,
+            animated = base + '/default/dark/' + emoteURLSize;
+
+        if (ChatLive_AnimatedEmotes) return animated;
+
+        var still = base + '/static/dark/' + emoteURLSize;
+
+        return emoteStillOk(still, animated) ? still : animated;
+    }
+
+    //An animated emote on screen keeps the WebView redrawing every frame (about half a CPU core on
+    //slow TVs), so with the "Animated emotes" chat option off, emotes with a still image use it
+    function emoteDiv(emote) {
+        if (ChatLive_AnimatedEmotes || !emote.chat_div_static) return emote.chat_div;
+
+        return emoteStillOk(emoteSrc(emote.chat_div_static), emoteSrc(emote.chat_div)) ? emote.chat_div_static : emote.chat_div;
+    }
+
+    function emoteSrc(div) {
+        var match = / src="([^"]+)"/.exec(div);
+
+        return match ? match[1] : '';
+    }
+
+    //Stills are the first frame of the animation, which is empty for emotes that animate in
+    //(tamashPANIC, ASSEMBLE...). Each still is checked once; a blank one falls back to the animation
+    var emoteStills = {};
+
+    function emoteStillOk(still, animated) {
+        var entry = emoteStills[still];
+
+        if (!entry) {
+            entry = emoteStills[still] = {blank: false};
+            emoteStillCheck(still, animated, entry);
+        }
+
+        return !entry.blank;
+    }
+
+    function emoteStillCheck(still, animated, entry) {
+        var img = new Image();
+
+        //CDN images allow cross-origin reads (Twitch, BTTV and 7TV), so the canvas can be read
+        img.crossOrigin = 'anonymous';
+        img.onload = function () {
+            try {
+                var size = Math.min(img.naturalWidth, 64) || 1,
+                    canvas = document.createElement('canvas'),
+                    context = canvas.getContext('2d'),
+                    visible = 0,
+                    data,
+                    i;
+
+                canvas.width = size;
+                canvas.height = size;
+                context.drawImage(img, 0, 0, size, size);
+                data = context.getImageData(0, 0, size, size).data;
+
+                for (i = 3; i < data.length; i += 4) {
+                    if (data[i] > 16) visible++;
+                }
+
+                if (visible < (size * size) / 100) {
+                    entry.blank = true;
+                    emoteStillFallback(still, animated);
+                }
+            } catch (e) {
+                //Unreadable pixels, keep the still
+            }
+        };
+        img.src = still;
+    }
+
+    //Lines already built with the blank still (on screen or waiting to be inserted) show the animation
+    function emoteStillFallback(still, animated) {
+        var style = Main_getElementById('emote_still_fallback');
+
+        if (!style) {
+            style = document.createElement('style');
+            style.id = 'emote_still_fallback';
+            document.head.appendChild(style);
+        }
+
+        style.sheet.insertRule('.emoticon[src="' + still + '"] {content: url("' + animated + '");}', style.sheet.cssRules.length);
     }
 
     function emoteURLFromObj(obj, replaceDark) {
@@ -56079,6 +56869,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         var SplittedMessage = message.split(' '),
             retArray = [],
             emote,
+            zero,
             cheer,
             i = 0,
             len = SplittedMessage.length,
@@ -56099,11 +56890,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
                 //some 7tv emotes goes direct on top of the center of the previews emote
                 if (retArray.length && emote && emote.chat_div_zero && Main_A_includes_B(retArray[retArray.length - 1], 'emoticon')) {
+                    zero =
+                        emoteDiv(emote) === emote.chat_div ? emote.chat_div_zero : emoteDiv(emote).replace('emoticon', 'emoticon zero-width-emote');
                     retArray[retArray.length - 1] = Main_A_includes_B(retArray[retArray.length - 1], 'zero-width-container')
-                        ? zeroWidthDiv(retArray[retArray.length - 1], emote.chat_div_zero)
-                        : zeroWidth(retArray[retArray.length - 1], emote.chat_div_zero);
+                        ? zeroWidthDiv(retArray[retArray.length - 1], zero)
+                        : zeroWidth(retArray[retArray.length - 1], zero);
                 } else if (emote) {
-                    retArray.push(emote.chat_div);
+                    retArray.push(emoteDiv(emote));
                 } else {
                     //parse with dontremove false escapes html itself, mescape is not needed before it
                     retArray.push(!i && skipEscape ? SplittedMessage[i] : twemoji.parse(SplittedMessage[i], false, true));
@@ -56153,11 +56946,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         //Run on reverse order to catch the correct position amountsArray = 1000, 500, 100, 1 ... amount = 250
         while (length--) {
-            if (amount >= amountsArray[length]) return amounts[amountsArray[length]];
+            if (amount >= amountsArray[length]) return emoteDiv(amounts[amountsArray[length]]);
         }
 
         //Fail safe
-        return amounts[amountsArray[0]];
+        return emoteDiv(amounts[amountsArray[0]]);
     }
 
     function emoticonize(message, emotes) {

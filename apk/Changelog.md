@@ -9,6 +9,13 @@ The App is divided in two part, **Apk** and **Web** you can check it version in 
 
 The app has a building update check function, so whenever there is a update a red text will show up bellow the main pages clock, also a short warning will pop on the screen let you know if is a **Apk** or **Web** update.
 
+November 5 2026 (3.0.400)
+==============
+
+* APK: the home screen channels (Live, User Live, Games) load their content even when the TV provider channel is not marked browsable — only the system launcher sets that flag, so on custom launchers like Projectivy the rows used to stay empty (by @Dryness, #12).
+* Chat: new Animated emotes option shows still images instead of animations, a big processor saving on slower TVs; watching a live stream reports watch time so channel points and drops accrue; the bonus chest and finished drops can be claimed automatically (off by default) (by @Dryness, #23, #13, #14).
+* Interface: key hints draw remote keys as glyphs with group dividers; holding OK can no longer pick a dialog option through auto-repeat; Account screen cards, tabs and rail fixes; welcome screen single highlight and reachable rail (by @Dryness, #8, #9, #10, #11).
+
 November 5 2026 (3.0.399)
 ==============
 

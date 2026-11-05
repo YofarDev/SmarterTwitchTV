@@ -21,11 +21,24 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 399, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/399/SmarterPurpleTV_3_0_399.apk',
+    publishVersionCode: 400, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/400/SmarterPurpleTV_3_0_400.apk',
     WebVersion: 'November 5 2026',
-    WebTag: 780, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 781, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 5 2026 (Web 781 / APK 400)',
+            changes: [
+                'Channel points: watching a live stream now reports watch time, so channel points, drop campaign progress and the bonus chest accrue like on the Twitch site (by @Dryness, #13)',
+                'Channel points: new settings dialog with auto claim — the bonus chest and finished drops can be claimed automatically (off by default, Settings › Channel points), with optional toast notices (by @Dryness, #14)',
+                'Chat: new Animated emotes option — still images instead of animations, a big processor saving on slower TVs (by @Dryness, #23)',
+                'Interface: key hints (the footer, player drawer help lines and the controls dialog) draw the remote keys as glyphs with group dividers, and the footer now advertises Hold Up Refresh (by @Dryness, #8)',
+                'Remote: holding OK on a card or an account can no longer pick an option in the dialog it opens through key auto-repeat (by @Dryness, #9)',
+                'Account: user cards are no longer clipped under the tabs, the tabs and rail are reachable again, the leftover page counter is gone, and Add User no longer lets a late answer act as Back on the next screen (by @Dryness, #10)',
+                'Welcome screen: the buttons show a single highlight, and Left reaches the navigation rail (by @Dryness, #11)',
+                'Home screen: User Live and Games fill in on custom TV launchers, and items opened from the home channels open in their own section — a game shows under Browse › Categories (by @Dryness, #12; the channel loading part is APK side)'
+            ]
+        },
         {
             title: 'November 5 2026 (Web 780 / APK 399)',
             changes: [
