@@ -199,6 +199,7 @@ function environment(target) {
         OSInterface_FixViewPosition: noop,
         Play_SetFullScreen: noop,
         Play_SetControlsVisibilityPlayer: noop,
+        PlayChannelPoints_Start: noop,
         Play_loadDataErrorFinish: () => effects.push('stream-error'),
         Play_loadDataId: 99
     };
