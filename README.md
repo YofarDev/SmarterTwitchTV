@@ -1,21 +1,57 @@
 # Smarter Purple TV
 
-A Twitch client for Android TV. This is a fork of [SmartTwitchTV](https://github.com/fgl27/SmartTwitchTV) by Felipe de Leon — same app you know, slowly getting a mind of its own.
+<div align="center">
 
-Same two-part architecture as upstream — a web app (UI and most features) loaded by an Android APK (players and platform glue) — same features, same remote-friendly navigation. The differences are listed below.
+<img src="docs/ui-redesign-screenshots/production-browse-720.png" alt="Smarter Purple TV — Browse screen" width="720">
 
-## What's different from SmartTwitchTV
+![Android TV](https://img.shields.io/badge/platform-Android%20TV-9146FF?logo=android&logoColor=white)
+[![Latest release](https://img.shields.io/github/v/release/YofarDev/SmarterTwitchTV?label=latest%20release)](https://github.com/YofarDev/SmarterTwitchTV/releases/latest)
+[![License](https://img.shields.io/github/license/YofarDev/SmarterTwitchTV)](LICENSE)
 
-- **Ad blocking, no proxy needed.** Ads stitched into live streams are removed directly from the playback playlists, using only Twitch's own servers. Ad breaks that can no longer be hidden freeze the picture on the last live frame until the break is over, and a pre-playback probe checks every stream quality so stitched ads can't slip into playback. On by default, can be turned off in Settings → Player → Block ads. (Requires an APK built from this fork.)
-- **Follow raids.** When the watched streamer raids, the player switches to the raided channel automatically (optional, requires login).
-- **A new default look.** Purple accent throughout: focused items get a purple outline and glow, the Following hearts are purple, and so are the loading spinners. Same dark base, own identity.
+**An unofficial Twitch client for Android TV and Google TV.**
 
-**Chat on phone:** APK 386 can host the phone chat page on your local network. Scan the TV QR, sign in on your phone, and chat follows the live stream playing on TV. See [setup and build instructions](docs/phone-chat-setup.md); Twitch login requires an owner-controlled client ID.
+Watch live streams, VODs and clips from the comfort of your couch — with a remote.
 
-## Everything else
+</div>
 
-Build instructions, translations, troubleshooting and the full story of the app live in the [upstream README](https://github.com/fgl27/SmartTwitchTV#readme). To build this fork, follow the same steps against this repository.
+Smarter Purple TV (SPTV) is [SmartTwitchTV](https://github.com/fgl27/SmartTwitchTV) with a purple identity and fork-specific improvements.
 
-## Credits and license
+## Features
 
-SmartTwitchTV is © 2017–present Felipe de Leon, its contributors, and this fork's contributors. Licensed under the [GPL-3.0](LICENSE), as is everything derived from it.
+- **Built for TV** — navigate every screen with the directional remote, OK and Back.
+- **Browse Twitch** — live streams, categories, VODs, clips, search, Following and Library.
+- **Watch your way** — picture-in-picture, multistream, chat and optional Twitch login.
+- **Better chat** — native Twitch emotes plus BTTV, FrankerFaceZ and 7TV emotes.
+- **Fork improvements** — stitched-ad filtering without a proxy, automatic follow raids and a purple-first interface.
+- **Chat on your phone** — show a QR code on the TV and keep chatting from your phone. See the [phone-chat guide](docs/phone-chat-setup.md).
+- **'TwitchNoSub feature'** — be able to watch any sub-only vod on Twitch 🤫
+
+| Live player | Light theme |
+| --- | --- |
+| ![Live player with chat](docs/ui-redesign-screenshots/production-chat-720.png) | ![Light theme](docs/ui-redesign-screenshots/production-light-720.png) |
+
+## Install
+
+1. Download the [latest APK](https://github.com/YofarDev/SmarterTwitchTV/releases/latest).
+2. Sideload it on Android TV or Google TV. You may need to allow your file manager or downloader to install unknown apps.
+
+The TV web interface can update independently of the APK, so many improvements do not require a reinstall.
+
+## Build from source
+
+The web app lives in `app/`; the Android host lives in `apk/`. Generated files in `release/` must be rebuilt, not edited by hand.
+
+```sh
+npm install
+node release/scripts/maker.js
+```
+
+For the full Android build, translation workflow and architecture notes, see the [upstream build guide](https://github.com/fgl27/SmartTwitchTV#readme). The [phone-chat guide](docs/phone-chat-setup.md) contains the additional client-ID setup.
+
+## Support
+
+If SPTV is useful, you can [support development on Ko-fi](https://ko-fi.com/yofardev).
+
+## Credits
+
+SPTV is a fork of SmartTwitchTV by Felipe de Leon and its contributors. It is licensed under the [GPL-3.0](LICENSE) and is not affiliated with Twitch.
