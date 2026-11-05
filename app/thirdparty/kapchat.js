@@ -18,7 +18,91 @@ var badgeURLSizes = {
 var badgeURLSize;
 
 function emoteURL(id) {
-    return 'https://static-cdn.jtvnw.net/emoticons/v2/' + id + '/default/dark/' + emoteURLSize;
+    //default is the animated image when the emote has one, every emote also has a static one
+    var base = 'https://static-cdn.jtvnw.net/emoticons/v2/' + id,
+        animated = base + '/default/dark/' + emoteURLSize;
+
+    if (ChatLive_AnimatedEmotes) return animated;
+
+    var still = base + '/static/dark/' + emoteURLSize;
+
+    return emoteStillOk(still, animated) ? still : animated;
+}
+
+//An animated emote on screen keeps the WebView redrawing every frame (about half a CPU core on
+//slow TVs), so with the "Animated emotes" chat option off, emotes with a still image use it
+function emoteDiv(emote) {
+    if (ChatLive_AnimatedEmotes || !emote.chat_div_static) return emote.chat_div;
+
+    return emoteStillOk(emoteSrc(emote.chat_div_static), emoteSrc(emote.chat_div)) ? emote.chat_div_static : emote.chat_div;
+}
+
+function emoteSrc(div) {
+    var match = / src="([^"]+)"/.exec(div);
+
+    return match ? match[1] : '';
+}
+
+//Stills are the first frame of the animation, which is empty for emotes that animate in
+//(tamashPANIC, ASSEMBLE...). Each still is checked once; a blank one falls back to the animation
+var emoteStills = {};
+
+function emoteStillOk(still, animated) {
+    var entry = emoteStills[still];
+
+    if (!entry) {
+        entry = emoteStills[still] = {blank: false};
+        emoteStillCheck(still, animated, entry);
+    }
+
+    return !entry.blank;
+}
+
+function emoteStillCheck(still, animated, entry) {
+    var img = new Image();
+
+    //CDN images allow cross-origin reads (Twitch, BTTV and 7TV), so the canvas can be read
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+        try {
+            var size = Math.min(img.naturalWidth, 64) || 1,
+                canvas = document.createElement('canvas'),
+                context = canvas.getContext('2d'),
+                visible = 0,
+                data,
+                i;
+
+            canvas.width = size;
+            canvas.height = size;
+            context.drawImage(img, 0, 0, size, size);
+            data = context.getImageData(0, 0, size, size).data;
+
+            for (i = 3; i < data.length; i += 4) {
+                if (data[i] > 16) visible++;
+            }
+
+            if (visible < (size * size) / 100) {
+                entry.blank = true;
+                emoteStillFallback(still, animated);
+            }
+        } catch (e) {
+            //Unreadable pixels, keep the still
+        }
+    };
+    img.src = still;
+}
+
+//Lines already built with the blank still (on screen or waiting to be inserted) show the animation
+function emoteStillFallback(still, animated) {
+    var style = Main_getElementById('emote_still_fallback');
+
+    if (!style) {
+        style = document.createElement('style');
+        style.id = 'emote_still_fallback';
+        document.head.appendChild(style);
+    }
+
+    style.sheet.insertRule('.emoticon[src="' + still + '"] {content: url("' + animated + '");}', style.sheet.cssRules.length);
 }
 
 function emoteURLFromObj(obj, replaceDark) {
@@ -43,6 +127,7 @@ function extraMessageTokenize(message, chat_number, bits, previewsEmote) {
     var SplittedMessage = message.split(' '),
         retArray = [],
         emote,
+        zero,
         cheer,
         i = 0,
         len = SplittedMessage.length,
@@ -63,11 +148,12 @@ function extraMessageTokenize(message, chat_number, bits, previewsEmote) {
 
             //some 7tv emotes goes direct on top of the center of the previews emote
             if (retArray.length && emote && emote.chat_div_zero && Main_A_includes_B(retArray[retArray.length - 1], 'emoticon')) {
+                zero = emoteDiv(emote) === emote.chat_div ? emote.chat_div_zero : emoteDiv(emote).replace('emoticon', 'emoticon zero-width-emote');
                 retArray[retArray.length - 1] = Main_A_includes_B(retArray[retArray.length - 1], 'zero-width-container')
-                    ? zeroWidthDiv(retArray[retArray.length - 1], emote.chat_div_zero)
-                    : zeroWidth(retArray[retArray.length - 1], emote.chat_div_zero);
+                    ? zeroWidthDiv(retArray[retArray.length - 1], zero)
+                    : zeroWidth(retArray[retArray.length - 1], zero);
             } else if (emote) {
-                retArray.push(emote.chat_div);
+                retArray.push(emoteDiv(emote));
             } else {
                 //parse with dontremove false escapes html itself, mescape is not needed before it
                 retArray.push(!i && skipEscape ? SplittedMessage[i] : twemoji.parse(SplittedMessage[i], false, true));
@@ -115,11 +201,11 @@ function getCheer(prefix, amount, chat_number) {
 
     //Run on reverse order to catch the correct position amountsArray = 1000, 500, 100, 1 ... amount = 250
     while (length--) {
-        if (amount >= amountsArray[length]) return amounts[amountsArray[length]];
+        if (amount >= amountsArray[length]) return emoteDiv(amounts[amountsArray[length]]);
     }
 
     //Fail safe
-    return amounts[amountsArray[0]];
+    return emoteDiv(amounts[amountsArray[0]]);
 }
 
 function emoticonize(message, emotes) {

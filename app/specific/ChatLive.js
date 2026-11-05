@@ -118,6 +118,8 @@ var ChatLive_SendPingId;
 var ChatLive_selectedChannel = [];
 var ChatLive_sub_replace = new RegExp('\\\\s', 'gi');
 var ChatLive_chat_line_class = '';
+//Chat option "Animated emotes"; off swaps animated emotes for their static image (see emoteDiv)
+var ChatLive_AnimatedEmotes = true;
 
 var KnowBots = {
     Nightbot: 1,
@@ -355,6 +357,7 @@ function ChatLive_SetOptions(chat_number, Channel_id, selectedChannel) {
     ChatLive_Channel_Regex_Replace[chat_number] = new RegExp('@' + ChatLive_selectedChannel[chat_number], 'gi');
 
     ChatLive_chat_line_class = (Settings_value.chat_line_animation.defaultValue ? 'chat_line_animation ' : '') + 'chat_line_holder';
+    ChatLive_AnimatedEmotes = Boolean(Settings_value.chat_animated_emotes.defaultValue);
 
     if (ChatLive_User_Set) {
         ChatLive_User_Regex_Search = new RegExp('@' + AddUser_UsernameArray[0].name + '(?=\\s|$)', 'i');
@@ -862,19 +865,21 @@ function ChatLive_loadEmotesbttv(data, chat_number) {
 }
 
 function ChatLive_loadEmotesbttvChannel(data, chat_number) {
-    var url, srcset, chat_div, id;
+    var url, srcset, chat_div, chat_div_static, id;
 
     try {
         data.forEach(function (emote) {
             srcset = ChatLive_bttv_srcset(emote.id);
             url = ChatLive_Base_BTTV_url + emote.id + '/3x';
             chat_div = emoteTemplate(url, srcset);
+            chat_div_static = ChatLive_bttv_static(emote);
             id = emote.code + emote.id;
 
             extraEmotes[chat_number][emote.code] = {
                 code: emote.code,
                 id: id,
                 chat_div: chat_div,
+                chat_div_static: chat_div_static,
                 '4x': url,
                 srcset: srcset
             };
@@ -883,6 +888,7 @@ function ChatLive_loadEmotesbttvChannel(data, chat_number) {
                 code: emote.code,
                 id: id,
                 chat_div: chat_div,
+                chat_div_static: chat_div_static,
                 '4x': url,
                 srcset: srcset
             };
@@ -903,6 +909,15 @@ function ChatLive_bttv_srcset(id) {
     }
 
     return srcset.length ? srcset.slice(0, -1) : srcset;
+}
+
+//Still image of an animated BTTV emote; BTTV serves /static/ only for animated emotes
+function ChatLive_bttv_static(emote) {
+    if (!emote.animated) return null;
+
+    var base = ChatLive_Base_BTTV_url + emote.id + '/static/';
+
+    return emoteTemplate(base + '3x.webp', base + '1x.webp 1x,' + base + '2x.webp 2x,' + base + '3x.webp 3x');
 }
 
 function ChatLive_loadCheersChannel(chat_number, id) {
@@ -927,10 +942,12 @@ function ChatLive_loadCheersChannelSuccess(responseText, chat_number, id) {
             cheers[ChatLive_selectedChannel_id[chat_number]][action.prefix] = {};
 
             action.tiers.forEach(function (tier) {
-                cheers[ChatLive_selectedChannel_id[chat_number]][action.prefix][tier.min_bits] = emoteTemplate(
-                    tier.images.dark.animated['4'],
-                    ChatLive_ffz_srcset(tier.images.dark.animated)
-                );
+                cheers[ChatLive_selectedChannel_id[chat_number]][action.prefix][tier.min_bits] = {
+                    chat_div: emoteTemplate(tier.images.dark.animated['4'], ChatLive_ffz_srcset(tier.images.dark.animated)),
+                    chat_div_static: tier.images.dark.static
+                        ? emoteTemplate(tier.images.dark.static['4'], ChatLive_ffz_srcset(tier.images.dark.static))
+                        : null
+                };
             });
         });
 
@@ -947,6 +964,7 @@ function ChatLive_updateExtraEmotes(obj, chat_number) {
             code: obj[property].code,
             id: obj[property].id,
             chat_div: obj[property].chat_div,
+            chat_div_static: obj[property].chat_div_static,
             chat_div_zero: obj[property].chat_div_zero,
             '4x': obj[property]['4x'],
             srcset: obj[property].srcset
@@ -1096,7 +1114,7 @@ function ChatLive_loadEmotesseven_tv(data, chat_number, isGlobal) {
         extraEmotesDone.seven_tv[ChatLive_selectedChannel_id[chat_number]] = {};
     }
 
-    var url, srcset, chat_div, chat_div_zero, id, emoteUrls, baseEmoteUrl, emote;
+    var url, srcset, chat_div, chat_div_static, chat_div_zero, id, emoteUrls, baseEmoteUrl, emote;
 
     try {
         emotes.forEach(function (seven_tv_emote) {
@@ -1121,6 +1139,7 @@ function ChatLive_loadEmotesseven_tv(data, chat_number, isGlobal) {
 
             srcset = ChatLive_seven_tv_srcset(baseEmoteUrl, emoteUrls);
             chat_div = emoteTemplate(url, srcset);
+            chat_div_static = emote.animated ? ChatLive_seven_tv_static(baseEmoteUrl, emoteUrls) : null;
             id = emote.name + emote.id;
             chat_div_zero = emote.flags === 256 ? chat_div.replace('emoticon', 'emoticon zero-width-emote') : null;
 
@@ -1128,6 +1147,7 @@ function ChatLive_loadEmotesseven_tv(data, chat_number, isGlobal) {
                 code: emote.name,
                 id: id,
                 chat_div: chat_div,
+                chat_div_static: chat_div_static,
                 chat_div_zero: chat_div_zero,
 
                 '4x': url,
@@ -1140,6 +1160,7 @@ function ChatLive_loadEmotesseven_tv(data, chat_number, isGlobal) {
                     code: emote.name,
                     id: id,
                     chat_div: chat_div,
+                    chat_div_static: chat_div_static,
                     chat_div_zero: chat_div_zero,
 
                     '4x': url,
@@ -1150,6 +1171,7 @@ function ChatLive_loadEmotesseven_tv(data, chat_number, isGlobal) {
                     code: emote.name,
                     id: id,
                     chat_div: chat_div,
+                    chat_div_static: chat_div_static,
                     chat_div_zero: chat_div_zero,
 
                     '4x': url,
@@ -1186,11 +1208,26 @@ function ChatLive_seven_tv_srcset(emoteUrl, array) {
 
     for (i; i < len; i++) {
         emote = array[i];
-        emoteSize = emote.name.split('.')[0]; // name is 1x.webp
+        emoteSize = emote.name.split(/[._]/)[0]; // name is 1x.webp, or 1x_static.webp for the still image
         srcset += ChatLive_seven_tv_getEmoteUrl(emoteUrl, emote) + ' ' + emoteSize + ',';
     }
 
     return srcset.length ? srcset.slice(0, -1) : srcset;
+}
+
+//Still image of an animated 7TV emote, from the files' static_name (1x_static.webp...)
+function ChatLive_seven_tv_static(emoteUrl, files) {
+    var stills = [],
+        i = 0,
+        len = files.length;
+
+    for (i; i < len; i++) {
+        if (files[i].static_name) stills.push({name: files[i].static_name});
+    }
+
+    if (!stills.length) return null;
+
+    return emoteTemplate(ChatLive_seven_tv_getEmoteUrl(emoteUrl, stills[stills.length - 1]), ChatLive_seven_tv_srcset(emoteUrl, stills));
 }
 
 function ChatLive_PreLoadChat(chat_number, id) {

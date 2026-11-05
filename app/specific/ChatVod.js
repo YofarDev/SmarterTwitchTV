@@ -417,19 +417,21 @@ function Chat_loadEmotesSuccessBttv(data) {
 function Chat_loadEmotesbttvGlobal(data) {
     extraEmotesDone.bttvGlobal = {};
 
-    var url, srcset, chat_div, id;
+    var url, srcset, chat_div, chat_div_static, id;
 
     try {
         data.forEach(function (emote) {
             srcset = ChatLive_bttv_srcset(emote.id);
             url = ChatLive_Base_BTTV_url + emote.id + '/3x';
             chat_div = emoteTemplate(url, srcset);
+            chat_div_static = ChatLive_bttv_static(emote);
             id = emote.code + emote.id;
 
             extraEmotes[0][emote.code] = {
                 code: emote.code,
                 id: id,
                 chat_div: chat_div,
+                chat_div_static: chat_div_static,
                 '4x': url,
                 srcset: srcset
             };
@@ -438,6 +440,7 @@ function Chat_loadEmotesbttvGlobal(data) {
                 code: emote.code,
                 id: id,
                 chat_div: chat_div,
+                chat_div_static: chat_div_static,
                 '4x': url,
                 srcset: srcset
             };
@@ -446,6 +449,7 @@ function Chat_loadEmotesbttvGlobal(data) {
                 code: emote.code,
                 id: id,
                 chat_div: chat_div,
+                chat_div_static: chat_div_static,
                 '4x': url,
                 srcset: srcset
             };

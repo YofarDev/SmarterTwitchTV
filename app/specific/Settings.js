@@ -708,6 +708,11 @@ var Settings_value = {
         values: ['no', 'yes'],
         defaultValue: 1
     },
+    chat_animated_emotes: {
+        //Migrated to dialog
+        values: ['no', 'yes'],
+        defaultValue: 2
+    },
     individual_lines: {
         //Migrated to dialog
         values: ['no', 'yes'],
@@ -3546,6 +3551,7 @@ function Settings_DialogShowChat(click) {
     Settings_value.individual_lines.values = yes_no;
     Settings_value.chat_nickcolor.values = yes_no;
     Settings_value.chat_line_animation.values = yes_no;
+    Settings_value.chat_animated_emotes.values = yes_no;
     Settings_value.chat_timestamp.values = yes_no;
     Settings_value.chat_showUserNotice.values = yes_no;
     Settings_value.clear_chat.values = [STR_NO, STR_YES, STR_CHAT_CLEAR_MSG_GREY];
@@ -3569,6 +3575,12 @@ function Settings_DialogShowChat(click) {
             values: Settings_value.chat_line_animation.values,
             title: STR_CHAT_LINE_ANIMATION,
             summary: null
+        },
+        chat_animated_emotes: {
+            defaultValue: Settings_value.chat_animated_emotes.defaultValue,
+            values: Settings_value.chat_animated_emotes.values,
+            title: STR_CHAT_ANIMATED_EMOTES,
+            summary: STR_CHAT_ANIMATED_EMOTES_SUMMARY
         },
         individual_lines: {
             defaultValue: Settings_value.individual_lines.defaultValue,
