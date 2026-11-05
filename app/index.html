@@ -2017,6 +2017,8 @@
                 width: 98%;
                 margin-left: 1%;
                 margin-bottom: 0.5%;
+                /* room for the focus outline of the first and last rows inside the clipped scroll area */
+                padding: 0.3em 0;
             }
 
             .hist_div,
@@ -3155,6 +3157,17 @@
                 width: 87%;
                 height: 68%;
                 overflow: hidden;
+            }
+            /* Settings has no tabs row under the heading, start the list right below the account line */
+            .navigation-settings #screens_holder {
+                top: 16%;
+                height: 76%;
+            }
+            /* Same elevated surface as the rail and player drawers. Class-only selector, like .navigation-rail,
+             * so the theme rule in SettingsColor.js (.navigation-settings #settings_holder) outranks it. */
+            .navigation-settings .settings_holder {
+                background: #1e1b25;
+                border-radius: 0.4em;
             }
             .navigation-live #screens_holder {
                 height: 53%;

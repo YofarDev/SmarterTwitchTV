@@ -927,6 +927,8 @@ function Settings_init() {
     Main_ShowElement('settings_holder');
     Main_IconLoad('label_thumb', 'icon-return', STR_GOBACK);
     Main_HideElement('label_refresh');
+    //Settings is a single list, drop the page counter left by the previous grid screen
+    Main_CounterDialogRst();
     Settings_cursorY = 0;
     Settings_inputFocus(Settings_cursorY);
     Navigation_Render(Main_values.Main_Go);
@@ -942,6 +944,7 @@ function Settings_exit() {
     Main_ShowElement('label_refresh');
     Settings_RemoveInputFocus();
     Main_HideElement('settings_holder');
+    Main_RemoveClass('scene1', 'navigation-settings');
 }
 
 function Settings_isVisible() {
@@ -1999,10 +2002,19 @@ function Settings_ScrollTable() {
 
     if (row && view) {
         var rowRect = row.getBoundingClientRect(),
-            viewRect = view.getBoundingClientRect();
+            viewRect = view.getBoundingClientRect(),
+            style = window.getComputedStyle(row),
+            //The focus outline is drawn outside the row, keep it inside the clipped area too
+            edge = Math.ceil((parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
+            top = rowRect.top - edge,
+            bottom = rowRect.bottom + edge,
+            title = row.previousElementSibling;
 
-        if (rowRect.top < viewRect.top) target = view.scrollTop + (rowRect.top - viewRect.top);
-        else if (rowRect.bottom > viewRect.bottom) target = view.scrollTop + (rowRect.bottom - viewRect.bottom);
+        //Show the section title together with the first option below it
+        if (title && title.classList.contains('settings_section')) top = Math.min(top, title.getBoundingClientRect().top);
+
+        if (top < viewRect.top) target = view.scrollTop + (top - viewRect.top);
+        else if (bottom > viewRect.bottom) target = view.scrollTop + (bottom - viewRect.bottom);
 
         if (target !== null) {
             target = Math.max(0, Math.min(target, view.scrollHeight - view.clientHeight));

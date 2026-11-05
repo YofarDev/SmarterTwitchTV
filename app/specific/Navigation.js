@@ -266,9 +266,11 @@ function Navigation_Render(screen) {
     else Main_HideElement('navigation-details');
     Main_ShowElement('navigation-shell');
     if (Settings_isVisible()) {
+        Main_AddClass('scene1', 'navigation-settings');
         Main_HideElement('navigation-tabs');
         Main_HideElement('navigation-refresh');
     } else {
+        Main_RemoveClass('scene1', 'navigation-settings');
         Main_ShowElement('navigation-tabs');
         Main_ShowElement('navigation-refresh');
     }
@@ -378,6 +380,8 @@ function Navigation_Close(restore) {
         // Settings and the search form keep their own focus treatment; the grid behind must not take it.
         if (obj && obj.addFocus && obj.itemsCount && !Navigation_Onboarding && !Settings_isVisible() && Main_values.Main_Go !== Main_Search)
             Screens_addFocus(true, Main_values.Main_Go);
+        // Settings drops its row focus when Up opens the rail, give it back with the input.
+        if (Settings_isVisible() && !Navigation_Onboarding) Settings_inputFocus(Settings_cursorY);
         if (obj && obj.emptyContent && Main_values.Main_Go === Main_UserLive && !Navigation_Onboarding)
             Main_getElementById('navigation-retry').focus();
     }
