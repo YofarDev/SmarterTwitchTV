@@ -142,6 +142,7 @@
         STR_CONTROLS_PLAY_11,
         STR_CONTROLS_PLAY_12,
         STR_CONTROLS_PLAY_14,
+        STR_CONTROLS_PLAY_15,
         STR_OAUTH_IN,
         STR_USER_CODE,
         STR_USER_CODE_OK,
@@ -186,6 +187,7 @@
         STR_OPEN_LAST_BROADCAST,
         STR_NO_BROADCAST,
         STR_NO_BROADCAST_WARNING,
+        STR_LAST_VOD_NOT_FOUND,
         STR_NO_CHAT,
         STR_IS_NOW,
         STR_OPEN_HOST,
@@ -1124,6 +1126,9 @@
             STR_DOT +
             STR_CONTROLS_PLAY_13 +
             STR_BR +
+            STR_DOT +
+            STR_CONTROLS_PLAY_15 +
+            STR_BR +
             STR_DIV_TITLE +
             STR_CHAT +
             '</div>' +
@@ -1652,6 +1657,7 @@
             'All media keys are supported (play, pause, stop, next track, fast forward etc ...), some are used as shortcuts for audio and video mode changes';
         STR_CONTROLS_PLAY_14 =
             'Chat and video (side by side): Key 2 or the fast forward media key. It also switches between the picture in picture and the 50/50 mode';
+        STR_CONTROLS_PLAY_15 = 'Open the last VOD of the channel: Key 7 (while watching a live or browsing a channel)';
         STR_F_DISABLE_CHAT = 'Force disable chat';
         STR_OAUTH_IN =
             'Adding a key allows the app to access chat using your user to send messages and get your emote list (enables you to be gifted subs given in chat), follow/unfollow channels, and access some user content faster.<br><br>Adding a key is not demanding and can be done at any point later.<br><br>In doubt read the contents of this link:<br><br>%x<br><br>For some devices, a mouse is necessary to complete the authorization action as you may need to manually click on a button to confirm certain actions.<br><br>Add a key for';
@@ -1714,6 +1720,7 @@
         STR_STAY_IS_OFFLINE = 'The stream was offline';
         STR_NO_BROADCAST = 'No VOD';
         STR_NO_BROADCAST_WARNING = 'There are no VODs for this clip';
+        STR_LAST_VOD_NOT_FOUND = 'There are no VODs for this channel';
         STR_NO_CHAT = 'and because of that no chat';
         STR_IS_NOW = 'is now';
         STR_OPEN_HOST = 'Open the Hosting';
@@ -8359,9 +8366,15 @@
         VersionBase: '3.0',
         publishVersionCode: 395, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/395/SmarterPurpleTV_3_0_395.apk',
-        WebVersion: 'November 4 2026',
-        WebTag: 775, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebVersion: 'November 5 2026',
+        WebTag: 776, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 5 2026 (Web 776)',
+                changes: [
+                    "Remote: key 7 opens the channel's most recent VOD while watching a live stream or browsing a channel screen — handy to jump from a live to what was streamed before; multi view and picture in picture keep their own keys"
+                ]
+            },
             {
                 title: 'November 4 2026 (Web 775)',
                 changes: [
@@ -12917,6 +12930,14 @@
                 if (!AddUser_UserIsSet()) {
                     Main_showWarningDialog(STR_NOKUSER_WARN, 2000);
                 }
+                break;
+            case KEY_7:
+                if (!ChannelContent_allowMature) {
+                    Main_showWarningDialog(STR_MATURE_DISABLED, 2000);
+                    break;
+                }
+
+                PlayVod_OpenLastVod(Main_values.Main_selectedChannel_id);
                 break;
             default:
                 break;
@@ -29415,6 +29436,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             case KEY_4:
                 Play_controls[Play_controlsChatSend].enterKey();
                 break;
+            case KEY_7:
+                if (Play_isEndDialogVisible() || Play_MultiDialogVisible()) break;
+
+                PlayVod_OpenLastVod(Play_data.data[14]);
+
+                break;
             case KEY_NUMPAD_6:
             case KEY_6:
                 PhoneChat_Toggle(e);
@@ -34477,7 +34504,92 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var PlayVod_VodOffset;
     var PlayVod_VodGameID;
     var PlayVod_ChaptersArray = [];
+
+    var PlayVod_LastVodLoading = false;
     //Variable initialization end
+
+    //Key 7 shortcut, opens the most recent VOD of a channel from the live player or the channel content screen
+    function PlayVod_OpenLastVod(Channel_id) {
+        if (PlayVod_LastVodLoading) return;
+
+        if (Play_MultiEnable || PlayExtra_PicturePicture) {
+            Play_showWarningMiddleDialog(STR_PP_VOD_ERROR, 2500);
+            return;
+        }
+
+        PlayVod_LastVodLoading = true;
+
+        BaseXmlHttpGet(
+            Main_helix_api + 'videos?first=1&user_id=' + Channel_id + '&type=archive&sort=time',
+            PlayVod_OpenLastVodSuccess,
+            PlayVod_OpenLastVodError,
+            null,
+            null,
+            true
+        );
+    }
+
+    function PlayVod_OpenLastVodSuccess(response) {
+        var obj = JSON.parse(response);
+
+        if (obj.data && obj.data.length) PlayVod_OpenLastVodEnd(ScreensObj_VodCellArray(obj.data[0], false, '', ''));
+        else PlayVod_OpenLastVodError();
+    }
+
+    function PlayVod_OpenLastVodError() {
+        PlayVod_LastVodLoading = false;
+
+        if (Main_isScene2DocVisible()) Play_showWarningDialog(STR_LAST_VOD_NOT_FOUND, 2000);
+        else Main_showWarningDialog(STR_LAST_VOD_NOT_FOUND, 2000);
+    }
+
+    //When update this check Main_OPenAsVod and Main_OpenVodStart
+    function PlayVod_OpenLastVodEnd(vodData) {
+        PlayVod_LastVodLoading = false;
+
+        if (Main_isScene2DocVisible()) {
+            //Live player context, same transition of Main_OPenAsVod when opening the VOD of the current stream
+            if (Play_isOn) {
+                Play_SavePlayData();
+                Main_OPenAsVod_shutdownStream();
+            } else if (Play_PreviewId) UserLiveFeed_Hide();
+
+            Play_CheckIfIsLiveCleanEnd();
+        } else {
+            //Channel content context, stop the live preview and release the screen the same way ChannelContent_keyEnter does
+            ChannelContent_CheckIfIsLiveSTop();
+            ChannelContent_removeFocus();
+            Main_removeEventListener('keydown', ChannelContent_handleKeyDown);
+            Main_HideElement('channel_content_scroll');
+
+            Play_CheckIfIsLiveCleanEnd();
+        }
+
+        Main_values_Play_data = vodData;
+
+        Main_values.Main_selectedChannelDisplayname = vodData[1];
+        Main_values.Main_selectedChannel = vodData[6];
+        Main_values.Main_selectedChannel_id = vodData[14];
+
+        Play_data.data[1] = vodData[1];
+        Play_data.data[3] = vodData[3];
+        if (Play_data.data[3] === null) Play_data.data[3] = '';
+        if (vodData[16]) Play_data.data[18] = vodData[16];
+        Play_data.data[6] = vodData[6];
+        Play_data.data[14] = vodData[14];
+
+        ChannelVod_createdAt = vodData[2];
+        ChannelVod_game = Play_data.data[3];
+        ChannelVod_views = vodData[4];
+        ChannelVod_language = vodData[9] ? vodData[9] : 'en';
+        ChannelVod_title = vodData[10];
+        Play_DurationSeconds = vodData[11];
+
+        Main_values.ChannelVod_vodId = vodData[7];
+        Main_vodOffset = 0;
+
+        Main_openVod();
+    }
 
     function PlayVod_Start() {
         //Main_Log('PlayVod_Start');
