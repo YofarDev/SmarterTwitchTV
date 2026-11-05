@@ -242,6 +242,7 @@ function en_USLang() {
         'All media keys are supported (play, pause, stop, next track, fast forward etc ...), some are used as shortcuts for audio and video mode changes';
     STR_CONTROLS_PLAY_14 =
         'Chat and video (side by side): Key 2 or the fast forward media key. It also switches between the picture in picture and the 50/50 mode';
+    STR_CONTROLS_PLAY_15 = "Open the last VOD of the channel: Key 7 (while watching a live or browsing a channel)";
     STR_F_DISABLE_CHAT = 'Force disable chat';
     STR_OAUTH_IN =
         'Adding a key allows the app to access chat using your user to send messages and get your emote list (enables you to be gifted subs given in chat), follow/unfollow channels, and access some user content faster.<br><br>Adding a key is not demanding and can be done at any point later.<br><br>In doubt read the contents of this link:<br><br>%x<br><br>For some devices, a mouse is necessary to complete the authorization action as you may need to manually click on a button to confirm certain actions.<br><br>Add a key for';
@@ -304,6 +305,7 @@ function en_USLang() {
     STR_STAY_IS_OFFLINE = 'The stream was offline';
     STR_NO_BROADCAST = 'No VOD';
     STR_NO_BROADCAST_WARNING = 'There are no VODs for this clip';
+    STR_LAST_VOD_NOT_FOUND = 'There are no VODs for this channel';
     STR_NO_CHAT = 'and because of that no chat';
     STR_IS_NOW = 'is now';
     STR_OPEN_HOST = 'Open the Hosting';

@@ -49,7 +49,85 @@ var PlayVod_SaveOffsetId;
 var PlayVod_VodOffset;
 var PlayVod_VodGameID;
 var PlayVod_ChaptersArray = [];
+
+var PlayVod_LastVodLoading = false;
 //Variable initialization end
+
+//Key 7 shortcut, opens the most recent VOD of a channel from the live player or the channel content screen
+function PlayVod_OpenLastVod(Channel_id) {
+    if (PlayVod_LastVodLoading) return;
+
+    if (Play_MultiEnable || PlayExtra_PicturePicture) {
+        Play_showWarningMiddleDialog(STR_PP_VOD_ERROR, 2500);
+        return;
+    }
+
+    PlayVod_LastVodLoading = true;
+
+    BaseXmlHttpGet(Main_helix_api + 'videos?first=1&user_id=' + Channel_id + '&type=archive&sort=time', PlayVod_OpenLastVodSuccess, PlayVod_OpenLastVodError, null, null, true);
+}
+
+function PlayVod_OpenLastVodSuccess(response) {
+    var obj = JSON.parse(response);
+
+    if (obj.data && obj.data.length) PlayVod_OpenLastVodEnd(ScreensObj_VodCellArray(obj.data[0], false, '', ''));
+    else PlayVod_OpenLastVodError();
+}
+
+function PlayVod_OpenLastVodError() {
+    PlayVod_LastVodLoading = false;
+
+    if (Main_isScene2DocVisible()) Play_showWarningDialog(STR_LAST_VOD_NOT_FOUND, 2000);
+    else Main_showWarningDialog(STR_LAST_VOD_NOT_FOUND, 2000);
+}
+
+//When update this check Main_OPenAsVod and Main_OpenVodStart
+function PlayVod_OpenLastVodEnd(vodData) {
+    PlayVod_LastVodLoading = false;
+
+    if (Main_isScene2DocVisible()) {
+        //Live player context, same transition of Main_OPenAsVod when opening the VOD of the current stream
+        if (Play_isOn) {
+            Play_SavePlayData();
+            Main_OPenAsVod_shutdownStream();
+        } else if (Play_PreviewId) UserLiveFeed_Hide();
+
+        Play_CheckIfIsLiveCleanEnd();
+    } else {
+        //Channel content context, stop the live preview and release the screen the same way ChannelContent_keyEnter does
+        ChannelContent_CheckIfIsLiveSTop();
+        ChannelContent_removeFocus();
+        Main_removeEventListener('keydown', ChannelContent_handleKeyDown);
+        Main_HideElement('channel_content_scroll');
+
+        Play_CheckIfIsLiveCleanEnd();
+    }
+
+    Main_values_Play_data = vodData;
+
+    Main_values.Main_selectedChannelDisplayname = vodData[1];
+    Main_values.Main_selectedChannel = vodData[6];
+    Main_values.Main_selectedChannel_id = vodData[14];
+
+    Play_data.data[1] = vodData[1];
+    Play_data.data[3] = vodData[3];
+    if (Play_data.data[3] === null) Play_data.data[3] = '';
+    if (vodData[16]) Play_data.data[18] = vodData[16];
+    Play_data.data[6] = vodData[6];
+    Play_data.data[14] = vodData[14];
+
+    ChannelVod_createdAt = vodData[2];
+    ChannelVod_game = Play_data.data[3];
+    ChannelVod_views = vodData[4];
+    ChannelVod_language = vodData[9] ? vodData[9] : 'en';
+    ChannelVod_title = vodData[10];
+    Play_DurationSeconds = vodData[11];
+
+    Main_values.ChannelVod_vodId = vodData[7];
+    Main_vodOffset = 0;
+
+    Main_openVod();
+}
 
 function PlayVod_Start() {
     //Main_Log('PlayVod_Start');

@@ -1980,6 +1980,12 @@ function Play_handleKeyDown(e) {
         case KEY_4:
             Play_controls[Play_controlsChatSend].enterKey();
             break;
+        case KEY_7:
+            if (Play_isEndDialogVisible() || Play_MultiDialogVisible()) break;
+
+            PlayVod_OpenLastVod(Play_data.data[14]);
+
+            break;
         case KEY_NUMPAD_6:
         case KEY_6:
             PhoneChat_Toggle(e);

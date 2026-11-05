@@ -630,6 +630,14 @@ function ChannelContent_handleKeyDown(event) {
                 Main_showWarningDialog(STR_NOKUSER_WARN, 2000);
             }
             break;
+        case KEY_7:
+            if (!ChannelContent_allowMature) {
+                Main_showWarningDialog(STR_MATURE_DISABLED, 2000);
+                break;
+            }
+
+            PlayVod_OpenLastVod(Main_values.Main_selectedChannel_id);
+            break;
         default:
             break;
     }
