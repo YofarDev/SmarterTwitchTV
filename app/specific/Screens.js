@@ -2292,9 +2292,16 @@ function Screens_handleKeyUp(key, e) {
     //Main_Log('Screens_handleKeyUp e.keyCode ' + e.keyCode + ' key ' + key);
 
     if (e.keyCode === KEY_ENTER) {
-        Screens_handleKeyUpClear(key);
-        if (!Screens_clear) {
-            ScreenObj[key].key_play();
+        Screens_ThumbOptionCanKeyEnter = true;
+        if (Main_isElementShowingWithEle(Screens_dialog_thumb_div)) {
+            // The hold opened the options dialog, which owns key-down now; re-arming the grid would leave it live behind later screens.
+            Main_clearTimeout(Screens_KeyEnterID);
+            Main_removeEventListener('keyup', ScreenObj[key].key_up);
+        } else {
+            Screens_handleKeyUpClear(key);
+            if (!Screens_clear) {
+                ScreenObj[key].key_play();
+            }
         }
     } else if (e.keyCode === KEY_UP && !Screens_DirectInputMode()) {
         Main_clearTimeout(Screens_KeyEnterID);
@@ -2540,6 +2547,7 @@ function Screens_handleKeyDown(key, event) {
             Main_removeEventListener('keydown', ScreenObj[key].key_fun);
             Main_addEventListener('keyup', ScreenObj[key].key_up);
             Screens_clear = false;
+            Screens_ThumbOptionCanKeyEnter = false;
             Screens_KeyEnterID = Main_setTimeout(
                 function () {
                     Screens_ThumbOptionStart(key, false);
@@ -3483,6 +3491,8 @@ function Screens_ThumbOptionStringGetHistory(key) {
 }
 
 var Screens_ThumbOptionCanKeyLeft = true;
+// False while the OK press that opened the dialog is still held, so auto-repeat can't pick an option.
+var Screens_ThumbOptionCanKeyEnter = true;
 function Screens_ThumbOptionhandleKeyDown(key, event) {
     //Main_Log('Screens_ThumbOptionhandleKeyDown ' + event.keyCode);
 
@@ -3504,7 +3514,7 @@ function Screens_ThumbOptionhandleKeyDown(key, event) {
             Screens_ThumbOptionDialogKeyUpDown(key, Screens_ThumbOptionPosY, 1);
             break;
         case KEY_ENTER:
-            Screens_ThumbOptionDialogKeyEnter(key);
+            if (Screens_ThumbOptionCanKeyEnter) Screens_ThumbOptionDialogKeyEnter(key);
             break;
         default:
             break;

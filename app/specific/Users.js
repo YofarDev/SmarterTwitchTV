@@ -34,6 +34,8 @@ var Users_ids;
 var Users_status = false;
 var Users_loadingData = true;
 var Users_Lang = '';
+// Key code of an OK press that opened a dialog and is still held, so its auto-repeat can't pick an option.
+var Users_HeldKey = 0;
 //Variable initialization end
 
 function Users_init() {
@@ -403,6 +405,12 @@ function Users_handleKeyEnter() {
     } else Users_keyEnter();
 }
 
+function Users_handleKeyUp(event) {
+    if (event && event.keyCode !== Users_HeldKey) return;
+    Users_HeldKey = 0;
+    Main_removeEventListener('keyup', Users_handleKeyUp);
+}
+
 function Users_handleKeyDown(event) {
     //Main_Log('Users_handleKeyDown ' + event.keyCode);
 
@@ -511,7 +519,12 @@ function Users_handleKeyDown(event) {
         case KEY_PLAYPAUSE:
         case KEY_KEYBOARD_SPACE:
         case KEY_ENTER:
+            if (Users_HeldKey) break;
             Users_handleKeyEnter();
+            if (Users_isUserDialogShown() || Users_isRemoveDialogShown()) {
+                Users_HeldKey = event.keyCode;
+                Main_addEventListener('keyup', Users_handleKeyUp);
+            }
             break;
         case KEY_2:
             Main_ReloadScreen();
