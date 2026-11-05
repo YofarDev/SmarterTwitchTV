@@ -54,9 +54,11 @@ window.parseIRC = function (data) {
         for (i; i < len; i++) {
             // Tags delimited by an equals sign are key=value tags.
             // If there's no equals, we assign the tag a value of true.
+            // Values may contain '=', so only the first one splits; with no '=' at all, substring would return the whole tag.
             var tag = rawTags[i];
-            var pair = tag.split('=');
-            message.tags[pair[0]] = tag.substring(tag.indexOf('=') + 1) || true;
+            var equals = tag.indexOf('=');
+            if (equals === -1) message.tags[tag] = true;
+            else message.tags[tag.substring(0, equals)] = tag.substring(equals + 1) || true;
         }
 
         position = nextspace + 1;

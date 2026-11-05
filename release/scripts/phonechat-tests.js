@@ -398,6 +398,26 @@ function loadSandbox(overrides) {
     ok(s1 && s2 && s1 !== s2 && s1.length === 64, 'oauth: crypto random state, 64 hex chars, unique');
 }
 
+/* ---------- 2b. IRC tag parsing (shared with TV chat and recent-messages history) ---------- */
+
+{
+    const sandbox = loadSandbox();
+    const tags = line => vm.runInContext('parseIRC(' + JSON.stringify(line) + ').tags', sandbox);
+
+    const parsed = tags('@badges=vip/1;emotes=25:0-4;color=;id=abc :nick!nick@nick.tmi.twitch.tv PRIVMSG #chan :Kappa');
+    eq(parsed.badges, 'vip/1', 'irc tags: key=value');
+    eq(parsed.emotes, '25:0-4', 'irc tags: emote ranges kept');
+    eq(parsed.color, true, 'irc tags: empty value is true');
+
+    //recent-messages history can send value-less tags; they must not take their own name as value
+    const bare = tags('@badges;emotes;color;id=abc :nick!nick@nick.tmi.twitch.tv PRIVMSG #chan :hi');
+    eq(bare.emotes, true, 'irc tags: value-less emotes is true, not "emotes"');
+    eq(bare.badges, true, 'irc tags: value-less badges is true');
+    eq(bare.id, 'abc', 'irc tags: valued tag after value-less ones');
+
+    eq(tags('@reply-parent-msg-body=a=b :nick!n@n PRIVMSG #chan :x')['reply-parent-msg-body'], 'a=b', 'irc tags: value containing = kept whole');
+}
+
 /* ---------- 3. IRC frame dispatch ---------- */
 
 {
