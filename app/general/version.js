@@ -24,8 +24,12 @@ var version = {
     publishVersionCode: 400, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/400/SmarterPurpleTV_3_0_400.apk',
     WebVersion: 'November 5 2026',
-    WebTag: 781, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 782, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 5 2026 (Web 782)',
+            changes: ['Ukrainian: the interface translation is complete — the navigation, tabs, welcome screen, key hints and player drawer labels are now Ukrainian (thank you @btncua, #25)']
+        },
         {
             title: 'November 5 2026 (Web 781 / APK 400)',
             changes: [
