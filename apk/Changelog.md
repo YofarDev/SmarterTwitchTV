@@ -9,6 +9,14 @@ The App is divided in two part, **Apk** and **Web** you can check it version in 
 
 The app has a building update check function, so whenever there is a update a red text will show up bellow the main pages clock, also a short warning will pop on the screen let you know if is a **Apk** or **Web** update.
 
+November 5 2026 (3.0.399)
+==============
+
+* APK: the preview player falls back to a software decoder when the device's single hardware decoder is already in use, and a preview that fell back is no longer promoted to the main player (by @Dryness, #19).
+* APK: playback no longer stops and returns to the menu when a Bluetooth remote disconnects or goes to sleep (by @yo1frenchtoast, #1).
+* Player: the bar caption shows what quality Auto is actually playing, leaving the timeline keeps the bar and stream info in sync, and reopening the channel feed starts on the live list (by @Dryness, #18, #17, #4).
+* Settings: dialogs with many options scroll just enough to keep the focused option in view (by @Dryness, #24); followed VODs no longer fail on VODs without a category (by @Dryness, #6).
+
 November 5 2026 (3.0.398)
 ==============
 

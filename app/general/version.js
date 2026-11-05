@@ -21,11 +21,23 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 398, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/398/SmarterPurpleTV_3_0_398.apk',
+    publishVersionCode: 399, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/399/SmarterPurpleTV_3_0_399.apk',
     WebVersion: 'November 5 2026',
-    WebTag: 779, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 780, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 5 2026 (Web 780 / APK 399)',
+            changes: [
+                'Player: the bar caption shows what quality Auto is actually playing, e.g. Quality · Auto (1080p60 | source) (by @Dryness, #18)',
+                'Player: leaving the timeline keeps the bar and the stream info in sync — Back no longer reopens the bar over a hidden panel, and Down brings the stream info back (by @Dryness, #17)',
+                'Player: reopening the channel feed (Up or the bar\'s Channels) starts on the live list again instead of showing the last visited list underneath (by @Dryness, #4)',
+                'Settings: dialogs with many options (like Chat options) scroll just enough to keep the focused option in view — option heights differ, so a fixed row count could not (by @Dryness, #24)',
+                'Browsing: followed VODs no longer fail to load when a VOD has no category (by @Dryness, #6)',
+                'APK: the preview player falls back to a software decoder when the single hardware decoder is already in use, and a preview that fell back is no longer promoted to the main player (by @Dryness, #19)',
+                'APK: playback no longer stops and returns to the menu when a Bluetooth remote disconnects or goes to sleep (by @yo1frenchtoast, #1)'
+            ]
+        },
         {
             title: 'November 5 2026 (Web 779 / APK 398)',
             changes: [

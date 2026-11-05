@@ -1476,6 +1476,8 @@
             pause: 'Pause',
             channels: 'Channels',
             quality: 'Quality',
+            //{quality} is the selected option (Auto), {playing} the quality it is currently playing, e.g. 1080p60 | source
+            qualityAutoPlaying: '{quality} ({playing})',
             unavailable: 'Not available in this playback mode',
             settingsHelp: 'About, controls and updates',
             loading: 'Loading your channels…',
@@ -8371,11 +8373,23 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 398, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/398/SmarterPurpleTV_3_0_398.apk',
+        publishVersionCode: 399, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/399/SmarterPurpleTV_3_0_399.apk',
         WebVersion: 'November 5 2026',
-        WebTag: 779, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 780, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 5 2026 (Web 780 / APK 399)',
+                changes: [
+                    'Player: the bar caption shows what quality Auto is actually playing, e.g. Quality · Auto (1080p60 | source) (by @Dryness, #18)',
+                    'Player: leaving the timeline keeps the bar and the stream info in sync — Back no longer reopens the bar over a hidden panel, and Down brings the stream info back (by @Dryness, #17)',
+                    "Player: reopening the channel feed (Up or the bar's Channels) starts on the live list again instead of showing the last visited list underneath (by @Dryness, #4)",
+                    'Settings: dialogs with many options (like Chat options) scroll just enough to keep the focused option in view — option heights differ, so a fixed row count could not (by @Dryness, #24)',
+                    'Browsing: followed VODs no longer fail to load when a VOD has no category (by @Dryness, #6)',
+                    'APK: the preview player falls back to a software decoder when the single hardware decoder is already in use, and a preview that fell back is no longer promoted to the main player (by @Dryness, #19)',
+                    'APK: playback no longer stops and returns to the menu when a Bluetooth remote disconnects or goes to sleep (by @yo1frenchtoast, #1)'
+                ]
+            },
             {
                 title: 'November 5 2026 (Web 779 / APK 398)',
                 changes: [
@@ -25996,6 +26010,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             }
         } else {
             Main_innerHTML('stream_quality', value);
+            PlayerUI_SetAutoQuality(who_called, value);
         }
     }
 
@@ -29362,7 +29377,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                     }
                     Play_MultiAddFocus();
                 } else if (!UserLiveFeed_isPreviewShowing()) {
-                    UserLiveFeed_FeedPosX = AddUser_UserIsSet() ? UserLiveFeedobj_UserLivePos : UserLiveFeedobj_LivePos;
+                    UserLiveFeed_ResetFeedPosX();
                     UserLiveFeed_ShowFeed();
                 } else if (Play_isEndDialogVisible() || UserLiveFeed_isPreviewShowing()) {
                     Play_EndTextClear();
@@ -31948,7 +31963,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
     function Play_BottomIconsFocus(skipInfo, checkjump, skipHide) {
         if (PlayVod_PanelY > 0 && !PlayerUI_State.suspended) {
-            PlayerUI_Show(PlayerUI_Mode());
+            // The hide paths reset focus here after hiding the panel (timeline inside); the bar opens over a shown panel only.
+            if (Play_isPanelShowing()) PlayerUI_Show(PlayerUI_Mode());
             return;
         }
         if (PlayVod_PanelY < 0) {
@@ -35290,6 +35306,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
     function PlayVod_RefreshProgressBarrStart(showVideoQuality, who_called) {
         PlayVod_getVideoQualityRate = 0;
+        //Not carried over from another stream; the first refresh below asks the player again
+        PlayerUI_State.autoQuality = '';
 
         if (Play_isOn) Play_RefreshWatchingTime();
 
@@ -35316,9 +35334,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     function PlayVod_RefreshProgressBarr(showVideoQuality, who_called) {
         var Update_status = Play_Status_Visible;
 
+        //Status "Always visible" (1) already asks every second (Play_UpdateStatus); the panel's quality caption needs it otherwise
         if (
             !PlayVod_getVideoQualityRate &&
-            !Update_status &&
+            Update_status !== 1 &&
             Main_IsOn_OSInterface &&
             showVideoQuality &&
             ((Main_A_includes_B(PlayVod_qualityPlaying, 'Auto') && PlayVod_isOn) ||
@@ -36997,7 +37016,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         hiddenTimer: null,
         timelineTimer: null,
         paused: false,
-        barPaused: null
+        barPaused: null,
+        autoQuality: ''
     };
 
     function PlayerUI_Mode() {
@@ -37105,6 +37125,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         }
         PlayerUI_State.mode = mode;
         PlayerUI_State.frames = [{group: 'bar', index: 0}];
+        // Focusing the timeline hides the stream info (Play_BottonIconsHide); every way back to the bar comes through here.
+        Main_RemoveClassWithEle(Play_info_div, 'opacity_zero');
         Play_clearHidePanel();
         UIFocus_Push({
             id: 'player',
@@ -37271,6 +37293,35 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         PlayerUI_ScheduleHide();
     }
 
+    function PlayerUI_QualityCaption() {
+        var quality =
+            PlayerUI_State.mode === 1 ? Play_data.qualityPlaying : PlayerUI_State.mode === 2 ? PlayVod_qualityPlaying : PlayClip_qualityPlaying;
+
+        if (PlayerUI_State.autoQuality && PlayerUI_State.mode < 3 && Main_A_includes_B(quality, 'Auto')) {
+            quality = STR_UI.qualityAutoPlaying.replace('{quality}', quality).replace('{playing}', PlayerUI_State.autoQuality);
+        }
+
+        Main_textContent('player-ui-name', STR_UI.quality + STR_UI.separator + quality);
+    }
+
+    //Native report of the Auto rendition (Play_ShowVideoQuality), e.g. '1080p60 | Auto | 8.99Mbps | AVC';
+    //named after the stream's own list entry when one matches ('1080p60 | source')
+    function PlayerUI_SetAutoQuality(who_called, value) {
+        var playing = value.split(' | ')[0],
+            list = who_called ? PlayVod_qualities : Play_data.qualities,
+            i;
+
+        for (i = 0; i < list.length; i++) {
+            if (list[i].id && list[i].id.split(' | ')[0] === playing) {
+                playing = list[i].id;
+                break;
+            }
+        }
+
+        PlayerUI_State.autoQuality = playing;
+        if (PlayerUI_State.frames.length && !PlayerUI_State.suspended) PlayerUI_QualityCaption();
+    }
+
     function PlayerUI_TimelineClass() {
         var timeline = Main_getElementById('progress_pause_holder');
         //A hidden live seek bar collapses the timeline row; the drawer then sits lower
@@ -37325,12 +37376,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 } else if (key === 'more') node.className += ' player-ui-bar-end';
             }
         }
-        Main_textContent(
-            'player-ui-name',
-            STR_UI.quality +
-                STR_UI.separator +
-                (PlayerUI_State.mode === 1 ? Play_data.qualityPlaying : PlayerUI_State.mode === 2 ? PlayVod_qualityPlaying : PlayClip_qualityPlaying)
-        );
+        PlayerUI_QualityCaption();
         Main_textContent('player-ui-value', PlayerUI_State.paused ? STR_UI.paused : '');
         drawer.style.display = frame.group === 'bar' ? 'none' : '';
         frame.list = false;
@@ -37492,7 +37538,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         var mode = PlayerUI_State.mode;
         PlayerUI_Close(true);
         if (!mode) return;
-        UserLiveFeed_FeedPosX = AddUser_UserIsSet() ? UserLiveFeedobj_UserLivePos : UserLiveFeedobj_LivePos;
+        UserLiveFeed_ResetFeedPosX();
         var data = UserLiveFeed_DataObj[UserLiveFeed_FeedPosX] || [],
             currentId = mode === 1 ? Play_data.data[14] : null;
         for (var i = 0; i < data.length; i++) {
@@ -49744,6 +49790,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         );
 
         Settings_DialogScrollCenter = scroll ? scroll : 0;
+        Settings_DialogScrollY = 0;
         Settings_DialogPos = 0;
         Main_AddClass(Settings_DialogValue[0], 'settings_value_focus');
         Main_AddClass(Settings_DialogValue[0] + '_div', 'settings_div_focus');
@@ -49843,21 +49890,30 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         }
     }
 
+    //Scroll just enough to keep the focused option in view. Options with a summary are two or three
+    //lines tall, so a fixed number of rows can't tell when the focus leaves the visible area
+    var Settings_DialogScrollY = 0;
     function Settings_ScrollConatiner(div, pos) {
         if (!Settings_DialogScrollCenter) {
             return;
         }
 
-        var center = Settings_DialogScrollCenter,
-            doc = Main_getElementById(div),
-            value = 0,
-            offset = 0;
+        var doc = Main_getElementById(div),
+            view = doc.parentNode.clientHeight,
+            row = Main_getElementById(Settings_DialogValue[pos] + '_div'),
+            style = window.getComputedStyle(row),
+            //The focus outline is drawn outside the row, keep it inside the clipped area too
+            edge = Math.ceil((parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
+            //Position inside the list, the same whatever translate (or translate animation) is applied
+            top = row.getBoundingClientRect().top - doc.getBoundingClientRect().top - edge,
+            bottom = top + row.offsetHeight + edge * 2;
 
-        if (pos > center) {
-            value = Main_getElementById(Settings_DialogValue[pos - center - offset] + '_div').offsetTop;
-        }
+        if (top < Settings_DialogScrollY) Settings_DialogScrollY = Math.max(0, top);
+        else if (bottom > Settings_DialogScrollY + view) Settings_DialogScrollY = bottom - view;
+        else return;
 
-        doc.style.transform = 'translateY(-' + value / BodyfontSize + 'em)';
+        //px, the list font is smaller than BodyfontSize so an em value would scroll short
+        doc.style.transform = 'translateY(-' + Settings_DialogScrollY + 'px)';
     }
 
     function Settings_DialogUpDown(offset) {
@@ -52387,6 +52443,18 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         UserLiveFeed_obj[UserLiveFeed_FeedPosX].show();
     }
 
+    //Closing the feed only hides its holder, so the last opened feed div is still unhidden, hide it before moving back to live
+    function UserLiveFeed_ResetFeedPosX() {
+        var pos = AddUser_UserIsSet() ? UserLiveFeedobj_UserLivePos : UserLiveFeedobj_LivePos;
+
+        if (UserLiveFeed_FeedPosX !== pos) {
+            UserLiveFeed_obj[UserLiveFeed_FeedPosX].hide();
+            //A game's list also shows the "go back to games" hint, live has none
+            Main_AddClass('icon_feed_back', 'opacity_zero');
+        }
+        UserLiveFeed_FeedPosX = pos;
+    }
+
     function UserLiveFeed_ResetFeedId() {
         UserLiveFeed_clearHideFeed();
 
@@ -54786,6 +54854,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             response_items,
             id,
             mArray,
+            game,
             i = 0,
             itemsCount = UserLiveFeed_itemsCount[pos],
             hasData =
@@ -54805,7 +54874,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             UserLiveFeed_obj[pos].cursor = response && response && response.length ? response[response.length - 1].cursor : null;
 
             for (i; i < response_items; i++) {
-                mArray = ScreensObj_VodCellArray(response[i].node, true, response[i].node.game.id, response[i].node.game.displayName);
+                //VODs without a category have a null game
+                game = response[i].node.game;
+                mArray = ScreensObj_VodCellArray(response[i].node, true, game ? game.id : null, game ? game.displayName : null);
                 id = mArray[7];
 
                 if (!UserLiveFeed_idObject[pos].hasOwnProperty(id)) {
