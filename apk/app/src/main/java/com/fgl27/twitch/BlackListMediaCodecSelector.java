@@ -34,9 +34,14 @@ import java.util.Locale;
 public class BlackListMediaCodecSelector implements MediaCodecSelector {
 
     private final String[] BLACKLISTEDCODECS;
+    private final boolean BlackListedAsFallback;
 
-    BlackListMediaCodecSelector(String[] BLACKLISTEDCODECS) {
+    //BlackListedAsFallback keeps the blacklisted software codecs at the end of the list instead of removing them,
+    //for a player that may find the allowed (hardware) decoders already in use, needs decoder fallback enabled.
+    //A blacklisted hardware codec stays out: the user blocked it, and a busy hardware decoder needs a software one
+    BlackListMediaCodecSelector(String[] BLACKLISTEDCODECS, boolean BlackListedAsFallback) {
         this.BLACKLISTEDCODECS = BLACKLISTEDCODECS;
+        this.BlackListedAsFallback = BlackListedAsFallback;
     }
 
     @NonNull
@@ -47,18 +52,38 @@ public class BlackListMediaCodecSelector implements MediaCodecSelector {
 
         // filter codecs based on blacklist template
         List<MediaCodecInfo> filteredCodecInfo = new ArrayList<>();
+        List<MediaCodecInfo> blacklistedCodecInfo = new ArrayList<>();
 
         for (MediaCodecInfo codecInfo : codecInfoList) {
-            if (codecInfo != null && !blacklistedCodec(codecInfo.name.toLowerCase(Locale.US) + codecInfo.mimeType)) {
+            if (codecInfo == null) continue;
+
+            if (!blacklistedCodec(codecInfo.name.toLowerCase(Locale.US) + codecInfo.mimeType)) {
                 filteredCodecInfo.add(codecInfo);
+            } else if (BlackListedAsFallback && codecInfo.softwareOnly) {
+                blacklistedCodecInfo.add(codecInfo);
             }
         }
+
+        filteredCodecInfo.addAll(blacklistedCodecInfo);
         return filteredCodecInfo;
     }
 
     private boolean blacklistedCodec(String codecNameMimeType) {
         for (String blackListedCodec : BLACKLISTEDCODECS) {
             if (codecNameMimeType.contains(blackListedCodec)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //Video decoder name as a player reports it (AnalyticsListener), the blacklist holds the codec name followed by its type
+    boolean isBlackListedVideoDecoder(String decoderName) {
+        String nameType = decoderName.toLowerCase(Locale.US) + "video/";
+
+        for (String blackListedCodec : BLACKLISTEDCODECS) {
+            if (blackListedCodec.startsWith(nameType)) {
                 return true;
             }
         }
