@@ -1,4 +1,4 @@
-# Smarter Purple TV — UI/UX redesign implementation plan
+# Smarter Purple TV UI/UX redesign implementation plan
 
 Status: production source integration completed October 16, 2026 following user approval of purple/charcoal and the concrete prototype layout. The shell, real loaders, focus/refresh guards and player drawers are integrated and release assets regenerated as Web 751. Hardware acceptance, authenticated end-to-end coverage and publication remain pending. See [validation](ui-ux-redesign-validation.md), [feature inventory](ui-ux-feature-parity.md), [remote matrix](ui-ux-remote-matrix.md), and [prototype](../dev/ui-redesign/README.md). The phase completion criteria below still apply.
 
@@ -41,7 +41,7 @@ Evidence is from source inspection. Device performance, live authentication flow
 
 ### Keep existing systems authoritative
 
-Use the existing screen loaders, authentication, playback actions, settings persistence, and bridge. New code should own navigation presentation, focus restoration, and overlay presentation—not duplicate the underlying state.
+Use the existing screen loaders, authentication, playback actions, settings persistence, and bridge. New code should own navigation presentation, focus restoration, and overlay presentation, not duplicate the underlying state.
 
 ```mermaid
 flowchart TD
@@ -80,7 +80,7 @@ Document approved visual roles and component rules in `DESIGN.md` when the imple
 - Persist only useful navigation preferences/bookmarks, with a versioned bounded structure. Keep transient overlay state, DOM references, timers, and request generations in memory.
 - Do not write storage or invoke cloud backup on every arrow press. Save at route/visibility boundaries or through a bounded debounce consistent with the existing persistence flow.
 
-## 4. Phase 0 — baseline and feature inventory
+## 4. Phase 0 baseline and feature inventory
 
 **Goal:** establish behavior that must survive before changing it.
 
@@ -89,7 +89,7 @@ Tasks:
 1. Record the starting commit, dirty files, app/APK versions, available browser/device environments, and pre-existing test failures. Coordinate integration with ongoing phone-chat and native-request changes.
 2. Run the current JSHint check and relevant existing fixtures once. Capture failures as baseline findings rather than folding unrelated repairs into the redesign.
 3. Capture Following, both existing menu modes, player controls, Settings, and representative empty/error states in the source browser build and on a TV when available.
-4. Create `docs/ui-ux-feature-parity.md`. Inventory every screen entry, settings entry, and player action—not only the high-level feature groups in the proposal.
+4. Create `docs/ui-ux-feature-parity.md`. Inventory every screen entry, settings entry, and player action, not only the high-level feature groups in the proposal.
 5. For each inventory row record: current entry point, underlying function/control key, playback/account requirements, shortcuts, saved settings, proposed location, and verification status.
 6. Create a remote behavior matrix covering Live, VOD, clips, full-screen chat, side-by-side chat, PiP, multistream, preview feed, end-of-stream, and modal dialogs. Include held keys, key-up handling, media keys, and number keys.
 7. Measure baseline key-to-focus responsiveness, first useful home render, request counts, and preview behavior using the same content/device conditions planned for final checks. Record conditions and ranges, not a single unrepeatable number.
@@ -98,7 +98,7 @@ Tasks:
 
 **Exit condition:** every existing feature family has an owner and destination, and the baseline distinguishes known defects from redesign regressions. Real-device checks that cannot yet run remain explicitly pending.
 
-## 5. Phase 1 — visual specification and remote prototype
+## 5. Phase 1 visual specification and remote prototype
 
 **Goal:** settle layout and interaction before changing shared screen/player code.
 
@@ -115,7 +115,7 @@ Tasks:
 
 **Exit condition:** the visual direction and remote behavior are concrete enough to implement without inventing screen structure along the way. The prototype is a design aid; later integration tests must execute production code.
 
-## 6. Phase 2 — navigation and focus foundations
+## 6. Phase 2 navigation and focus foundations
 
 **Depends on:** baseline inventory and the interaction specification.
 
@@ -169,7 +169,7 @@ Do not equate an absent OAuth token with an absent account; preserve supported u
 
 **Exit condition:** the new presentation can reach every existing route without changing its data or playback behavior.
 
-## 7. Phase 3 — stable navigation shell
+## 7. Phase 3 stable navigation shell
 
 **Depends on:** Phase 2 and approved visual specification.
 
@@ -182,13 +182,13 @@ Tasks:
 5. Make active destination and remote focus visually distinct. Provide useful accessible labels for icon controls and preserve mouse/keyboard development support.
 6. Wire Left from the first content column into the rail, Right back to content, and explicit transitions between tabs, content, and details. Empty screens must still allow navigation.
 7. Ensure Update, About, Controls help, and Exit remain reachable from the utility area while their eventual Settings grouping is completed.
-8. Keep old views reachable in development through an implementation-only switch until migration validation completes. Do not create a permanent user-facing “old/new UI” setting by default.
+8. Keep old views reachable in development through an implementation-only switch until migration validation completes. Do not create a permanent user-facing "old/new UI" setting by default.
 
 **Validation:** visit all destinations; switch tabs repeatedly; enter/leave nested Search and channel screens; open dialogs from the rail; switch accounts; test no-account operation. Check event-listener/timer cleanup and source/bundle loading.
 
 **Exit condition:** the old main/user menu distinction is gone from normal browsing and every previous destination remains reachable.
 
-## 8. Phase 4 — Following home and stable content refresh
+## 8. Phase 4 Following home and stable content refresh
 
 **Depends on:** Phase 3.
 
@@ -212,7 +212,7 @@ Use the existing feed/data owners initially. Do not add a second polling loop to
 
 ### State handling
 
-Provide loading, no account, authorization needed, no followed channels, nobody live, stale content, retry, and missing-image states. Only distinguish “no follows” from “nobody live” when existing data proves the distinction; an empty live-stream result alone does not prove the user follows nobody. Use neutral copy if evidence is unavailable.
+Provide loading, no account, authorization needed, no followed channels, nobody live, stale content, retry, and missing-image states. Only distinguish "no follows" from "nobody live" when existing data proves the distinction; an empty live-stream result alone does not prove the user follows nobody. Use neutral copy if evidence is unavailable.
 
 Keep last successful content on transient refresh failures, mark it stale, and retain Retry. Do not show data from a previous account as a stale fallback.
 
@@ -226,7 +226,7 @@ Check `Screens_LoadPreviewRestore`, `Sidepannel_SetPlayerViewSidePanel`, and fee
 
 **Exit condition:** Following supports the complete browse → watch → return flow with stable identity and geometry, including failure states.
 
-## 9. Phase 5 — migrate remaining browsing surfaces
+## 9. Phase 5 migrate remaining browsing surfaces
 
 **Depends on:** the validated shell and Following implementation.
 
@@ -244,7 +244,7 @@ Tasks:
 
 **Exit condition:** every browsing screen fits the new navigation model and has a tested return path.
 
-## 10. Phase 6 — audit and adapt player actions
+## 10. Phase 6 audit and adapt player actions
 
 **Can begin after:** Phase 0 inventory. Integrate after the focus contract is stable.
 
@@ -265,7 +265,7 @@ Tasks:
 
 **Exit condition:** every action intended for the new bar/drawers can execute correctly without the old strip owning input or state.
 
-## 11. Phase 7 — compact player bar, drawers, and channel switcher
+## 11. Phase 7 compact player bar, drawers, and channel switcher
 
 **Depends on:** Phases 2 and 6; integrate alongside the completed browsing experience.
 
@@ -292,7 +292,7 @@ Tasks:
 
 **Exit condition:** the old control strip is no longer needed for user interaction, all player actions have verified destinations, and no new overlay leaks keys or timers.
 
-## 12. Phase 8 — settings, themes, translations, and migration
+## 12. Phase 8 settings, themes, translations, and migration
 
 **Depends on:** stable navigation and player groups; theme/string work also accompanies earlier phases.
 
@@ -309,7 +309,7 @@ Tasks:
 
 **Exit condition:** existing users retain their settings and capabilities; every new user-visible string has a valid rendering path; themes and help match the redesigned experience.
 
-## 13. Phase 9 — integration validation and release readiness
+## 13. Phase 9 integration validation and release readiness
 
 **Depends on:** completed browsing/player integration and settings migration. Targeted checks below also run during the earlier phases; this phase closes the combined acceptance matrix.
 

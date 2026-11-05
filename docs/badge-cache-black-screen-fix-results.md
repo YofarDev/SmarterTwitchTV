@@ -1,4 +1,4 @@
-# Badge-cache black-screen fix — implementation and validation
+# Badge-cache black-screen fix, implementation and validation
 
 October 30, 2026. Web 772; APK version unchanged.
 

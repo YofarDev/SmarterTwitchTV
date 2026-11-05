@@ -296,7 +296,7 @@ SPTVPhoneChat.Render = (function () {
 
         return {
             messages: messages,
-            //Returns { appended: true, duplicate: bool, pruned: n } — ids already
+            //Returns { appended: true, duplicate: bool, pruned: n }. Ids already
             //seen (including deleted) are duplicates and are not appended
             append: function (entry) {
                 var pruned = 0,
@@ -320,7 +320,7 @@ SPTVPhoneChat.Render = (function () {
 
                 return {appended: true, duplicate: false, pruned: pruned};
             },
-            //True when the id was seen — including deleted: callers use this
+            //True when the id was seen, including deleted. Callers use this
             //to suppress duplicates and replays of removed messages
             has: function (id) {
                 return byId.hasOwnProperty(id);

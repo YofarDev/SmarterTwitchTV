@@ -131,9 +131,9 @@ The maker discovers the new TV source files automatically, but app/index.html's 
 
 ### 9. [P2] Recognize Twitch's real authentication failure notice
 
-**Location:** `app/PhoneChat/transport.js:354–366`.
+**Location:** `app/PhoneChat/transport.js:354-366`.
 
-Authentication rejection is recognized only through selected msg-id tags. Twitch documents an untagged `NOTICE *` containing “Login authentication failed”. That actual response is treated as an ordinary notice, leaving the transport authenticating; the subsequent close schedules retries using the same invalid credentials. [Twitch IRC authentication response](https://dev.twitch.tv/docs/chat/irc/#authenticating-with-the-twitch-irc-server).
+Authentication rejection is recognized only through selected msg-id tags. Twitch documents an untagged `NOTICE *` containing "Login authentication failed". That actual response is treated as an ordinary notice, leaving the transport authenticating; the subsequent close schedules retries using the same invalid credentials. [Twitch IRC authentication response](https://dev.twitch.tv/docs/chat/irc/#authenticating-with-the-twitch-irc-server).
 
 **Reproduced:** Feeding the documented untagged response emits a normal notice and leaves state `authenticating`. The passing test adds a login_failure tag that the documented failure does not have.
 

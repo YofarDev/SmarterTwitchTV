@@ -1,4 +1,4 @@
-# TV remote ergonomics — implementation plan
+# TV remote ergonomics, implementation plan
 
 Date: October 16, 2026.
 Status: implemented for Web 752 except the documented device-only rows and the deviations listed in
@@ -134,7 +134,7 @@ request outcome, not from the absence of DOM cards alone.
 
 ## 4. Ordered implementation phases
 
-### Phase 0 — Establish the regression baseline
+### Phase 0. Establish the regression baseline
 
 **Files:** existing UI test scripts, `docs/ui-ux-remote-matrix.md`, this plan and the review evidence.
 
@@ -151,7 +151,7 @@ request outcome, not from the absence of DOM cards alone.
 **Exit condition:** a failing integration case demonstrates the reported bug against production
 handlers; there is a known baseline for the journeys later claimed to improve.
 
-### Phase 1 — Repair focus ownership before adding new targets
+### Phase 1. Repair focus ownership before adding new targets
 
 **Primary files:** `app/specific/UIFocus.js`, `Navigation.js`, `Screens.js`, `PlayerUI.js` and scoped
 focus CSS in `app/index.html`. Inspect `Main.js` and `Sidepannel.js` listener/lifecycle callers.
@@ -177,7 +177,7 @@ switch. For each, assert both the immediate focus state and the effect of the ne
 **Exit condition:** the original browser reproduction passes with exactly one focus treatment and
 no hidden element receiving input. Ship this as an independently reviewable change.
 
-### Phase 2 — Add card action targets and remove the unreachable footer action
+### Phase 2. Add card action targets and remove the unreachable footer action
 
 **Primary files:** `Screens.js` cell renderers and key handlers, `ScreensObj.js`, `Navigation.js`,
 `app/index.html`, `SettingsColor.js` and language strings.
@@ -213,7 +213,7 @@ history deletion and return from nested channel/category screens.
 **Exit condition:** every applicable card exposes its own actions with short presses; OK on its body
 still invokes the original primary action exactly once.
 
-### Phase 3 — Make search editing and Back history preserve intent
+### Phase 3. Make search editing and Back history preserve intent
 
 **Primary files:** `Search.js`, `ScreensObj.js`, `Navigation.js`, `Main.js`; inspect playback search
 entry callbacks and `ChannelContent.js` where needed.
@@ -244,7 +244,7 @@ Edit search visits, keyboard dismissal and delayed input-focus timer after leavi
 **Exit condition:** correcting a query requires editing only the changed text, and Back reaches the
 original caller without a form/results loop.
 
-### Phase 4 — Make navigation affordances and hints truthful
+### Phase 4. Make navigation affordances and hints truthful
 
 **Primary files:** `Navigation.js`, `Search.js`, `Settings.js`, `PlayerUI.js`, `PlayEtc.js`,
 `app/index.html`, `SettingsColor.js`, `app/languages/en_US.js` and untranslated-string tracking.
@@ -280,7 +280,7 @@ original caller without a form/results loop.
 **Exit condition:** every visible hint describes the focused target's actual controls; Search and
 Settings can enter/leave navigation without changing a value or losing their local state.
 
-### Phase 5 — Implement state-specific recovery
+### Phase 5. Implement state-specific recovery
 
 **Primary files:** `Navigation.js`, `Screens.js`, `ScreensObj.js`, `AddUser.js`, `Users.js`, relevant
 existing auth callbacks in `AddCode.js`, `app/index.html` and language strings.
@@ -318,7 +318,7 @@ existing auth callbacks in `AddCode.js`, `app/index.html` and language strings.
 **Exit condition:** each primary action actually resolves its stated problem or leads directly into
 the relevant recovery flow, with explicit same-account and cancellation behavior.
 
-### Phase 6 — Improve long-press ergonomics without silently changing saved behavior
+### Phase 6. Improve long-press ergonomics without silently changing saved behavior
 
 **Primary files:** `Screens.js`, `UIFocus.js`, `Settings.js`, language strings and preference restore
 paths only where the new setting requires them.
@@ -355,7 +355,7 @@ would be a separately documented decision, not inferred from missing storage dur
 **Exit condition:** users can choose immediate browsing without losing any action, and existing
 users keep their remote semantics unless they change the new preference.
 
-### Phase 7 — Check traversal cost, readability and response time
+### Phase 7. Check traversal cost, readability and response time
 
 **Primary files:** scoped shell/card/player CSS, `SettingsColor.js`, `Navigation.js`, `PlayerUI.js`
 only if the measurements demonstrate a necessary adjustment; validation documentation.
@@ -386,7 +386,7 @@ only if the measurements demonstrate a necessary adjustment; validation document
 **Exit condition:** task counts and TV-distance observations are recorded, accepted tradeoffs are
 explicit and focus is not delayed by remote/network/preview work.
 
-### Phase 8 — Complete regression, browser and device acceptance
+### Phase 8. Complete regression, browser and device acceptance
 
 Use the test layers in section 5. Correct all P1 failures before the final acceptance pass. Keep a
 single evidence matrix with pass/fail/not-tested, environment, steps and captured output. Do not
@@ -396,7 +396,7 @@ convert a browser-only check into a native pass.
 have actual TV evidence. If hardware is unavailable, implementation can be code-complete but the
 release remains explicitly unvalidated for those rows.
 
-### Phase 9 — Package the web release and document the behavior
+### Phase 9. Package the web release and document the behavior
 
 **Primary files:** `app/general/version.js`, generated assets, existing redesign/remote validation
 docs, `DESIGN.md` interaction notes and Controls help.

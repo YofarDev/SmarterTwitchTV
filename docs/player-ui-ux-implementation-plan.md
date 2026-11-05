@@ -1,9 +1,9 @@
-# Player UI/UX — implementation plan
+# Player UI/UX, implementation plan
 
 Date: October 19, 2026.
 Status: not started.
 Source: player critique of October 18, 2026 (`.impeccable/critique/2026-10-18T21-15-05Z__app-specific-playerui-js.md`, score 17/36).
-Audience: an implementing agent with no prior context. Read sections 1–3 completely before touching code.
+Audience: an implementing agent with no prior context. Read sections 1 to 3 completely before touching code.
 
 ## 1. Goal and scope
 
@@ -43,7 +43,7 @@ Out of scope (do not do these; list them in the results file as follow-ups):
    `#c1b8cd` secondary text, `#bca0ff` focus outline, `#30253f` focus fill. Saved themes override these through
    the generated CSS in `app/specific/SettingsColor.js:452-490`. If you add a selector that uses the focus color
    or the surface color, **also add it to the matching rule in `SettingsColor.js`**, or custom themes will break.
-5. Strings: add new user-facing text only as new keys on `STR_UI` in `app/languages/en_US.js` (lines 23–60).
+5. Strings: add new user-facing text only as new keys on `STR_UI` in `app/languages/en_US.js` (lines 23 to 60).
    Other languages fall back to English for missing keys; do not edit other language files. Never hard-code
    English in JS.
 6. Formatting: Prettier settings from `.prettierrc` (4 spaces, width 150, single quotes, no trailing commas,
@@ -63,8 +63,8 @@ Out of scope (do not do these; list them in the results file as follow-ups):
 | `app/specific/UIFocus.js` | Input-owner stack and the listener wrapper that dispatches keys to owners |
 | `app/specific/PlayEtc.js` | Legacy player: `Play_controls` descriptors (`Play_MakeControls`, line ~2048), key handlers, panel show/hide, defaults (`Play_PreStart`, ~4532) |
 | `app/specific/Play.js` | Live info panel content (`Play_UpdateMainStreamDiv` ~503, `Play_RefreshWatchingTime` ~1688, `Play_GetLiveTime` ~1727, `Play_showPanel` ~1663) |
-| `app/index.html` | All CSS (player overlay CSS at ~3128–3260) and markup (`#player-ui` at ~4040, `#playerinfo` at ~4182, `#progress_pause_holder` at ~4459, `#playsideinfo` at ~4631) |
-| `app/specific/SettingsColor.js` | Theme CSS generator (role selectors at 452–490) |
+| `app/index.html` | All CSS (player overlay CSS at ~3128 to 3260) and markup (`#player-ui` at ~4040, `#playerinfo` at ~4182, `#progress_pause_holder` at ~4459, `#playsideinfo` at ~4631) |
+| `app/specific/SettingsColor.js` | Theme CSS generator (role selectors at 452 to 490) |
 | `app/languages/en_US.js` | `STR_UI` strings and all legacy `STR_*` strings |
 | `release/scripts/player-ui-tests.js` | Runs real `Play_controls` descriptors through `PlayerUI_*` with stubs |
 | `release/scripts/ui-focus-tests.js` | Runs real `UIFocus_*` functions in a VM sandbox (`ui-test-sandbox.js`) |
@@ -132,7 +132,7 @@ update that assertion and say so in the results file; never delete a test to mak
 
 ## 5. Phases
 
-### Phase 1 — Stop OK from toggling playback when it reveals the controls (P1)
+### Phase 1. Stop OK from toggling playback when it reveals the controls (P1)
 
 **Bug.** With the bar hidden, OK reaches the legacy `Play_handleKeyDown` (`PlayEtc.js:1841`), which calls
 `Play_showPanel` → `PlayerUI_Show` → `PlayerUI_Render` → `PlayerUI_Focus`, which calls `.focus()` on the bar's
@@ -176,7 +176,7 @@ viewers expect, and the fix above is what prevents the accidental activation.
 
 **Done when** both browser checks pass and all section 4 checks pass.
 
-### Phase 2 — Hide the diagnostics HUD by default (P2)
+### Phase 2. Hide the diagnostics HUD by default (P2)
 
 `Play_Status_Visible` controls the top-right technical block (`#playsideinfo`: resolution, net speed, skipped
 frames, buffer, latency, ping). Values: `0` "When player info is visible", `1` "Always visible", `2` "Never visible"
@@ -198,7 +198,7 @@ In the browser, clear storage (`localStorage.clear()`, reload), open a stream, r
 Open More → Diagnostics, set "When player info is visible", reveal again: the block appears. Update
 `player-ui-tests.js` if its sandbox default (`Play_Status_Visible: 0`) makes an assertion about the default.
 
-### Phase 3 — One visual system for the player chrome (P1)
+### Phase 3, One visual system for the player chrome (P1)
 
 Target composition at the 1080p reference, all within 5% safe margins:
 
@@ -332,7 +332,7 @@ When the viewer pauses and the bar hides, nothing says the stream is paused.
 **Phase 3 done when** the 720p and 1080p screenshots match the composition sketch, the title never wraps,
 no channel name is repeated, PiP and multistream info still render (open each once), and section 4 passes.
 
-### Phase 4 — Drawer rows that read like a TV settings list (P2)
+### Phase 4, Drawer rows that read like a TV settings list (P2)
 
 #### 4a. Quality as a list of choices (live, VOD, clip; single stream only)
 
@@ -356,7 +356,7 @@ Implementation in `PlayerUI.js`:
    logic keeps focus by identity, and set the initial `frame.index` to the current rendition when the frame is new.
    Leave the other quality controls (mini/multi) appended as rows below the list if they are available
    (they never are at the same time as the single-stream control, but keep the code general).
-3. Navigation: in `PlayerUI_Handle`, treat this list like `more` — Up/Down moves, Left/Right does nothing,
+3. Navigation: in `PlayerUI_Handle`, treat this list like `more`. Up/Down moves, Left/Right does nothing,
    OK calls the pick. In `PlayerUI_Focus`, focus `#player-ui-quality-<index>` for this group. Make sure
    `PlayerUI_Handle`'s "re-render on every key for control groups" line does not break focus (it should not,
    because entries are identity strings).
@@ -391,7 +391,7 @@ Several summaries wrap values in parentheses: `:2954`, `:3213`, `:3247`.
 - For each `'(' + … + ')'` site: drop the parentheses.
 - Video mode (`:2897-2902`): title becomes `STR_CHAT_VIDEO_MODE` only; summary becomes
   `<current mode name>` on the first line of the summary and the action hint `STR_UI.switchTo + <next mode>`
-  (`switchTo: 'OK · Switch to '`, new key) — or, if two lines are too tall, only the current mode plus the hint in
+  (`switchTo: 'OK · Switch to '`, new key), or, if two lines are too tall, only the current mode plus the hint in
   the help line. Do not keep `STR_PRESS_ENTER_TO_CHANGE` in the player (leave the string defined; other code may
   use it).
 - Phone chat (`:3005`): `string: STR_PHONE_CHAT_OPEN + ' (6)'` → `string: STR_PHONE_CHAT_OPEN`. The number-key
@@ -423,7 +423,7 @@ render about 8 px tall.
   the drawer CSS for that control only (or swap which triangle sits left), not in the shared
   `Play_BottomArrows` logic. Add a `player-ui-tests.js` assertion for at least speed and one chat setting.
 
-### Phase 5 — Keep the viewer oriented while a drawer is open (P2)
+### Phase 5. Keep the viewer oriented while a drawer is open (P2)
 
 1. **Origin marker.** In `PlayerUI_Render`, when `frames.length > 1`, add class `player-ui-origin` and
    `aria-current="true"` to the bar button `player-ui-bar-<frames[0].index>`; remove them otherwise. CSS:
@@ -453,7 +453,7 @@ render about 8 px tall.
    that cleanup removes `player-ui-drawer-open` and the origin class (call the owner's cleanup and inspect the
    stub element state; extend the `element()` stub with a minimal `classList` that records classes if needed).
 
-### Phase 6 — Type sizes and minor polish (P3)
+### Phase 6, Type sizes and minor polish (P3)
 
 Apply and then measure at 1080p (section 3, step 5):
 
@@ -473,7 +473,7 @@ Also:
 - Check large-text and light themes once (Settings → interface): bar, drawer, caption, info block, paused chip.
   Light theme must not show white text on a light surface; fix through `SettingsColor.js` roles.
 
-### Phase 7 — Channel switcher: align the look only (P2, visual-only)
+### Phase 7, Channel switcher: align the look only (P2, visual-only)
 
 The **Channels** button (and Up during playback) opens the legacy feed (`UserLiveFeed`, `.user_feed` at
 `index.html:961`). Change only colors, type and focus; **do not change sizes, positions, widths, paddings that
@@ -491,9 +491,9 @@ affect card width, or the scroll math** (the native preview uses fixed slot posi
 5. Verify with `getBoundingClientRect` that the first card's rect is identical (±1 px) before and after the change.
    If it is not, revert the offending rule.
 
-### Phase 8 — Documentation, build and release packaging
+### Phase 8, Documentation, build and release packaging
 
-1. `DESIGN.md`, "Approved composition" player paragraph: record the new rules — Quality is a list with the
+1. `DESIGN.md`, "Approved composition" player paragraph: record the new rules. Quality is a list with the
    current rendition checked; the origin bar button shows the active underline while its drawer is open; the
    timeline lives inside the bar card; diagnostics HUD is off by default; a paused chip appears when the bar is
    hidden; the info block uses one-line title and a `·`-separated secondary line.

@@ -1,4 +1,4 @@
-# Smarter Purple TV — redesign proposal
+# Smarter Purple TV redesign proposal
 
 Status: draft for review. Scope: navigation, home, and player. Based on source inspection; current on-device appearance and behavior have not been tested for this proposal.
 
@@ -10,7 +10,7 @@ The user has confirmed three priorities: followed live channels come first, all 
 
 The proposed identity comes through a recognizable interaction: the followed channels you see at startup are also available in a compact switcher while watching. Home and playback feel like two views of the same personal channel collection.
 
-“Premium” should be visible in readable typography, steady focus, useful defaults, coherent controls, and fast transitions. Larger empty areas alone would make finding a stream slower.
+"Premium" should be visible in readable typography, steady focus, useful defaults, coherent controls, and fast transitions. Larger empty areas alone would make finding a stream slower.
 
 ## 2. Navigation: one stable menu
 
@@ -18,12 +18,12 @@ Replace the separate main/user menu states with one menu whose destinations keep
 
 | Destination | Contents |
 | --- | --- |
-| **Following** — startup destination | Live now; tabs for followed videos, channels, and categories |
+| **Following**, startup destination | Live now; tabs for followed videos, channels, and categories |
 | **Browse** | Live streams, categories, featured content, videos, and clips |
 | **Search** | One entry point; result types for live streams, channels, categories, and videos |
 | **Library** | Watch history, with live/video/clip filters; resume videos where existing history supports it |
-| **Account** — lower utility area | Switch/add accounts, own channel, blocked channels |
-| **Settings** — lower utility area | Playback, chat, appearance, remote controls, notifications, accounts/sync, updates, help/about |
+| **Account**, lower utility area | Switch/add accounts, own channel, blocked channels |
+| **Settings**, lower utility area | Playback, chat, appearance, remote controls, notifications, accounts/sync, updates, help/about |
 
 Keep explicit Exit available in the utility area. Put changelog under Updates and controls help under Remote controls. Featured content remains accessible inside Browse.
 
@@ -41,7 +41,7 @@ Navigation behavior:
 
 Use a three-column grid as the initial TV layout hypothesis. It provides recognizable thumbnails and readable channel names without spending half the viewport on a single featured stream. Validate density at viewing distance; three columns is a proposal, not a locked setting.
 
-Structural sketch — placeholders represent content, not a final visual design:
+Structural sketch. Placeholders represent content, not a final visual design:
 
 ```text
 ┌──────────────────────────────────────────────────────────────────┐
@@ -81,10 +81,10 @@ Important states:
 
 | State | Experience |
 | --- | --- |
-| No account configured | “Add an account to see followed channels,” plus a usable Browse action |
+| No account configured | "Add an account to see followed channels," plus a usable Browse action |
 | Account needs authorization | Explain the issue and offer reconnection without implying follows are empty |
 | No follows | Explain how to follow channels; offer Search and Browse |
-| Nobody live | “Nobody you follow is live right now”; offer followed videos and Browse |
+| Nobody live | "Nobody you follow is live right now"; offer followed videos and Browse |
 | Loading | Stable card placeholders and usable navigation; no decorative animated shimmer required |
 | Refresh failure | Keep last successful content, mark it as potentially out of date, and offer Retry |
 | Missing thumbnail or long title | Same card geometry, fallback image, readable truncation; full title in detail area |
@@ -107,7 +107,7 @@ While watching, the picture leads. Reveal controls on OK, then automatically dis
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-Use text labels alongside icons. Display the actual state, such as Chat on/off and selected quality. For videos and clips, show the timeline and supported transport controls; reserve “Back to live” for playback modes that actually support it.
+Use text labels alongside icons. Display the actual state, such as Chat on/off and selected quality. For videos and clips, show the timeline and supported transport controls; reserve "Back to live" for playback modes that actually support it.
 
 | Entry | What opens |
 | --- | --- |
@@ -117,11 +117,11 @@ Use text labels alongside icons. Display the actual state, such as Chat on/off a
 | **Layout** | Single stream, supported picture-in-picture/multistream modes, target stream selection, and audio source |
 | **More** | Channel/category details, follow state, available broadcast/rewind/chapters, playback speed, audio, low latency, previews, external player, screen off, and diagnostics, grouped by purpose |
 
-Drawers open as readable vertical lists, with current values aligned consistently and descriptions shown only for the focused row. Deep controls remain inside named groups: Playback, Audio, Preview, and Diagnostics. Avoid replacing one long control strip with one equally long “More” list.
+Drawers open as readable vertical lists, with current values aligned consistently and descriptions shown only for the focused row. Deep controls remain inside named groups: Playback, Audio, Preview, and Diagnostics. Avoid replacing one long control strip with one equally long "More" list.
 
 **The channel switcher:** retain Up as the shortcut to followed channels. Show a horizontal row over the playing video. Left/Right selects; OK switches; Back cancels. Also expose Channels through More so the shortcut is optional. Preview behavior follows existing preferences. In multistream, selection uses the existing add/replace workflow and makes the destination slot explicit.
 
-**The phone chat entry:** keep “Chat on phone” near the top of Chat, with its QR instructions in a focused panel. Retain the existing number-key shortcut as an accelerator. It should be discoverable with a basic remote.
+**The phone chat entry:** keep "Chat on phone" near the top of Chat, with its QR instructions in a focused panel. Retain the existing number-key shortcut as an accelerator. It should be discoverable with a basic remote.
 
 ## 5. Remote and focus contract
 

@@ -1,4 +1,4 @@
-# TV remote ergonomics — implementation results
+# TV remote ergonomics, implementation results
 
 October 16, 2026. Companion to [the implementation plan](tv-remote-ux-implementation-plan.md) and
 the [review](tv-remote-ux-review.md). Web release **752** (APK 391 unchanged, no native bridge change).
@@ -26,7 +26,7 @@ Counted on the shipping behavior, key-down + key-up counted as one press:
 | --- | --- | --- |
 | Watch the selected stream | 1 | OK on the card body (unchanged) |
 | Next row | 1 | Down (unchanged) |
-| Next card body, horizontally | 2 | Right (→ Actions), Right (→ next body) — the documented card-actions tradeoff |
+| Next card body, horizontally | 2 | Right (→ Actions), Right (→ next body), the documented card-actions tradeoff |
 | Selected channel's content | 3 | Right, OK (options menu opens on Channel content), OK |
 | Refresh | tabs control, or Hold OK in Legacy | visible Refresh control in the tabs row |
 | Switch Following / Browse | rail | Up, Left, Up/Down, OK |
@@ -70,7 +70,7 @@ Commands run at integration: `maker.js jsh`, all seven suites (source and `--bui
 - **`remote-input-tests.js`:** tests the Direct/Legacy suppression contract over the real
   `UIFocus.js` rather than `Screens.js` press policies, which are not VM-loadable; the press
   policies were verified against the running app instead.
-- **Plan section 5B cases 4–8:** partially covered (rerender, held keys, empty return in the
+- **Plan section 5B cases 4 to 8:** partially covered (rerender, held keys, empty return in the
   fixture; search/settings via the app). Virtualized identity restore, recovery focus steal and
   player drawer cases in the fixture remain future additions.
 
@@ -104,7 +104,7 @@ full source/generated suite run; the layout change was re-measured on the rebuil
 ## Update dialog replaced by a passive rail badge
 
 User report: the update dialog popped up although the update was already installed, and
-"update now" then failed. The automatic popup path is removed — `Main_WarnUpdate` no longer
+"update now" then failed. The automatic popup path is removed. `Main_WarnUpdate` no longer
 opens the dialog regardless of the update notification setting. Update availability is now a
 red badge (dot plus tinted label) on the rail's Updates entry (`Navigation_SetUpdateBadge`),
 set from both the APK check and the version.json check, cleared when the device is current.

@@ -53,52 +53,52 @@ Each row is extracted from an active control declaration in `Play_MakeControls`.
 
 | Named control | Current label expression | Modes | Specialized groups | Callback / presentation dependencies | Proposed group | Migration |
 | --- | --- | --- | --- | --- | --- | --- |
-| `Play_controlsBack` | `STR_SIDE_PANEL_BACK_MAIN_MENU` | — | ShowInChat, ShowInAudio, ShowInAudioPP, ShowInAudioMulti, ShowInPreview | enterKey, Play_PanelCounter, Play_SetControlsVisibility | Drawer Back (existing behavior must be extracted) | Adapter wired; native check pending |
+| `Play_controlsBack` | `STR_SIDE_PANEL_BACK_MAIN_MENU` | None | ShowInChat, ShowInAudio, ShowInAudioPP, ShowInAudioMulti, ShowInPreview | enterKey, Play_PanelCounter, Play_SetControlsVisibility | Drawer Back (existing behavior must be extracted) | Adapter wired; native check pending |
 | `Play_controlsSearch` | `STR_SEARCH` | LVCPM | ShowInStay | enterKey | More / Channel/content | Adapter wired; native check pending |
 | `Play_controlsChanelCont` | `STR_CHANNEL_CONT` | LVCPM | ShowInStay | enterKey, setLabel | More / Channel/content | Adapter wired; native check pending |
 | `Play_controlsGameCont` | `STR_GAME_CONT` | LVCPM | ShowInStay | enterKey, setLabel | More / Channel/content | Adapter wired; native check pending |
-| `Play_controlsOpenLive` | `STR_IS_LIVE` | — | — | enterKey, doc_title, setLabel | More / Channel/content | Adapter wired; native check pending |
-| `Play_controlsOpenVod` | `STR_OPEN_BROADCAST` | — | — | enterKey, doc_title, setLabel | More / Channel/content | Adapter wired; native check pending |
+| `Play_controlsOpenLive` | `STR_IS_LIVE` | None | None | enterKey, doc_title, setLabel | More / Channel/content | Adapter wired; native check pending |
+| `Play_controlsOpenVod` | `STR_OPEN_BROADCAST` | None | None | enterKey, doc_title, setLabel | More / Channel/content | Adapter wired; native check pending |
 | `Play_controlsFollow` | `STR_FOLLOW` | LVCPM | ShowInStay | enterKey, doc_title, setLabel, Play_ResetPanel | More / Channel/content | Adapter wired; native check pending |
-| `Play_controlsSpeed` | `STR_SPEED` | LVCPM | — | enterKey, value adjustment, doc_name, setLabel, bottomArrows, OSInterface_ | More / Playback | Adapter wired; native check pending |
-| `Play_controlsExternal` | `STR_OPEN_EXTERNAL_PLAYER` | LVCPM | — | enterKey, value adjustment, doc_name, setLabel, bottomArrows, OSInterface_ | More / Playback | Adapter wired; native check pending |
-| `Play_controlsRewind` | `STR_OPEN_REWIND` | L | — | enterKey, setLabel | More / Playback | Adapter wired; native check pending |
-| `Play_controlsQuality` | `STR_QUALITY` | LVC | — | enterKey, value adjustment, Play_ResetPanel, OSInterface_ | Quality / per-slot restart | Adapter wired; native check pending |
-| `Play_controlsQualityMini` | `STR_PLAYER_RESYNC` | P | — | enterKey, value adjustment, doc_name, setLabel, Play_ResetPanel, OSInterface_ | Quality / per-slot restart | Adapter wired; native check pending |
-| `Play_controlsQualityMulti` | `STR_PLAYER_RESYNC` | M | — | enterKey, value adjustment, doc_name, setLabel, Play_ResetPanel, OSInterface_ | Quality / per-slot restart | Adapter wired; native check pending |
+| `Play_controlsSpeed` | `STR_SPEED` | LVCPM | None | enterKey, value adjustment, doc_name, setLabel, bottomArrows, OSInterface_ | More / Playback | Adapter wired; native check pending |
+| `Play_controlsExternal` | `STR_OPEN_EXTERNAL_PLAYER` | LVCPM | None | enterKey, value adjustment, doc_name, setLabel, bottomArrows, OSInterface_ | More / Playback | Adapter wired; native check pending |
+| `Play_controlsRewind` | `STR_OPEN_REWIND` | L | None | enterKey, setLabel | More / Playback | Adapter wired; native check pending |
+| `Play_controlsQuality` | `STR_QUALITY` | LVC | None | enterKey, value adjustment, Play_ResetPanel, OSInterface_ | Quality / per-slot restart | Adapter wired; native check pending |
+| `Play_controlsQualityMini` | `STR_PLAYER_RESYNC` | P | None | enterKey, value adjustment, doc_name, setLabel, Play_ResetPanel, OSInterface_ | Quality / per-slot restart | Adapter wired; native check pending |
+| `Play_controlsQualityMulti` | `STR_PLAYER_RESYNC` | M | None | enterKey, value adjustment, doc_name, setLabel, Play_ResetPanel, OSInterface_ | Quality / per-slot restart | Adapter wired; native check pending |
 | `Play_controlsScreeOff` | `STR_SCREEN_OFF` | LVCPM | ShowInStay | enterKey | More / Playback | Adapter wired; native check pending |
-| `Play_controlsLowLatency` | `STR_LOW_LATENCY` | LPM | — | enterKey, value adjustment, doc_name, setLabel, bottomArrows, Play_ResetPanel, OSInterface_ | More / Playback | Adapter wired; native check pending |
-| `Play_controlsChapters` | `STR_CHAPTERS` | — | — | enterKey, value adjustment, doc_name, setLabel, bottomArrows | More / Playback | Adapter wired; native check pending |
-| `Play_MultiStream` | `STR_4_WAY_MULTI` | LPM | — | enterKey, OSInterface_ | Layout | Adapter wired; native check pending |
-| `Play_controlsAudio` | `STR_VOLUME_CONTROLS` | LVCPM | — | enterKey, Play_PanelCounter | More / Audio | Adapter wired; native check pending |
+| `Play_controlsLowLatency` | `STR_LOW_LATENCY` | LPM | None | enterKey, value adjustment, doc_name, setLabel, bottomArrows, Play_ResetPanel, OSInterface_ | More / Playback | Adapter wired; native check pending |
+| `Play_controlsChapters` | `STR_CHAPTERS` | None | None | enterKey, value adjustment, doc_name, setLabel, bottomArrows | More / Playback | Adapter wired; native check pending |
+| `Play_MultiStream` | `STR_4_WAY_MULTI` | LPM | None | enterKey, OSInterface_ | Layout | Adapter wired; native check pending |
+| `Play_controlsAudio` | `STR_VOLUME_CONTROLS` | LVCPM | None | enterKey, Play_PanelCounter | More / Audio | Adapter wired; native check pending |
 | `Play_controlsChatSide` | `STR_CHAT_VIDEO_MODE` | LVCPM | ShowInStay | enterKey, doc_title, setLabel, Play_ResetPanel | Layout | Adapter wired; native check pending |
 | `Play_controlsChat` | `STR_CHAT_SHOW` | LVCPM | ShowInChat, ShowInStay | enterKey, setLabel | Chat (phone first) | Adapter wired; native check pending |
 | `Play_controlsChatSend` | `STR_CHAT_WRITE` | LPM | ShowInStay | enterKey | Chat (phone first) | Adapter wired; native check pending |
-| `Play_controlsPhoneChat` | `STR_PHONE_CHAT_OPEN + ' (6)'` | LP | — | enterKey, PhoneChat_Show | Chat (phone first) | Adapter wired; native check pending |
+| `Play_controlsPhoneChat` | `STR_PHONE_CHAT_OPEN + ' (6)'` | LP | None | enterKey, PhoneChat_Show | Chat (phone first) | Adapter wired; native check pending |
 | `Play_controlsChatSettings` | `STR_CHAT_EXTRA` | LVCPM | ShowInStay | enterKey, Play_PanelCounter, Play_SetControlsVisibility | Chat (phone first) | Adapter wired; native check pending |
-| `Play_controlsPlayerStatus` | `STR_PLAYER_INFO_VISIBILITY` | LVCPM | — | value adjustment, bottomArrows | More / Diagnostics | Adapter wired; native check pending |
+| `Play_controlsPlayerStatus` | `STR_PLAYER_INFO_VISIBILITY` | LVCPM | None | value adjustment, bottomArrows | More / Diagnostics | Adapter wired; native check pending |
 | `Play_controlsPreview` | `STR_PREVIEW_SET` | LVCPM | ShowInStay | enterKey, bottomArrows, Play_PanelCounter, Play_SetControlsVisibility | More / Preview | Adapter wired; native check pending |
-| `Play_controlsChatForceDis` | `STR_F_DISABLE_CHAT` | — | ShowInChat | enterKey, setLabel | Chat (phone first) | Adapter wired; native check pending |
-| `Play_controlsChatDisShared` | `STR_DISABLE_SHARED_CHAT` | — | ShowInChat | enterKey, setLabel | Chat (phone first) | Adapter wired; native check pending |
-| `Play_controlsChatDelay` | `STR_CHAT_DELAY` | — | ShowInChat | value adjustment, doc_name, setLabel, bottomArrows | Chat (phone first) | Adapter wired; native check pending |
-| `Play_controlsChatPos` | `STR_CHAT_POS` | — | ShowInChat | value adjustment, doc_name, setLabel, bottomArrows | Chat (phone first) | Adapter wired; native check pending |
-| `Play_controlsChatSize` | `STR_CHAT_SIZE` | — | ShowInChat | value adjustment, doc_name, setLabel, bottomArrows | Chat (phone first) | Adapter wired; native check pending |
-| `Play_controlsChatBright` | `STR_CHAT_BRIGHTNESS` | — | ShowInChat | value adjustment, doc_name, setLabel, bottomArrows | Chat (phone first) | Adapter wired; native check pending |
-| `Play_controlsChatFont` | `STR_CHAT_FONT` | — | ShowInChat | value adjustment, doc_name, setLabel, bottomArrows | Chat (phone first) | Adapter wired; native check pending |
-| `Play_controlsAudioAll` | `STR_AUDIO_ALL` | — | ShowInAudioPP, ShowInAudioMulti | enterKey, OSInterface_ | More / Audio | Adapter wired; native check pending |
-| `Play_controlsAudio_Volume_100` | `STR_AUDIO_ALL_100` | — | ShowInAudio, ShowInAudioPP, ShowInAudioMulti | enterKey, OSInterface_ | More / Audio | Adapter wired; native check pending |
-| `Play_controlsAudioEna0` | `''` | — | ShowInAudio, ShowInAudioPP, ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
-| `Play_controlsAudioVol0` | `''` | — | ShowInAudio, ShowInAudioPP, ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
-| `Play_controlsAudioEna1` | `''` | — | ShowInAudioPP, ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
-| `Play_controlsAudioVol1` | `''` | — | ShowInAudioPP, ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
-| `Play_controlsAudioEna2` | `''` | — | ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
-| `Play_controlsAudioVol2` | `''` | — | ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
-| `Play_controlsAudioEna3` | `''` | — | ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
-| `Play_controlsAudioVol3` | `''` | — | ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
-| `Play_controlsPreviewEnable` | `STR_PREVIEW_SHOW` | — | ShowInPreview | value adjustment, bottomArrows | More / Preview | Adapter wired; native check pending |
-| `Play_controlsPreviewSize` | `STR_PREVIEW_SIZE_CONTROLS` | — | ShowInPreview | value adjustment, bottomArrows, OSInterface_ | More / Preview | Adapter wired; native check pending |
-| `Play_controlsPreviewVolume` | `STR_PREVIEW_VOLUME` | — | ShowInPreview | value adjustment, bottomArrows, OSInterface_ | More / Preview | Adapter wired; native check pending |
-| `Play_controlsPreviewMainVolume` | `STR_PREVIEW_OTHERS_VOLUME` | — | ShowInPreview | value adjustment, bottomArrows, OSInterface_ | More / Preview | Adapter wired; native check pending |
+| `Play_controlsChatForceDis` | `STR_F_DISABLE_CHAT` | None | ShowInChat | enterKey, setLabel | Chat (phone first) | Adapter wired; native check pending |
+| `Play_controlsChatDisShared` | `STR_DISABLE_SHARED_CHAT` | None | ShowInChat | enterKey, setLabel | Chat (phone first) | Adapter wired; native check pending |
+| `Play_controlsChatDelay` | `STR_CHAT_DELAY` | None | ShowInChat | value adjustment, doc_name, setLabel, bottomArrows | Chat (phone first) | Adapter wired; native check pending |
+| `Play_controlsChatPos` | `STR_CHAT_POS` | None | ShowInChat | value adjustment, doc_name, setLabel, bottomArrows | Chat (phone first) | Adapter wired; native check pending |
+| `Play_controlsChatSize` | `STR_CHAT_SIZE` | None | ShowInChat | value adjustment, doc_name, setLabel, bottomArrows | Chat (phone first) | Adapter wired; native check pending |
+| `Play_controlsChatBright` | `STR_CHAT_BRIGHTNESS` | None | ShowInChat | value adjustment, doc_name, setLabel, bottomArrows | Chat (phone first) | Adapter wired; native check pending |
+| `Play_controlsChatFont` | `STR_CHAT_FONT` | None | ShowInChat | value adjustment, doc_name, setLabel, bottomArrows | Chat (phone first) | Adapter wired; native check pending |
+| `Play_controlsAudioAll` | `STR_AUDIO_ALL` | None | ShowInAudioPP, ShowInAudioMulti | enterKey, OSInterface_ | More / Audio | Adapter wired; native check pending |
+| `Play_controlsAudio_Volume_100` | `STR_AUDIO_ALL_100` | None | ShowInAudio, ShowInAudioPP, ShowInAudioMulti | enterKey, OSInterface_ | More / Audio | Adapter wired; native check pending |
+| `Play_controlsAudioEna0` | `''` | None | ShowInAudio, ShowInAudioPP, ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
+| `Play_controlsAudioVol0` | `''` | None | ShowInAudio, ShowInAudioPP, ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
+| `Play_controlsAudioEna1` | `''` | None | ShowInAudioPP, ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
+| `Play_controlsAudioVol1` | `''` | None | ShowInAudioPP, ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
+| `Play_controlsAudioEna2` | `''` | None | ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
+| `Play_controlsAudioVol2` | `''` | None | ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
+| `Play_controlsAudioEna3` | `''` | None | ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
+| `Play_controlsAudioVol3` | `''` | None | ShowInAudioMulti | value adjustment, setLabel, bottomArrows | More / Audio | Adapter wired; native check pending |
+| `Play_controlsPreviewEnable` | `STR_PREVIEW_SHOW` | None | ShowInPreview | value adjustment, bottomArrows | More / Preview | Adapter wired; native check pending |
+| `Play_controlsPreviewSize` | `STR_PREVIEW_SIZE_CONTROLS` | None | ShowInPreview | value adjustment, bottomArrows, OSInterface_ | More / Preview | Adapter wired; native check pending |
+| `Play_controlsPreviewVolume` | `STR_PREVIEW_VOLUME` | None | ShowInPreview | value adjustment, bottomArrows, OSInterface_ | More / Preview | Adapter wired; native check pending |
+| `Play_controlsPreviewMainVolume` | `STR_PREVIEW_OTHERS_VOLUME` | None | ShowInPreview | value adjustment, bottomArrows, OSInterface_ | More / Preview | Adapter wired; native check pending |
 | `Play_controlsControls` | `STR_CONTROLS` | LVCPM | ShowInStay | enterKey | More / Diagnostics | Adapter wired; native check pending |
 | `Play_controlsContentLang` | `STR_CONTENT_LANG` | LVCPM | ShowInStay | value adjustment, doc_name, bottomArrows | More / Playback | Adapter wired; native check pending |
 

@@ -1,4 +1,4 @@
-# Optimization implementation plan — Smarter Purple TV
+# Optimization implementation plan, Smarter Purple TV
 
 Prepared October 16, 2026. This is an implementation handoff, not a completed optimization or a device performance report. Paths below are relative to the repository root. Function names are the primary navigation anchors because line numbers will change.
 
@@ -43,7 +43,7 @@ Capture a repeatable performance workload, with fixture messages and mocked netw
 
 These rates are stress-test inputs, not claims about typical Twitch traffic. Prefer counters for pending timers, cache entries, admitted requests, and scroll calls; also use actual browser/TV traces for layout and responsiveness. Do not print tokens or response bodies in diagnostics.
 
-**1. Skip minification in lint-only mode — small, low risk**
+**1. Skip minification in lint-only mode, small, low risk**
 
 Files: `release/scripts/maker.js`; optionally `package.json` and documentation for check commands.
 
@@ -74,7 +74,7 @@ Acceptance:
 - Compare production bundle hashes before/after under the same dependencies. This package should not change runtime bundle content. Investigate any difference.
 - Report median timing before/after. No new permanent test suite is needed solely for the timing shortcut.
 
-**2. Replace delayed-message timers with one scheduler per TV chat — medium risk**
+**2. Replace delayed-message timers with one scheduler per TV chat, medium risk**
 
 Files: `app/specific/ChatLive.js`; inspect `Main_setTimeout` in `Main.js`, delay-setting handlers in `ChatLiveControls.js`/`PlayEtc.js`, and callers of `ChatLive_ClearIds`, `ChatLive_Clear`, `ChatLive_Switch`, and `ChatLive_SetOptions`. Add focused Node regression tests under `release/scripts/`.
 
@@ -104,7 +104,7 @@ Acceptance tests with a fake clock:
 
 Keep DOM batching out of this package so timer correctness can be reviewed independently.
 
-**3. Bound reusable TV channel caches — medium risk**
+**3. Bound reusable TV channel caches, medium risk**
 
 Primary file: `app/specific/ChatLive.js`. Inspect `ChatLiveControls.js`, `ChatVod.js`, `AddUser.js`, and `app/thirdparty/kapchat.js` for consumers and derived state.
 
@@ -143,7 +143,7 @@ Acceptance:
 - Badge CSS and emotes already rendered remain correct; account switching and the TV emote picker still work.
 - Heap inspection distinguishes evicted cache objects from legitimate account/global copies and browser image caching.
 
-**4. Optimize chat rendering without changing retained content — split into three patches**
+**4. Optimize chat rendering without changing retained content, split into three patches**
 
 **4A. TV message animation**
 
@@ -178,7 +178,7 @@ Acceptance:
 - Switching channels before a scheduled flush cannot affect the new channel; both tabs and jump-to-latest behave correctly.
 - Use a real browser for scroll/layout verification. Pure Node assertions cannot establish layout performance.
 
-**4C. TV DOM insertion batching — only after tracing confirms benefit**
+**4C. TV DOM insertion batching, only after tracing confirms benefit**
 
 Files: `ChatLive.js` (`ChatLive_ElementAdd`, `ChatLive_ElementAddCheckExtra`, `ChatLive_MessagesRunAfterPause`), `ChatVod.js` (`Main_Addline`, `Chat_Clean`).
 
@@ -186,7 +186,7 @@ The browser can already coalesce synchronous DOM writes. Do not claim one append
 
 If there is a measurable bottleneck, use a `DocumentFragment` for a synchronous append-only burst, preserving highlight transformations, alternating backgrounds, extra-message placement, counters, and cleanup. Treat `addToStart` separately: preloaded history is iterated in reverse and prepended; naively appending its nodes to a fragment reverses the result. Do not move incoming message processing asynchronously across moderation events without covering pending messages in moderation logic. Retain the existing immediate path for isolated messages. Skip this patch with recorded evidence if it adds complexity without a useful gain.
 
-**5. Bound native network work and tie it to activity lifetime — highest risk, two patches**
+**5. Bound native network work and tie it to activity lifetime, highest risk, two patches**
 
 Files: `apk/app/src/main/java/com/fgl27/twitch/PlayerActivity.java`, possibly a small package-private request dispatcher/helper; inspect `Tools.java`, `OSInterface.js`, and the Java test harness pattern under `release/scripts/java/`.
 
@@ -253,7 +253,7 @@ Manual acceptance on a representative older TV/WebView:
 
 Prepare versioning once per intended release, not once per patch. Tooling-only changes need no runtime bump. For a web-only release, increment the then-current `WebTag`, use the release date, add the changelog, and build. For the combined native/web release, follow `AGENTS.md`: increment APK code in both sources, update `ApkUrl` to the intended matching artifact, mirror `apk/Changelog.md`, and also advance the web tag/date for shipped web changes. Do not hardcode the reviewed versions (APK 390 / WebTag 749) if the branch has advanced. Build-generated version/changelog and phone assets must match the source. Keep publishing separate.
 
-Update `AGENTS.md`'s stale “no test suite” statement with the actual focused harness commands and new checks. Do not describe fixture tests as complete end-to-end coverage.
+Update `AGENTS.md`'s stale "no test suite" statement with the actual focused harness commands and new checks. Do not describe fixture tests as complete end-to-end coverage.
 
 Final implementation report must include:
 

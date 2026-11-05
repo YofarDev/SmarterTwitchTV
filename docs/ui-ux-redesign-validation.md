@@ -1,4 +1,4 @@
-# UI/UX redesign — production integration validation
+# UI/UX redesign production integration validation
 
 October 16, 2026. The approved purple/charcoal composition is integrated into production source and
 regenerated release assets. Hardware acceptance and authenticated end-to-end coverage remain pending;

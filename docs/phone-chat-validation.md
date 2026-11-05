@@ -1,4 +1,4 @@
-# Phone chat mute and repeat-filter validation — October 31, 2026
+# Phone chat mute and repeat-filter validation, October 31, 2026
 
 ## Findings and changes
 

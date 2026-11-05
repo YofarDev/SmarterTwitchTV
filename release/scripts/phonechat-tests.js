@@ -496,7 +496,7 @@ function loadSandbox(overrides) {
     staleOnClose();
     eq(transport.state, T.States.RECONNECTING, 'irc: stale close ignored');
 
-    //Auth failure stops retries — Twitch's DOCUMENTED form is an untagged NOTICE
+    //Auth failure stops retries, Twitch's DOCUMENTED form is an untagged NOTICE
     transport._connect();
     const authSocket = sockets[sockets.length - 1];
     authSocket.readyState = 1;
@@ -757,7 +757,7 @@ function loadSandbox(overrides) {
     ]);
     eq(zeroAndNormal.resolve('Dup').id, 'n', 'collision: zero-width does not displace a claimed code');
 
-    //Get User Emotes: EXACTLY the documented response shape — top-level
+    //Get User Emotes: EXACTLY the documented response shape, top-level
     //template, per-emote format/scale/theme_mode ARRAYS, decimal scale URLs
     //(HEAD-verified: '/static/dark/2' is 404, '/static/dark/2.0' is 200)
     const userTemplate = 'https://static-cdn.jtvnw.net/emoticons/v2/{{id}}/{{format}}/{{theme_mode}}/{{scale}}';
@@ -1328,7 +1328,7 @@ asyncSections.push(async () => {
     //Pending consumed exactly once
     eq(app.sandbox.sessionStorage.getItem('sptv_phone_chat_pending'), null, 'boot: pending state consumed');
 
-    //Validation: GET with the OAuth token (never POST — Twitch 404s POST)
+    //Validation: GET with the OAuth token (never POST, Twitch 404s POST)
     const validateCalls = app.fetchCalls.filter(c => c.url.indexOf('id.twitch.tv/oauth2/validate') > -1);
     eq(validateCalls.length, 1, 'boot: token validated once');
     eq(validateCalls[0].options.method, 'GET', 'boot: validate uses GET');

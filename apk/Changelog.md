@@ -12,7 +12,7 @@ The app has a building update check function, so whenever there is a update a re
 November 5 2026 (3.0.400)
 ==============
 
-* APK: the home screen channels (Live, User Live, Games) load their content even when the TV provider channel is not marked browsable — only the system launcher sets that flag, so on custom launchers like Projectivy the rows used to stay empty (by @Dryness, #12).
+* APK: the home screen channels (Live, User Live, Games) load their content even when the TV provider channel is not marked browsable. Only the system launcher sets that flag, so on custom launchers like Projectivy the rows used to stay empty (by @Dryness, #12).
 * Chat: new Animated emotes option shows still images instead of animations, a big processor saving on slower TVs; watching a live stream reports watch time so channel points and drops accrue; the bonus chest and finished drops can be claimed automatically (off by default) (by @Dryness, #23, #13, #14).
 * Interface: key hints draw remote keys as glyphs with group dividers; holding OK can no longer pick a dialog option through auto-repeat; Account screen cards, tabs and rail fixes; welcome screen single highlight and reachable rail (by @Dryness, #8, #9, #10, #11).
 
@@ -30,19 +30,19 @@ November 5 2026 (3.0.398)
 * APK: the ad-filtered playlist stream is closed so its gzip inflater is freed after each ad check instead of leaking (by @Dryness, #21).
 * Chat: busy live chats insert their new lines together at most twice a second, cutting WebView CPU on slower TVs; value-less IRC tags from the message history no longer break the chat history on join (by @Dryness, #22, #5).
 * Player: the timeline no longer carries a drop-shadow filter that stalled the video on weak TVs while the menu was open (by @Dryness, #16).
-* Settings: headings scroll in with their first option, the focus outline stays inside the list, the screen uses the elevated surface, and closing the rail returns the focus to the row (by @Dryness, #7).
+* Settings: headings scroll in with their first option, the focus outline stays inside the list, the screen uses the same background as the navigation rail, and closing the rail returns the focus to the row (by @Dryness, #7).
 
 November 5 2026 (3.0.397)
 ==============
 
-* General: the repository is now github.com/YofarDev/SmarterPurpleTV — the app's update check, hosted pages (main, keys and phone chat) and home channel images now use the new addresses; old addresses keep working through GitHub's redirect.
+* General: the repository is now github.com/YofarDev/SmarterPurpleTV. The app's update check, hosted pages (main, keys and phone chat) and home channel images now use the new addresses; old addresses keep working through GitHub's redirect.
 * Install this APK to switch the TV page and update check to the new repository address; the web update alone cannot replace these APK constants.
 
 November 5 2026 (3.0.396)
 ==============
 
-* Settings: the list scrolls row by row keeping the focused setting on screen — it used to flip between the top and the bottom of the page, which left settings permanently invisible on screens that fit fewer rows.
-* Player: new setting "Hide live seek bar" (Settings › Player related) — live streams hide the seek bar and its once a second updates while the menu is open, which can stop frame drops on slower TVs; VODs and clips keep their bar.
+* Settings: the list scrolls row by row keeping the focused setting on screen. It used to flip between the top and the bottom of the page, which left settings permanently invisible on screens that fit fewer rows.
+* Player: new setting "Hide live seek bar" (Settings › Player related). Live streams hide the seek bar and its once a second updates while the menu is open, which can stop frame drops on slower TVs; VODs and clips keep their bar.
 * Both changes are web side; the web part updates on app restart, no new APK needed.
 
 October 31 2026 (3.0.395)
@@ -67,20 +67,20 @@ October 23 2026 (3.0.392)
 * Storage: history saves recover from storage quota errors by trimming old entries; the stream playlist is no longer saved to storage.
 * Fix: the phone chat background sync keeps running after the player closes; it now stops cleanly.
 * Fix: the first notification run saved an empty live list, causing a burst of "went live" toasts on the next check; avatars past the first 100 follows never loaded; avatar fetches had no timeouts and could stall notifications forever.
-* Android: fix leaks on player restart — the ad reload listener held the destroyed activity, handler threads and pending handlers were never released, WebViews were never destroyed.
+* Android: fix leaks on player restart. The ad reload listener held the destroyed activity, handler threads and pending handlers were never released, WebViews were never destroyed.
 * Android: notification logos are downsampled before decode, downloaded once with timeouts, and cached; TV channel thumbnails no longer carry a cache buster that forced a re-download every sync; user switch no longer blocks the app bridge for seconds; the phone chat server backs off instead of hot-spinning when accepts fail.
 
 October 24 2026 (3.0.393)
 ==============
 
-* Ad breaks that can no longer be hidden now freeze the picture on the last live frame until the break is over, instead of playing the ad — some breaks are stitched into every fresh stream session and simply cannot be escaped.
+* Ad breaks that can no longer be hidden now freeze the picture on the last live frame until the break is over, instead of playing the ad. Some breaks are stitched into every fresh stream session and simply cannot be escaped.
 * The escape reloads rotate the fallback stream types much faster (15 seconds instead of 60), so every type is tried within a single ad break.
 * The pre-playback ad probe checks every stream quality instead of only the first and last, so ads stitched into a single quality can no longer slip into playback.
 
 October 25 2026 (3.0.394)
 ==============
 
-* Phone chat: fix muting on iPhone — long-pressing a message now opens the mute sheet on iOS browsers, which never report a long-press as a context menu (Android and desktop right-click are unchanged).
+* Phone chat: fix muting on iPhone. Long-pressing a message now opens the mute sheet on iOS browsers, which never report a long-press as a context menu (Android and desktop right-click are unchanged).
 
 October 11 2026 (3.0.390)
 ==============

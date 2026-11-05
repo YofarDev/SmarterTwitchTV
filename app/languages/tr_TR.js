@@ -894,7 +894,7 @@ function tr_TRLang() {
         "Çoğu yayın 1080p60'a kadar AVC (H.264) kullanır; HEVC/AV1, mevcut olduğunda 1440p, 4K ve 60+fps'yi etkinleştirir.";
 
     STR_PLAYER_EXTRA_CODEC_SUMMARY1 =
-        "Bu özellik yalnızca oturum açmış kullanıcılar için çalışır. Tüm yayınlar desteklenmez — bu, yayıncının etkinleştirmesine ve Twitch'in bölgenizde bunu sağlayıp sağlamadığına bağlıdır.";
+        "Bu özellik yalnızca oturum açmış kullanıcılar için çalışır. Tüm yayınlar desteklenmez; bu, yayıncının etkinleştirmesine ve Twitch'in bölgenizde bunu sağlayıp sağlamadığına bağlıdır.";
 
     STR_PLAYER_EXTRA_CODEC_SUMMARY_EXTRA =
         "Uygulama, daha yüksek kaliteli yayınlar için cihazınızın HEVC veya AV1'i destekleyip desteklemediğini kontrol eder.";

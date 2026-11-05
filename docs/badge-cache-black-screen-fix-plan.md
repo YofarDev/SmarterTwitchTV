@@ -83,7 +83,7 @@ The implementation should be a web-only change. No new Android bridge methods, M
 
 ## 3. Implement in reviewable stages
 
-### Stage A — Lock down the failure with production-code fixtures
+### Stage A. Lock down the failure with production-code fixtures
 
 Create `release/scripts/chat-badge-tests.js` using the repository's existing `vm`/assertion approach. Load real production definitions; stub network transport, DOM insertion, clock, and native playback effects.
 
@@ -93,7 +93,7 @@ Add the `[1, 0]` reproduction above first. Before the fix, it must demonstrate t
 
 Capture the exact dependency set used by the fixture so it cannot silently replace the production badge functions with permissive mocks. Existing chat optimization tests currently stub badge transformation, so they do not cover this failure.
 
-### Stage B — Correct the request contract
+### Stage B. Correct the request contract
 
 In `Chat_loadBadgesGlobalRequestWithChannel()`:
 
@@ -103,11 +103,11 @@ In `Chat_loadBadgesGlobalRequestWithChannel()`:
 4. Require a usable channel ID before creating channel-specific CSS or dispatching its request. Preserve the shared-chat participant channel ID rather than replacing it with the main channel.
 5. Retain the existing auth refresh/error behavior supplied by the full HTTP helper.
 
-“Single request” here means one request per uncached invocation. Cross-slot request coalescing would introduce waiter and cancellation state; it is not required for this fix. Preserve correctness if two valid slots make concurrent full requests.
+"Single request" here means one request per uncached invocation. Cross-slot request coalescing would introduce waiter and cancellation state; it is not required for this fix. Preserve correctness if two valid slots make concurrent full requests.
 
 **Acceptance:** a cold invocation emits exactly one full request and zero basic requests. Both Android and browser transport paths deliver the documented callback arguments.
 
-### Stage C — Build valid caches before publishing them
+### Stage C. Build valid caches before publishing them
 
 Replace truthiness as the cache-ready test with an explicit invariant: the global template at key `0` must be a string. An empty string is a valid successful result.
 
@@ -132,7 +132,7 @@ Payload rules:
 
 For channel completion in `ChatLive_loadBadgesChannelSuccess()`, validate first, build locally, then publish CSS and the shared-channel-loaded flag together. Retain generation and `ChatLive_CachePins` checks. Treat cached empty channel CSS as ready by checking for a string instead of truthiness.
 
-### Stage D — Recover from an already broken cache
+### Stage D. Recover from an already broken cache
 
 The cache-read path must tolerate `{}`, `{0: null}`, or `{0: undefined}` without throwing.
 
@@ -145,7 +145,7 @@ The cache-read path must tolerate `{}`, `{0: null}`, or `{0: undefined}` without
 
 Invalid JSON is parsed inside `BaseXmlHttpGetFull_Process_End()` before badge completion. Keep that shared parser outside this patch's scope unless testing shows a required change. A malformed transport response may still produce an asynchronous diagnostic, but it must never publish a broken badge cache or prevent video startup. Do not claim that all HTTP parsing errors are eliminated by badge validation.
 
-### Stage E — Keep chat initialization failures from aborting video
+### Stage E. Keep chat initialization failures from aborting video
 
 Add a narrow failure boundary at the `ChatLive_Init()` entry point, covering its chat-only synchronous initialization work. This protects the main stream, secondary stream, and multistream callers that already use that entry point.
 

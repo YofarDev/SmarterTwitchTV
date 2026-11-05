@@ -2,7 +2,7 @@
 
 October 16, 2026. Review only; no application changes, build, commit or deployment.
 
-> Historical record: the findings below were implemented for Web 752 — see
+> Historical record: the findings below were implemented for Web 752. See
 > [the implementation results](tv-remote-ux-implementation-results.md) for what shipped, the
 > verification evidence and the remaining device-only rows. The findings themselves are unchanged.
 
@@ -27,7 +27,7 @@ The recommendations below apply those principles to the actual SPTV handlers.
 
 ## Priority findings
 
-### P1 — Closing the rail/tabs does not transfer DOM focus back to content
+### P1. Closing the rail/tabs does not transfer DOM focus back to content
 
 **Browser reproduced, source confirmed.** In Browse, open the rail, then press Right to return to the
 grid. The first card regains its outline, but `document.activeElement` remains a rail button. The next
@@ -51,7 +51,7 @@ and [next Down unexpectedly reopens the rail](ui-redesign-screenshots/remote-rai
 The captured variant has Search focused before collapse and Library selected after Down; the same
 fault was also reproduced starting from Browse.
 
-### P2 — The visible Channel content action is not reachable for arbitrary selected cards
+### P2. The visible Channel content action is not reachable for arbitrary selected cards
 
 **Source confirmed and exercised with the actual extracted handler.** The footer describes the
 currently selected stream and offers Channel content, but Down only enters that action when
@@ -65,7 +65,7 @@ optional shortcut. The acceptance criterion is access to the selected channel's 
 scrolling to the dataset's end or changing the selected channel. Decide the exact action placement
 before implementation; blindly remapping Down would break continuous grid browsing.
 
-### P2 — Correcting a search requires re-entering the query
+### P2. Correcting a search requires re-entering the query
 
 **Source confirmed, submission behavior executed in a small VM harness.** `Search_KeyEnter` saves
 the query then clears the input (`app/specific/Search.js:145`). `Search_exit` clears it again (`:52`),
@@ -77,10 +77,10 @@ that submitting a query and pressing Back returned to Browse.
 Define Back as results → populated search form → previous destination, preserving result focus when
 re-entering results. A typo correction should never require typing the whole query with a remote.
 
-### P2 — Visible remote instructions disagree with the current interaction
+### P2. Visible remote instructions disagree with the current interaction
 
 **Source confirmed; search footer observed in browser.** The search form still shows the generic
-“OK · Watch / Up · Tabs / Left · Navigation” footer. Its handler instead edits/focuses the input and
+"OK · Watch / Up · Tabs / Left · Navigation" footer. Its handler instead edits/focuses the input and
 wraps among search-type buttons (`app/specific/Search.js:85`). Settings also renders the rail, but
 Left changes a value and Up stops at the first setting (`app/specific/Settings.js:2056`); neither
 screen provides the same directional route to the rail as the browsing grid.
@@ -94,7 +94,7 @@ search/settings an explicit, reachable navigation escape without overloading Lef
 Distinguish selection from editing, and describe the actual Back behavior. Do not change legacy
 remote mappings globally merely to make one hint true.
 
-### P2 — Recovery actions do not match the reason content is missing
+### P2. Recovery actions do not match the reason content is missing
 
 **Source confirmed, authenticated scenario not exercised.** Following's authentication message asks
 the viewer to reconnect, but the only status action is always Try again → refresh

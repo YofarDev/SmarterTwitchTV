@@ -1,4 +1,4 @@
-# Phone chat by QR code — implementation handoff
+# Phone chat by QR code, implementation handoff
 
 Prepared October 9, 2026 for Smarter Purple TV (SPTV).
 
@@ -112,7 +112,7 @@ http://localhost:5000/app/PhoneChat/index.html
 
 Register only URLs that will actually be used, matching scheme, host, path and case. Check current Twitch rules for localhost before choosing the development URL. A phone cannot reach a development server through the computer's localhost; use a deployed test page or an explicitly configured reachable HTTPS test origin for physical-phone OAuth testing.
 
-## 5. Milestone A — independent mobile page and build
+## 5. Milestone A, independent mobile page and build
 
 1. Create the shell with a real mobile viewport, title **SPTV Chat**, visible channel identity, account/connection status, message region, composer and emote picker.
 2. Put `jsstart`/`jsend` markers around the source scripts, following the existing standalone-page pattern. Keep script ordering explicit.
@@ -125,7 +125,7 @@ Register only URLs that will actually be used, matching scheme, host, path and c
 
 Checkpoint: source page and generated page render correctly from an HTTP server; existing TV and extra-page builds still succeed. Missing Twitch configuration is a visible state, not a crash.
 
-## 6. Milestone B — Twitch account connection
+## 6. Milestone B, Twitch account connection
 
 Use the [Twitch browser-only implicit flow](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/). It is currently documented for client-side apps without a server. Do not implement an authorization-code exchange that embeds a client secret in JavaScript.
 
@@ -146,7 +146,7 @@ Set a restrictive referrer policy for the phone page. Never log token-bearing OA
 
 Checkpoint: valid login returns to the original channel; denial, tampered state, missing scopes, wrong client ID and expiry are handled. A reload in the same tab restores a valid session. TV login continues to work unchanged.
 
-## 7. Milestone C — live chat transport
+## 7. Milestone C, live chat transport
 
 Follow [Twitch's IRC protocol](https://dev.twitch.tv/docs/chat/irc/), with existing ChatLive.js as a local reference. Connect to `wss://irc-ws.chat.twitch.tv:443`; authenticate with PASS then NICK, request tags/commands, and join the validated channel. Answer PING with matching PONG. Consume PRIVMSG, ROOMSTATE, USERSTATE, NOTICE, CLEARMSG, CLEARCHAT and RECONNECT.
 
@@ -165,7 +165,7 @@ Implementation requirements:
 
 Checkpoint: messages from another device appear on the phone; a manually sent phone message appears in Twitch and on the TV. Network loss, foreground return and server reconnect recover without duplicate messages, timers or sends.
 
-## 8. Milestone D — all four emote providers
+## 8. Milestone D, all four emote providers
 
 Use small adapters with a common record such as:
 
@@ -207,7 +207,7 @@ Consult current [BTTV docs](https://betterttv.com/developers), [FFZ docs](https:
 
 Checkpoint: receive and insert emotes from every provider, including a BTTV shared emote, a 7TV channel alias/zero-width overlay, an animated emote, and a Twitch subscription emote available to the logged-in user. Provider errors leave chat usable.
 
-## 9. Milestone E — rendering and phone UX
+## 9. Milestone E, rendering and phone UX
 
 Preserve SPTV's established identity. Existing TV source documents charcoal surfaces (#0b0a0e, #15121c, #1f1b29), purple accents (#7635fc/#a78bfa), white primary text and muted secondary text. Adapt those values to a compact touch interface. No marketing landing page or new visual identity is needed.
 
@@ -229,7 +229,7 @@ Safety and accessibility:
 
 Required states: missing/invalid channel, nonexistent channel, missing client configuration, signed out, authorizing, authorization denied, connecting/joining, connected but quiet, reconnecting, offline, expired credentials, restricted/rejected sending, provider loading/partial failure, and disconnected. Every error state offers a relevant recovery action.
 
-## 10. Milestone F — TV control and QR dialog
+## 10. Milestone F, TV control and QR dialog
 
 Add `Play_controlsPhoneChat` through the existing control-index allocation in PlayEtc.js; avoid hard-coded numeric positions. Put it near the existing chat-write action, with the normal control labels/icons/focus behavior. Populate all visibility flags consistently. It must work even if TV chat is hidden or the TV user is not logged in, since phone auth is independent.
 
@@ -244,7 +244,7 @@ Dialog content:
 - One focused **Close** action, with Back/Esc also closing the dialog.
 - Short note **After changing streams, scan again.**
 
-Generate the QR from the configured canonical URL plus channel; never include tokens, user credentials or a pairing secret. Render locally with adequate contrast and at least a four-module quiet zone, at a scan-friendly size around 350–450 physical pixels. Avoid interpolation blur. Confirm the encoded URL, not just that something resembling a QR is displayed.
+Generate the QR from the configured canonical URL plus channel; never include tokens, user credentials or a pairing secret. Render locally with adequate contrast and at least a four-module quiet zone, at a scan-friendly size around 350 to 450 physical pixels. Avoid interpolation blur. Confirm the encoded URL, not just that something resembling a QR is displayed.
 
 Opening the dialog must hide/cancel normal player-panel auto-dismiss behavior as needed and transfer remote input ownership so arrow/Enter/Back cannot trigger playback beneath it. Playback/audio continue. Closing restores player input and focus to the originating control without duplicate listeners. Ensure the modal remains above the native video using established player-overlay behavior.
 

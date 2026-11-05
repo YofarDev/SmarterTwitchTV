@@ -7,7 +7,7 @@ the final state.
 
 ## What changed per phase
 
-### Phase 1 — OK no longer toggles playback when it reveals the controls
+### Phase 1. OK no longer toggles playback when it reveals the controls
 
 `UIFocus_Listener`'s keydown wrapper (`app/specific/UIFocus.js`) now calls `event.preventDefault()`
 when a legacy keydown hands input to a newly pushed owner, alongside the existing held-key
@@ -15,14 +15,14 @@ suppression. Play/Pause stays the bar's first button and default focus. Two new 
 (352 total, was 350). Browser: with the bar hidden, Enter shows the bar with zero pause-bridge
 calls; the next Enter toggles. Search and rail/grid regressions pass.
 
-### Phase 2 — Diagnostics HUD off by default
+### Phase 2, Diagnostics HUD off by default
 
 `Play_Status_Visible` default in `Play_PreStart` changed from `0` to `2` ("Never visible"). Viewers
 who ever changed the option keep their saved value. Verified: reveal with value 2 keeps
 `#playsideinfo` hidden; value 0 shows it. The `player-ui-tests` sandbox passes the value as an input
 and asserts nothing about the storage default, so no test change was needed.
 
-### Phase 3 — One visual system for the player chrome
+### Phase 3, One visual system for the player chrome
 
 - Info block (scoped to `#scene_channel_panel #stream_info`, PiP/multi untouched): safe-area
   padding, round 4.5% avatar, name line at 125%, one-line ellipsized title, secondary line in
@@ -51,7 +51,7 @@ and asserts nothing about the storage default, so no test change was needed.
   player starts playing (`SetupPlayer`) without notifying the web side. Hidden while the bar is
   visible via `#scene2.player-ui-active`.
 
-### Phase 4 — Drawer rows
+### Phase 4, Drawer rows
 
 - Quality (single stream, all modes) is a list: `PlayerUI_QualityList` + `PlayerUI_QualityPick`.
   Rows are `role="menuitemradio"`, the playing rendition gets `' ✓'`, `aria-checked` and the themed
@@ -64,8 +64,8 @@ and asserts nothing about the storage default, so no test change was needed.
   `STR_UI.switchTo`), removed
   the parentheses on Chat enable / Force disable chat / Disable shared chat summaries and the
   `(6)` on Chat on phone. Kept the channel-name suffixes on "Open VOD - name" and the multistream
-  audio value lines — that information appears nowhere else on those rows.
-- Arrows: rebuilt inside the drawer as `◂ value ▸` on the value line — the summary line is a
+  audio value lines. That information appears nowhere else on those rows.
+- Arrows: rebuilt inside the drawer as `◂ value ▸` on the value line. The summary line is a
   shrink-wrapped positioning box, triangles sit at its edges, the value is padded between them,
   container font-size forced to 100% (was 50%). Rows render arrows before labels (the descriptors'
   own order), so formatted values such as `1x (Normal)` survive. Direction: `Play_BottomArrows` brightens
@@ -73,7 +73,7 @@ and asserts nothing about the storage default, so no test change was needed.
   side is always the in-bounds direction (verified at both bounds in the browser, speeds 0/last).
   Triangles use `currentColor` so themes keep them visible.
 
-### Phase 5 — Drawer orientation
+### Phase 5, Drawer orientation
 
 `PlayerUI_Orient` (called from Render): adds `player-ui-drawer-open` to `#player-ui` and `#scene2`,
 underlines the originating bar button (`player-ui-origin` + `aria-current`, themed box-shadow),
@@ -86,7 +86,7 @@ gaps between key groups are kept (`white-space: pre-wrap`). `#playsideinfo` gets
 color supplied by the theme generator so light themes get a light fade. Cleanup drops the
 drawer-open classes (unit-asserted).
 
-### Phase 6 — Type sizes
+### Phase 6, Type sizes
 
 `#player-ui-help` 63→76%, caption 75→80%, row titles 85→90%, value/summary lines 85% at 0.75
 opacity (inherit, so themes work), row min-height 3.4→2.9em. The drawer ends a gap above the bar
@@ -94,7 +94,7 @@ opacity (inherit, so themes work), row min-height 3.4→2.9em. The drawer ends a
 Focus outline offset (0.04em + 0.13em) fits the 0.2em scroll padding, nothing clipped. Light theme
 (White preset) verified: themed fade, dark arrows, no white-on-white.
 
-### Phase 7 — Channel switcher
+### Phase 7, Channel switcher
 
 `.side_panel_feed_img_focus` and the theme generator's `.feed_thumbnail_focused` rule now use the
 outline treatment (`box-shadow: none; outline 0.1em/0.05em focusColor`); `.feed_thumbnail_focused`
@@ -103,7 +103,7 @@ and border glow in favor of the shell tab underline; inactive tabs and the foote
 secondary color; card names `#f5f1fa`, metadata `#c1b8cd`. First-card rect unchanged (outline and
 shadow are layout-neutral); tab colors use `#user_feed`-scoped rules so the focused tab wins.
 
-### Phase 8 — Documentation and release
+### Phase 8, Documentation and release
 
 DESIGN.md "Approved composition" gained a "Player composition (Web 753)" paragraph. Web version
 bumped: `WebTag` 752→753, `WebVersion` October 19 2026, changelog entry added. Full build run;
@@ -115,7 +115,7 @@ bumped: `WebTag` 752→753, `WebVersion` October 19 2026, changelog entry added.
   gradient in every theme); drawer value lines and arrows instead inherit the themed text color.
 - **3e timeline visibility**: live shows the timeline whenever the panel/overlay is up except in
   the offline "stay" dialog; VOD shows it once playback starts (`PlayVod_PosStart`, up to ~500 ms
-  after start — covered by the re-check timer). The browser embed flow does not reach that show
+  after start, covered by the re-check timer). The browser embed flow does not reach that show
   call, so the class check was verified by forcing the show; on device the flow is the legacy one.
 - **4b label decisions**: kept channel-name suffixes at the "Open VOD" title and the multistream
   audio value lines; dropped everywhere else as recorded above. `STR_PRESS_ENTER_TO_CHANGE` left
@@ -128,11 +128,11 @@ bumped: `WebTag` 752→753, `WebVersion` October 19 2026, changelog entry added.
 
 ## Test counts
 
-- ui-focus: 352 (source and built) — +2 from Phase 1
-- player-ui: 84 (source and built) — +16 (quality list ×8 including the array-hole index case,
+- ui-focus: 352 (source and built), +2 from Phase 1
+- player-ui: 84 (source and built), +16 (quality list ×8 including the array-hole index case,
   spinner ×2, help lines ×4, paused reset ×1, cleanup ×1)
-- navigation 121, remote-input 11, search-navigation 26, following 17 — unchanged, all pass
-- phonechat 396, update 20, chat-optimization 773 — all pass
+- navigation 121, remote-input 11, search-navigation 26, following 17, unchanged, all pass
+- phonechat 396, update 20, chat-optimization 773, all pass
 - Full build: `node release/scripts/maker.js` completed; JSHint clean
 
 ## Screenshots

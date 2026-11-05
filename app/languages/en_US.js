@@ -316,7 +316,7 @@ function en_USLang() {
     STR_SETTINGS_BUFFER_SIZE = 'Start buffer size:';
     STR_SETTINGS_BUFFER_SIZE_SHORT_SUMMARY = 'Controls start buffer size';
     STR_SETTINGS_BUFFER_SIZE_SUMMARY =
-        'Specifies the amount of data needed to buffer before starting playback. This value is unrelated to the maximum buffer size, which depends on the device’s available RAM. A lower setting will start playback sooner, which is generally recommended. Increasing this value rarely improves performance and may cause delays.';
+        "Specifies the amount of data needed to buffer before starting playback. This value is unrelated to the maximum buffer size, which depends on the device's available RAM. A lower setting will start playback sooner, which is generally recommended. Increasing this value rarely improves performance and may cause delays.";
     STR_SETTINGS_BUFFER_LIVE = 'Lives start buffer';
     STR_SETTINGS_BUFFER_VOD = 'Videos (past broadcasts and highlights) start buffer';
     STR_SETTINGS_BUFFER_CLIP = 'Clips start buffer';
@@ -345,7 +345,7 @@ function en_USLang() {
     STR_RESTORE_PLAYBACK_WARN = 'The app was closed during playback. Restoring previous session...';
     STR_RESTORE_PLAYBACK = 'Restore Previous Playback';
     STR_RESTORE_PLAYBACK_SUMMARY =
-        'The app saves playback progress in case it’s closed unintentionally. Switching apps may lead to system out of memory issues that close the app. When reopened, it will resume the previous playback.';
+        "The app saves playback progress in case it's closed unintentionally. Switching apps may lead to system out of memory issues that close the app. When reopened, it will resume the previous playback.";
     STR_CHAT_FONT = 'Chat Font Size';
     STR_VIDEOS_ANIMATION = 'Animated Video Thumbnails';
     STR_VIDEOS_ANIMATION_SUMMARY =
@@ -360,7 +360,7 @@ function en_USLang() {
     STR_MINUTE = 'minute';
     STR_MINUTES = 'minutes';
     STR_CLOCK_OFFSET = 'Clock offset';
-    STR_CLOCK_OFFSET_SUMMARY = 'Adjust the app’s main clock based on your preferred time offset.';
+    STR_CLOCK_OFFSET_SUMMARY = "Adjust the app's main clock based on your preferred time offset.";
     STR_CLOCK_AM_PM = 'Clock style';
     STR_CLOCK_AM_PM_SUMMARY = 'Set 24H or 12H AM PM or 12H.';
     STR_CONTENT_LANG = 'Content language';
@@ -686,7 +686,7 @@ function en_USLang() {
         'When enabled, the app saves its own logs and serves them over the local network (http port 8977), so they can be read from a computer on the same network to help diagnose issues. Only this app logs are exposed, and only inside your network.';
     STR_HIDE_LIVE_SEEK_BAR = 'Hide live seek bar';
     STR_HIDE_LIVE_SEEK_BAR_SUMMARY =
-        'When enabled, live streams no longer show the seek bar (timeline) while the player menu is open, and its once a second updates stop — this can remove frame drops on slower TVs. VODs and clips keep their bar.';
+        'When enabled, live streams no longer show the seek bar (timeline) while the player menu is open, and its once a second updates stop, which can prevent frame drops on slower TVs. VODs and clips keep their bar.';
     STR_PLAYER_LAG = "Player is lagging, quality changed to 'Auto mode'";
     STR_PLAYER_SOURCE = 'Player is lagging, quality was lowered';
     STR_TOO_ERRORS = 'or too many errors';
@@ -969,7 +969,7 @@ function en_USLang() {
     STR_PLAYER_EXTRA_CODEC_SUMMARY = 'Most streams use AVC (H.264) up to 1080p60; HEVC/AV1 enable 1440p, 4K, and 60+fps where available.';
 
     STR_PLAYER_EXTRA_CODEC_SUMMARY1 =
-        'This feature only works for logged-in users. Not all streams are supported — it depends on the streamer enabling it and whether Twitch provides it in your region.';
+        'This feature only works for logged-in users. Not all streams are supported. It depends on the streamer enabling it and whether Twitch provides it in your region.';
 
     STR_PLAYER_EXTRA_CODEC_SUMMARY_EXTRA = 'The app checks if your device supports HEVC or AV1 for higher-quality streams.';
 
@@ -1070,5 +1070,5 @@ function en_USLang() {
 
     STR_BACKUP_SYNC_ENABLE = 'Sync across devices';
     STR_BACKUP_SYNC_ENABLE_SUMMARY =
-        "Enabling this will add a slight delay to the application's startup process, and is unnecessary if you are using the app in a single device. The app will sync all enabled options below between this device and others using the same Google Drive account. To switch devices and continue watching seamlessly, minimize the app on the current device by pressing the Home key. Then, make sure the app is fully closed on the other device before opening it.";
+        "Enabling this will add a slight delay to the application's startup process, and is unnecessary if you are using the app in a single device. The app will sync all enabled options below between this device and others using the same Google Drive account. To switch devices and keep watching where you left off, minimize the app on the current device by pressing the Home key. Then, make sure the app is fully closed on the other device before opening it.";
 }

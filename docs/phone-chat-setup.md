@@ -1,4 +1,4 @@
-# Chat on phone — local TV hosting
+# Chat on phone, local TV hosting
 
 The Android TV app hosts the phone chat webpage on its own Wi-Fi/Ethernet address.
 APK **386** and web build **744** introduce this mode. No public hosting or per-TV

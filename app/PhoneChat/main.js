@@ -445,7 +445,7 @@ SPTVPhoneChat.App = (function () {
     /*
      * Process an OAuth return. MUST run before init()'s ordinary missing-channel
      * check: Twitch sends the user back to the REGISTERED callback URL, which
-     * has no ?channel — the channel comes from the pending record instead.
+     * has no ?channel, the channel comes from the pending record instead.
      * Sensitive callback data is removed from the address bar on every path
      * (success, denial, tampering) before any network request. Returns true
      * whenever callback data was present (boot stops here either way).
@@ -1211,7 +1211,7 @@ SPTVPhoneChat.App = (function () {
         }
 
         //Common targeted cleanup FIRST: every user's messages are removed the
-        //same way — including the signed-in account's own rows and echoes
+        //same way, including the signed-in account's own rows and echoes
         var rows = box.querySelectorAll('[data-user-id="' + cssEscape(event.targetUserId) + '"]'),
             i;
 
@@ -1283,7 +1283,7 @@ SPTVPhoneChat.App = (function () {
         S.lastSendTime = now;
 
         //Local echo: rendered like any other message (third-party emote codes
-        //included), marked as submitted — never as server-confirmed delivery
+        //included), marked as submitted, never as server-confirmed delivery
         S.echoSeq++;
         var rowId = 'echo-' + S.echoSeq,
             roles = Render.messageRoles(S.ownBadges, S.session.login),
@@ -1384,7 +1384,7 @@ SPTVPhoneChat.App = (function () {
 
     function loadTwitchEmotes(preferStatic) {
         //Get User Emotes: only emotes the logged-in viewer can actually use.
-        //Entries carry NO per-emote image urls — the response has a top-level
+        //Entries carry NO per-emote image urls, the response has a top-level
         //template the normalizer substitutes into. The broadcaster-context
         //request ADDS follower emotes; it does not filter to one channel, so
         //channel scope is classified by owner_id == this broadcaster.
@@ -2401,7 +2401,7 @@ SPTVPhoneChat.App = (function () {
         S.originOk = !!Auth.currentCallbackUrl();
 
         //OAuth returns land on the REGISTERED callback URL, which carries NO
-        //?channel — so any callback data must be processed BEFORE the ordinary
+        //?channel, so any callback data must be processed BEFORE the ordinary
         //missing-channel check below can reject boot (and the token fragment
         //must leave the address bar on every path, including failure)
         if (hasCallbackData()) {

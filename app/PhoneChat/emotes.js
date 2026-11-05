@@ -102,12 +102,12 @@ SPTVPhoneChat.Emotes = (function () {
     }
 
     /*
-     * Get User Emotes (chat/emotes/user): entries carry NO per-emote images —
-     * the response has a TOP-LEVEL template, e.g.
+     * Get User Emotes (chat/emotes/user): entries carry NO per-emote images.
+     * The response has a TOP-LEVEL template, e.g.
      *   https://static-cdn.jtvnw.net/emoticons/v2/{{id}}/{{format}}/{{theme_mode}}/{{scale}}
      * Variant values are documented as: format 'static'|'animated',
      * theme_mode 'light'|'dark', scale '1.0'|'2.0'|'3.0' (DECIMAL strings in
-     * the URL — '/2' is a 404). Each emote lists its own format/scale/
+     * the URL, '/2' is a 404). Each emote lists its own format/scale/
      * theme_mode arrays; only those variants may be substituted. Reduced
      * motion prefers the static format when the emote provides one.
      */
@@ -397,8 +397,8 @@ SPTVPhoneChat.Emotes = (function () {
      * Build the code -> emote resolver from precedence-ordered record lists.
      * First occurrence of a code wins, so callers pass lists already ordered:
      * channel sets before global sets, and 7TV before BTTV before FFZ within
-     * a scope. Zero-width (overlay) records resolve too — the renderer decides
-     * whether an overlay attaches to a preceding emote — but they never
+     * a scope. Zero-width (overlay) records resolve too, the renderer decides
+     * whether an overlay attaches to a preceding emote, but they never
      * DISPLACE a normal emote that claimed the code first.
      */
     function buildResolver(lists) {

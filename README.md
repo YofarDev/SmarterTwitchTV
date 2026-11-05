@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="docs/ui-redesign-screenshots/production-browse-720.png" alt="Smarter Purple TV — Browse screen" width="720">
+<img src="docs/ui-redesign-screenshots/production-browse-720.png" alt="Smarter Purple TV Browse screen" width="720">
 
 ![Android TV](https://img.shields.io/badge/platform-Android%20TV-9146FF?logo=android&logoColor=white)
 [![Latest release](https://img.shields.io/github/v/release/YofarDev/SmarterPurpleTV?label=latest%20release)](https://github.com/YofarDev/SmarterPurpleTV/releases/latest)
@@ -10,7 +10,7 @@
 
 **An unofficial Twitch client for Android TV and Google TV.**
 
-Watch live streams, VODs and clips from the comfort of your couch — with a remote.
+Watch live streams, VODs and clips on your TV with the remote.
 
 </div>
 
@@ -18,13 +18,13 @@ Smarter Purple TV (SPTV) is [SmartTwitchTV](https://github.com/fgl27/SmartTwitch
 
 ## Features
 
-- **Built for TV** — navigate every screen with the directional remote, OK and Back.
-- **Browse Twitch** — live streams, categories, VODs, clips, search, Following and Library.
-- **Watch your way** — picture-in-picture, multistream, chat and optional Twitch login.
-- **Better chat** — native Twitch emotes plus BTTV, FrankerFaceZ and 7TV emotes.
-- **Fork improvements** — stitched-ad filtering without a proxy, automatic follow raids and a purple-first interface.
-- **Chat on your phone** — show a QR code on the TV and keep chatting from your phone. See the [phone-chat guide](docs/phone-chat-setup.md).
-- **'TwitchNoSub feature'** — be able to watch any sub-only vod on Twitch 🤫
+- **Built for TV.** Navigate every screen with the directional remote, OK and Back.
+- **Browse Twitch.** Live streams, categories, VODs, clips, search, Following and Library.
+- **Watch your way.** Picture-in-picture, multistream, chat and optional Twitch login.
+- **Better chat.** Native Twitch emotes plus BTTV, FrankerFaceZ and 7TV emotes.
+- **Fork improvements.** Stitched-ad filtering without a proxy, automatic follow raids and a purple-first interface.
+- **Chat on your phone.** Show a QR code on the TV and keep chatting from your phone. See the [phone-chat guide](docs/phone-chat-setup.md).
+- **TwitchNoSub feature.** Watch any sub-only VOD on Twitch.
 
 | Live player | Light theme |
 | --- | --- |
