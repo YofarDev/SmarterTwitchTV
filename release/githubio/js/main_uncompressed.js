@@ -1466,6 +1466,7 @@
             welcomeCopy: 'Add an account to see who you follow, or browse live channels without one.',
             //Key hints: keep {ok} {up} {down} {left} {right} {back} as is, they are drawn as remote key glyphs
             browseHelp: '{ok} Watch    {up} Tabs    Hold {up} Refresh    {left} Navigation    Hold {ok} Options    {back} Return',
+            channelHelp: '{ok} Watch    {up} Tabs    Hold {up} Refresh    {left} Navigation    {back} Return',
             browseHelpDirect: '{ok} Watch    {up}{down} Rows    {left}{right} Cards and Actions    {back} Return',
             actionsHelp: '{ok} Options    {left} Card    {up}{down} Browse    {back} Card / Return',
             searchHelp: '{ok} Edit search / type    {left}{right} Choose type    {up}{down} Form / results    {back} Return',
@@ -8531,8 +8532,23 @@
         publishVersionCode: 400, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/400/SmarterPurpleTV_3_0_400.apk',
         WebVersion: 'November 5 2026',
-        WebTag: 782, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 784, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 5 2026 (Web 784)',
+                changes: [
+                    'Channel screen: the header and navigation now name the channel you opened instead of the screen you came from',
+                    'Channel screen: the key hints match the real controls — Hold OK refreshes here and Up opens the tabs row (Up and Down no longer both toggle the same two rows)',
+                    'Channel screen: the channel banner sits behind the About panel as a dimmed cover instead of floating over empty space, and the Videos/Clips/Follow switches use the standard focus style, centered labels and icons that follow the color style'
+                ]
+            },
+            {
+                title: 'November 5 2026 (Web 783)',
+                changes: [
+                    'Player: the bar caption and the checked row in the Quality and Layout drawers stay readable on light and custom color styles',
+                    'Player: drawer lists fade at the clipped top and bottom edges instead of ending in a hard cut, on every color style'
+                ]
+            },
             {
                 title: 'November 5 2026 (Web 782)',
                 changes: [
@@ -12567,6 +12583,8 @@
         Main_values.Main_CenterLablesVectorPos = 1;
         Main_values.Main_Go = Main_ChannelContent;
         Navigation_Render(Main_ChannelContent);
+        //Name the screen in the chrome on every entry, the restore path skips StartLoad
+        ScreensObj_SetTopLable(Main_values.Main_selectedChannelDisplayname);
 
         if (ChannelContent_ChannelValueIsset && !Main_values.Search_isSearching && Main_values.Main_selectedChannel_id) {
             ChannelContent_RestoreChannelValue();
@@ -12734,14 +12752,16 @@
                 'channel_content_titley_2',
                 '<i class="icon-heart" style="color: #7635fc; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOWING
             );
+            Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', STR_FOLLOWING);
         } else {
             Main_innerHTML(
                 'channel_content_titley_2',
-                '<i class="icon-heart-o" style="color: #FFFFFF; font-size: 100%; "></i>' +
+                '<i class="icon-heart-o stream_channel_follow_icon"></i>' +
                     STR_SPACE_HTML +
                     STR_SPACE_HTML +
                     (AddUser_UserIsSet() ? STR_FOLLOW : STR_NOKEY)
             );
+            Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', AddUser_UserIsSet() ? STR_FOLLOW : STR_NOKEY);
         }
     }
 
@@ -12752,15 +12772,6 @@
                 Main_values.Main_selectedChannelLogo.replace('300x300', '600x600') +
                 '" onerror="this.onerror=null;this.src=\'' +
                 IMG_404_LOGO +
-                '\';">'
-        );
-
-        Main_innerHTML(
-            'channel_content_img0_1',
-            '<img class="stream_img_channel" alt="" src="' +
-                ChannelContent_profile_banner +
-                '" onerror="this.onerror=null;this.src=\'' +
-                IMG_404_BANNER +
                 '\';">'
         );
 
@@ -12789,7 +12800,18 @@
         streamer_bio +=
             ChannelContent_description !== '' ? STR_BR + STR_BR + STR_ABOUT + ':' + STR_BR + twemoji.parse(ChannelContent_description) : '';
 
-        Main_innerHTML('channel_content_infodiv0_1', streamer_bio);
+        //The banner sits behind the About panel as a dimmed cover; a bare floating image read as a bug
+        Main_innerHTML(
+            'channel_content_infodiv0_1',
+            '<img class="stream_img_channel" alt="" src="' +
+                ChannelContent_profile_banner +
+                '" onerror="this.onerror=null;this.src=\'' +
+                IMG_404_BANNER +
+                '\';">' +
+                '<div class="channel_about_text">' +
+                streamer_bio +
+                '</div>'
+        );
 
         var allowMature = ChannelContent_responseText ? ScreensObj_CheckIsMature(ChannelContent_responseText[0]) : true;
 
@@ -13044,7 +13066,16 @@
             if (!ChannelContent_clear) ChannelContent_keyEnter();
         } else if (e.keyCode === KEY_UP) {
             ChannelContent_handleKeyUpClear();
-            if (!ChannelContent_clear) ChannelContent_keyUpDown();
+            if (!ChannelContent_clear) {
+                if (ChannelContent_cursorY) {
+                    ChannelContent_removeFocus();
+                    ChannelContent_cursorY = 0;
+                    ChannelContent_addFocus();
+                } else {
+                    //Up from the sections row opens the shell tabs, like the grid screens do
+                    Navigation_Open(ChannelContent_handleKeyDown, 'tabs');
+                }
+            }
         }
     }
 
@@ -13055,13 +13086,10 @@
     }
 
     function ChannelContent_keyUpDown() {
+        //Down leaves the sections row for the live card; the live card is the bottom of this screen
         if (!ChannelContent_cursorY) {
             ChannelContent_removeFocus();
             ChannelContent_cursorY = 1;
-            ChannelContent_addFocus();
-        } else {
-            ChannelContent_removeFocus();
-            ChannelContent_cursorY = 0;
             ChannelContent_addFocus();
         }
     }
@@ -18635,8 +18663,11 @@
         );
         Main_innerHTML(
             'channel_content_titley_2',
-            '<i class="icon-heart-o" style="color: #FFFFFF; font-size: 100%; "></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOW
+            '<i class="icon-heart-o stream_channel_follow_icon"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOW
         );
+        Main_getElementById('channel_content_thumbdivy_0').setAttribute('aria-label', STR_VIDEOS);
+        Main_getElementById('channel_content_thumbdivy_1').setAttribute('aria-label', STR_CLIPS);
+        Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', STR_FOLLOW);
 
         Main_textContent('dialog_hist_setting_name_0', STR_SORTING);
         Main_textContent('dialog_hist_setting_name_2', STR_DELETE_HISTORY);
@@ -21870,6 +21901,7 @@
     function Navigation_UpdateHint(screen) {
         var hint;
         if (screen === Main_Search) hint = STR_UI.searchHelp;
+        else if (screen === Main_ChannelContent) hint = STR_UI.channelHelp;
         else if (Settings_isVisible()) hint = STR_UI.settingsNavHelp;
         else if (ScreenObj[screen] && ScreenObj[screen].posSub === Screens_SubActions) hint = STR_UI.actionsHelp;
         else if (Screens_DirectInputMode()) hint = STR_UI.browseHelpDirect;
@@ -21926,7 +21958,9 @@
         Main_emptyWithEle(rail);
         for (i = 0; i < routes.length; i++) {
             button = Navigation_Button(rail, 'navigation-route-' + i, labels[i], Navigation_Activate.bind(null, i), icons[i]);
-            if (routes[i].id === Navigation_State.destination) button.setAttribute('aria-current', 'page');
+            //Only a real destination (or Settings) is "current": detail screens mark nothing so the
+            //rail never claims you are somewhere you are not
+            if ((route || Settings_isVisible()) && routes[i].id === Navigation_State.destination) button.setAttribute('aria-current', 'page');
         }
         Main_textContent(
             'navigation-heading',
@@ -45922,6 +45956,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             'top_lable',
             text + STR_SPACE_HTML + (small_text ? '<div style="font-size: 65%;display: inline-block;">' + small_text + '</div>' : '')
         );
+        //Detail screens (channel, game, VOD) have no destination of their own; the shell heading shows
+        //the screen-set label so the chrome names what is actually on screen instead of the origin
+        if (!Navigation_Route(Main_values.Main_Go)) Main_textContent('navigation-heading', text);
     }
 
     function ScreensObj_LiveQueryCellArray(cell) {
@@ -51232,6 +51269,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             surface = pos === 0 ? '#1e1b25' : background,
             focusColor = pos === 0 ? '#bca0ff' : border === background ? TextColor : border,
             focusSurface = pos === 0 ? '#30253f' : background,
+            //Secondary text and drawer fades track the saved palette so light styles stay readable;
+            //the dark default keeps its hardcoded literals
+            textSoft = pos === 0 ? '#c1b8cd' : TextColor.replace(', 1)', ', 0.72)'),
+            fadeBase = pos === 0 ? '#1e1b25' : background,
+            fadeSoft = fadeBase.replace(', 1)', ', 0)'),
             cssClass =
                 //Switcher cards use the overlay focus look: outline, no glow.
                 '.feed_thumbnail_focused_no_ani,.feed_thumbnail_focused {background-color:' +
@@ -51313,6 +51355,41 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             focusColor +
             ';outline-offset:0.05em;}';
         cssClass += '.navigation-enabled .stream_info_live,.navigation-enabled #clock_holder{color:' + TextColor + ';opacity:0.85;}';
+        cssClass +=
+            //Switch rows (channel sections, VOD switch cells) use the same focus system as the cards,
+            //and their labels follow the palette instead of hardcoded white
+            '.navigation-enabled .stream_switch_focused{border-color:' +
+            focusColor +
+            ' !important;background:' +
+            focusSurface +
+            ';outline:0.1em solid ' +
+            focusColor +
+            ';outline-offset:0.05em;box-shadow:none !important;}' +
+            '.navigation-enabled .stream_channel_follow_game{color:' +
+            TextColor +
+            ';}';
+        if (pos !== 0) {
+            //Light and custom palettes: themed caption text, current drawer row and drawer scroll fades.
+            //The higher-specificity selectors are needed where the static rules tie on specificity and
+            //win by source order (focus_class_holder is written before the main stylesheet)
+            cssClass +=
+                '#player-ui .player-ui-caption{color:' +
+                textSoft +
+                ';}' +
+                '#player-ui #player-ui-menu .player-ui-current{color:' +
+                focusColor +
+                ';}' +
+                '#player-ui .player-ui-drawer.player-ui-more-below::after{background:linear-gradient(to top,' +
+                fadeBase +
+                ',' +
+                fadeSoft +
+                ');}' +
+                '#player-ui .player-ui-drawer.player-ui-more-above::before{background:linear-gradient(to bottom,' +
+                fadeBase +
+                ',' +
+                fadeSoft +
+                ');}';
+        }
         Main_getElementById('scene1').style.backgroundColor = background;
         Main_innerHTML('focus_class_holder', cssClass);
 

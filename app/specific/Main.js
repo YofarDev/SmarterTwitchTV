@@ -600,8 +600,11 @@ function Main_SetStringsSecondary() {
     Main_innerHTML('channel_content_titley_1', '<i class="icon-movie stream_channel_follow_icon"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_CLIPS);
     Main_innerHTML(
         'channel_content_titley_2',
-        '<i class="icon-heart-o" style="color: #FFFFFF; font-size: 100%; "></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOW
+        '<i class="icon-heart-o stream_channel_follow_icon"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOW
     );
+    Main_getElementById('channel_content_thumbdivy_0').setAttribute('aria-label', STR_VIDEOS);
+    Main_getElementById('channel_content_thumbdivy_1').setAttribute('aria-label', STR_CLIPS);
+    Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', STR_FOLLOW);
 
     Main_textContent('dialog_hist_setting_name_0', STR_SORTING);
     Main_textContent('dialog_hist_setting_name_2', STR_DELETE_HISTORY);

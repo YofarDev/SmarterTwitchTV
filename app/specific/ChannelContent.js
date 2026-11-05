@@ -50,6 +50,8 @@ function ChannelContent_init() {
     Main_values.Main_CenterLablesVectorPos = 1;
     Main_values.Main_Go = Main_ChannelContent;
     Navigation_Render(Main_ChannelContent);
+    //Name the screen in the chrome on every entry, the restore path skips StartLoad
+    ScreensObj_SetTopLable(Main_values.Main_selectedChannelDisplayname);
 
     if (ChannelContent_ChannelValueIsset && !Main_values.Search_isSearching && Main_values.Main_selectedChannel_id) {
         ChannelContent_RestoreChannelValue();
@@ -215,14 +217,16 @@ function ChannelContent_setFollow() {
             'channel_content_titley_2',
             '<i class="icon-heart" style="color: #7635fc; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOWING
         );
+        Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', STR_FOLLOWING);
     } else {
         Main_innerHTML(
             'channel_content_titley_2',
-            '<i class="icon-heart-o" style="color: #FFFFFF; font-size: 100%; "></i>' +
+            '<i class="icon-heart-o stream_channel_follow_icon"></i>' +
                 STR_SPACE_HTML +
                 STR_SPACE_HTML +
                 (AddUser_UserIsSet() ? STR_FOLLOW : STR_NOKEY)
         );
+        Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', AddUser_UserIsSet() ? STR_FOLLOW : STR_NOKEY);
     }
 }
 
@@ -233,15 +237,6 @@ function ChannelContent_loadDataSuccess() {
             Main_values.Main_selectedChannelLogo.replace('300x300', '600x600') +
             '" onerror="this.onerror=null;this.src=\'' +
             IMG_404_LOGO +
-            '\';">'
-    );
-
-    Main_innerHTML(
-        'channel_content_img0_1',
-        '<img class="stream_img_channel" alt="" src="' +
-            ChannelContent_profile_banner +
-            '" onerror="this.onerror=null;this.src=\'' +
-            IMG_404_BANNER +
             '\';">'
     );
 
@@ -269,7 +264,18 @@ function ChannelContent_loadDataSuccess() {
 
     streamer_bio += ChannelContent_description !== '' ? STR_BR + STR_BR + STR_ABOUT + ':' + STR_BR + twemoji.parse(ChannelContent_description) : '';
 
-    Main_innerHTML('channel_content_infodiv0_1', streamer_bio);
+    //The banner sits behind the About panel as a dimmed cover; a bare floating image read as a bug
+    Main_innerHTML(
+        'channel_content_infodiv0_1',
+        '<img class="stream_img_channel" alt="" src="' +
+            ChannelContent_profile_banner +
+            '" onerror="this.onerror=null;this.src=\'' +
+            IMG_404_BANNER +
+            '\';">' +
+            '<div class="channel_about_text">' +
+            streamer_bio +
+            '</div>'
+    );
 
     var allowMature = ChannelContent_responseText ? ScreensObj_CheckIsMature(ChannelContent_responseText[0]) : true;
 
@@ -526,7 +532,16 @@ function ChannelContent_handleKeyUp(e) {
         if (!ChannelContent_clear) ChannelContent_keyEnter();
     } else if (e.keyCode === KEY_UP) {
         ChannelContent_handleKeyUpClear();
-        if (!ChannelContent_clear) ChannelContent_keyUpDown();
+        if (!ChannelContent_clear) {
+            if (ChannelContent_cursorY) {
+                ChannelContent_removeFocus();
+                ChannelContent_cursorY = 0;
+                ChannelContent_addFocus();
+            } else {
+                //Up from the sections row opens the shell tabs, like the grid screens do
+                Navigation_Open(ChannelContent_handleKeyDown, 'tabs');
+            }
+        }
     }
 }
 
@@ -537,13 +552,10 @@ function ChannelContent_handleKeyUpClear() {
 }
 
 function ChannelContent_keyUpDown() {
+    //Down leaves the sections row for the live card; the live card is the bottom of this screen
     if (!ChannelContent_cursorY) {
         ChannelContent_removeFocus();
         ChannelContent_cursorY = 1;
-        ChannelContent_addFocus();
-    } else {
-        ChannelContent_removeFocus();
-        ChannelContent_cursorY = 0;
         ChannelContent_addFocus();
     }
 }

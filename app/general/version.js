@@ -24,8 +24,23 @@ var version = {
     publishVersionCode: 400, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/400/SmarterPurpleTV_3_0_400.apk',
     WebVersion: 'November 5 2026',
-    WebTag: 782, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 784, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 5 2026 (Web 784)',
+            changes: [
+                'Channel screen: the header and navigation now name the channel you opened instead of the screen you came from',
+                'Channel screen: the key hints match the real controls — Hold OK refreshes here and Up opens the tabs row (Up and Down no longer both toggle the same two rows)',
+                'Channel screen: the channel banner sits behind the About panel as a dimmed cover instead of floating over empty space, and the Videos/Clips/Follow switches use the standard focus style, centered labels and icons that follow the color style'
+            ]
+        },
+        {
+            title: 'November 5 2026 (Web 783)',
+            changes: [
+                'Player: the bar caption and the checked row in the Quality and Layout drawers stay readable on light and custom color styles',
+                'Player: drawer lists fade at the clipped top and bottom edges instead of ending in a hard cut, on every color style'
+            ]
+        },
         {
             title: 'November 5 2026 (Web 782)',
             changes: ['Ukrainian: the interface translation is complete — the navigation, tabs, welcome screen, key hints and player drawer labels are now Ukrainian (thank you @btncua, #25)']

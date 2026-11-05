@@ -197,6 +197,7 @@ function Navigation_Button(parent, id, label, callback, icon) {
 function Navigation_UpdateHint(screen) {
     var hint;
     if (screen === Main_Search) hint = STR_UI.searchHelp;
+    else if (screen === Main_ChannelContent) hint = STR_UI.channelHelp;
     else if (Settings_isVisible()) hint = STR_UI.settingsNavHelp;
     else if (ScreenObj[screen] && ScreenObj[screen].posSub === Screens_SubActions) hint = STR_UI.actionsHelp;
     else if (Screens_DirectInputMode()) hint = STR_UI.browseHelpDirect;
@@ -253,7 +254,9 @@ function Navigation_Render(screen) {
     Main_emptyWithEle(rail);
     for (i = 0; i < routes.length; i++) {
         button = Navigation_Button(rail, 'navigation-route-' + i, labels[i], Navigation_Activate.bind(null, i), icons[i]);
-        if (routes[i].id === Navigation_State.destination) button.setAttribute('aria-current', 'page');
+        //Only a real destination (or Settings) is "current": detail screens mark nothing so the
+        //rail never claims you are somewhere you are not
+        if ((route || Settings_isVisible()) && routes[i].id === Navigation_State.destination) button.setAttribute('aria-current', 'page');
     }
     Main_textContent(
         'navigation-heading',

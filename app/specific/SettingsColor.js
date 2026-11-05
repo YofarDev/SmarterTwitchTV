@@ -429,6 +429,11 @@ function SettingsColor_SetAnimationStyle(pos) {
         surface = pos === 0 ? '#1e1b25' : background,
         focusColor = pos === 0 ? '#bca0ff' : border === background ? TextColor : border,
         focusSurface = pos === 0 ? '#30253f' : background,
+        //Secondary text and drawer fades track the saved palette so light styles stay readable;
+        //the dark default keeps its hardcoded literals
+        textSoft = pos === 0 ? '#c1b8cd' : TextColor.replace(', 1)', ', 0.72)'),
+        fadeBase = pos === 0 ? '#1e1b25' : background,
+        fadeSoft = fadeBase.replace(', 1)', ', 0)'),
         cssClass =
             //Switcher cards use the overlay focus look: outline, no glow.
             '.feed_thumbnail_focused_no_ani,.feed_thumbnail_focused {background-color:' +
@@ -510,6 +515,41 @@ function SettingsColor_SetAnimationStyle(pos) {
         focusColor +
         ';outline-offset:0.05em;}';
     cssClass += '.navigation-enabled .stream_info_live,.navigation-enabled #clock_holder{color:' + TextColor + ';opacity:0.85;}';
+    cssClass +=
+        //Switch rows (channel sections, VOD switch cells) use the same focus system as the cards,
+        //and their labels follow the palette instead of hardcoded white
+        '.navigation-enabled .stream_switch_focused{border-color:' +
+        focusColor +
+        ' !important;background:' +
+        focusSurface +
+        ';outline:0.1em solid ' +
+        focusColor +
+        ';outline-offset:0.05em;box-shadow:none !important;}' +
+        '.navigation-enabled .stream_channel_follow_game{color:' +
+        TextColor +
+        ';}';
+    if (pos !== 0) {
+        //Light and custom palettes: themed caption text, current drawer row and drawer scroll fades.
+        //The higher-specificity selectors are needed where the static rules tie on specificity and
+        //win by source order (focus_class_holder is written before the main stylesheet)
+        cssClass +=
+            '#player-ui .player-ui-caption{color:' +
+            textSoft +
+            ';}' +
+            '#player-ui #player-ui-menu .player-ui-current{color:' +
+            focusColor +
+            ';}' +
+            '#player-ui .player-ui-drawer.player-ui-more-below::after{background:linear-gradient(to top,' +
+            fadeBase +
+            ',' +
+            fadeSoft +
+            ');}' +
+            '#player-ui .player-ui-drawer.player-ui-more-above::before{background:linear-gradient(to bottom,' +
+            fadeBase +
+            ',' +
+            fadeSoft +
+            ');}';
+    }
     Main_getElementById('scene1').style.backgroundColor = background;
     Main_innerHTML('focus_class_holder', cssClass);
 

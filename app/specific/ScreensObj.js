@@ -3011,6 +3011,9 @@ function ScreensObj_SetTopLable(text, small_text) {
         'top_lable',
         text + STR_SPACE_HTML + (small_text ? '<div style="font-size: 65%;display: inline-block;">' + small_text + '</div>' : '')
     );
+    //Detail screens (channel, game, VOD) have no destination of their own; the shell heading shows
+    //the screen-set label so the chrome names what is actually on screen instead of the origin
+    if (!Navigation_Route(Main_values.Main_Go)) Main_textContent('navigation-heading', text);
 }
 
 function ScreensObj_LiveQueryCellArray(cell) {
