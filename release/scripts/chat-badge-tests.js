@@ -151,6 +151,7 @@ function environment(target) {
         ChatLive_Close: n => effects.push('close:' + n),
         ChatLive_SendClose: () => effects.push('send-close'),
         ChatLive_DelayClear: noop,
+        ChatLive_InsertClear: noop,
         Chat_loadBadgesGlobal: noop,
         ChatLive_CacheSetPins: n => {
             s.ChatLive_CachePins[n] = {[s.ChatLive_selectedChannel_id[n]]: true};

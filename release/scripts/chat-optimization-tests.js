@@ -184,9 +184,13 @@ for (const rate of [20, 100]) for (const delay of [0, 5000, 30000]) {
     s.Chat_div = [chat0, chat1];
     s.Main_getElementById = id => (id === 'chat_loggedin0' ? logged0 : logged1);
     s.ChatLive_LineAddCheckDelay(0, message('switch0')); s.ChatLive_LineAddCheckDelay(1, message('switch1', 1));
+    const lineWaiting = mockDiv();
+    s.ChatLive_InsertLast[0] = h.now(); //inside the insert interval, so the line waits
+    s.ChatLive_InsertLine(0, lineWaiting);
     s.ChatLive_Switch(); h.advance(10000);
     check(h.timers.size === 0 && h.rendered.length === 0, 'switch releases both scheduler queues');
     check(chat0.firstChild === lineB && chat1.firstChild === lineA, 'switch moves the line nodes between chats');
+    check(chat1.children[1] === lineWaiting && chat0.children.length === 1, 'switch moves a line still waiting for its insert with its chat');
     check(logged0.firstChild === nameB && logged1.firstChild === nameA, 'switch moves the logged in labels');
     check(s.ChatLive_SpamLast[0] === null && s.ChatLive_SpamLast[1] === null, 'switch resets the spam trackers');
     s.extraEmotes[0] = {fixture: {}};
@@ -333,6 +337,85 @@ for (const rate of [20, 100]) for (const delay of [0, 5000, 30000]) {
     s.Play_ChatEnable = true;
     h.advance(h.now() + 2000);
     check(s.ChatLive_AniClassName(0) === s.ChatLive_chat_line_class, 'limit resets on the next second');
+}
+{
+    //Batched line inserts: a busy chat touches the DOM at most once per ChatLive_InsertInterval
+    const h = sandbox(), {s} = h;
+    const mockDiv = () => {
+        const el = {children: [], parentNode: null, isFragment: false, inserts: 0};
+        el.appendChild = child => {
+            el.inserts++;
+            const adopt = c => {
+                if (c.parentNode) c.parentNode.children.splice(c.parentNode.children.indexOf(c), 1);
+                c.parentNode = el;
+                el.children.push(c);
+            };
+            if (child.isFragment) {
+                child.children.slice().forEach(adopt);
+                child.children.length = 0;
+            } else adopt(child);
+        };
+        return el;
+    };
+    s.document = {createDocumentFragment: () => Object.assign(mockDiv(), {isFragment: true})};
+    const chat0 = mockDiv(), chat1 = mockDiv();
+    s.Chat_div = [chat0, chat1];
+    const line = name => ({name: name, parentNode: null});
+    const names = div => div.children.map(c => c.name).join(',');
+    const interval = s.ChatLive_InsertInterval;
+
+    s.ChatLive_InsertLine(0, line('a'));
+    check(names(chat0) === 'a' && chat0.inserts === 1 && h.timers.size === 0, 'insert: a line after a quiet period is inserted at once');
+    h.advance(h.now() + 100);
+    s.ChatLive_InsertLine(0, line('b'));
+    s.ChatLive_InsertLine(0, line('c'));
+    check(names(chat0) === 'a' && h.timers.size === 1, 'insert: lines inside the interval wait, one timer');
+    s.ChatLive_InsertLine(1, line('x'));
+    check(names(chat1) === 'x', 'insert: each chat keeps its own interval');
+    h.advance(h.now() + interval - 101);
+    check(names(chat0) === 'a', 'insert: nothing before the interval ends');
+    h.advance(h.now() + 1);
+    check(names(chat0) === 'a,b,c' && chat0.inserts === 2, 'insert: waiting lines go in together, in order, with one DOM insert');
+
+    const before = chat0.inserts, start = h.now();
+    for (let i = 0; i < 40; i++) {
+        h.advance(start + i * 125); //8 lines per second for 5 seconds
+        s.ChatLive_InsertLine(0, line('f' + i));
+    }
+    h.advance(start + 40 * 125 + interval);
+    const flood = chat0.children.slice(3).map(c => c.name);
+    check(flood.length === 40 && flood.every((n, i) => n === 'f' + i), 'insert: a flood keeps every line in order');
+    check(chat0.inserts - before <= Math.ceil((40 * 125) / interval) + 1, 'insert: 8 lines a second touch the DOM at most twice a second');
+
+    h.advance(h.now() + interval * 2);
+    s.ChatLive_InsertLine(0, line('quiet'));
+    s.ChatLive_InsertLine(0, line('late'));
+    check(names(chat0).slice(-6) === ',quiet' && h.timers.size === 1, 'insert: a line right behind an insert waits for the interval');
+    s.ChatLive_ClearIds(0);
+    h.advance(h.now() + interval * 2);
+    check(names(chat0).indexOf('late') === -1 && h.timers.size === 0, 'insert: clearing a chat drops its waiting lines and timer');
+
+    //The real ChatLive_ElementAdd (the sandbox stubs it) hands its line to the batched insert
+    const source = fs.readFileSync('app/specific/ChatLive.js', 'utf8');
+    const start2 = source.indexOf('function ChatLive_ElementAdd(');
+    const end2 = source.slice(start2).search(/\r?\n\}\r?\n/); //ChatLive.js is stored with CRLF
+    s.ChatLive_ElementAdd = vm.runInContext('(' + source.slice(start2, start2 + end2) + '\n})', s);
+    s.document.createElement = () => {
+        const el = mockDiv();
+        Object.defineProperty(el, 'innerHTML', {set: html => el.appendChild(Object.assign(mockDiv(), {html: html}))});
+        Object.defineProperty(el, 'firstChild', {get: () => el.children[0] || null});
+        return el;
+    };
+    Object.assign(s, {Play_ChatEnable: true, ChatLive_chat_line_class: 'chat_line_holder', ChatLive_Individual_Background: 0});
+    const div = mockDiv();
+    s.Chat_div = [div, chat1];
+    h.advance(h.now() + interval);
+    s.ChatLive_ElementAdd({chat_number: 0, message: 'one'});
+    s.ChatLive_ElementAdd({chat_number: 0, message: 'two'});
+    check(div.children.length === 1 && h.timers.size === 1, 'insert: ElementAdd inserts the first line and holds the next');
+    h.advance(h.now() + interval);
+    const second = div.children[1] && div.children[1].firstChild.html;
+    check(div.children.length === 2 && div.inserts === 2 && second.indexOf('two') !== -1, 'insert: ElementAdd lines reach the chat in order');
 }
 {
     //twemoji: non ASCII text without emoji code units skips the emoji scan

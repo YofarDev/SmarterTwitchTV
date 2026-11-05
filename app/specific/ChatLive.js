@@ -258,6 +258,10 @@ function ChatLive_Switch() {
     //element can end up merged into a line that now belongs to the other chat
     var fragment = document.createDocumentFragment();
 
+    //Lines still waiting for their batched insert move with their chat too
+    ChatLive_InsertFlush(0);
+    ChatLive_InsertFlush(1);
+
     while (Chat_div[1].firstChild) fragment.appendChild(Chat_div[1].firstChild);
     while (Chat_div[0].firstChild) Chat_div[1].appendChild(Chat_div[0].firstChild);
     Chat_div[0].appendChild(fragment);
@@ -2349,6 +2353,49 @@ function ChatLive_AniClassName(chat_number) {
     return ++ChatLive_AniRateCount[chat_number] <= ChatLive_AniRateMax ? ChatLive_chat_line_class : 'chat_line_holder';
 }
 
+//Every insert lays out and rasters the whole chat box again (about 80 ms of CPU on a TV),
+//however many lines it adds, so a busy chat inserts its new lines together at most once
+//per ChatLive_InsertInterval ms; a line after a quiet period is still inserted at once
+var ChatLive_InsertInterval = 500;
+var ChatLive_InsertPending = [];
+var ChatLive_InsertTimer = [];
+var ChatLive_InsertLast = [];
+
+function ChatLive_InsertLine(chat_number, element) {
+    if (!ChatLive_InsertPending[chat_number]) ChatLive_InsertPending[chat_number] = document.createDocumentFragment();
+    ChatLive_InsertPending[chat_number].appendChild(element);
+
+    if (ChatLive_InsertTimer[chat_number]) return;
+
+    var wait = (ChatLive_InsertLast[chat_number] || 0) + ChatLive_InsertInterval - Date.now();
+
+    if (wait > 0) {
+        ChatLive_InsertTimer[chat_number] = Main_setTimeout(function () {
+            ChatLive_InsertFlush(chat_number);
+        }, wait);
+    } else {
+        ChatLive_InsertFlush(chat_number);
+    }
+}
+
+function ChatLive_InsertFlush(chat_number) {
+    var pending = ChatLive_InsertPending[chat_number];
+
+    ChatLive_InsertClear(chat_number);
+
+    if (pending) {
+        ChatLive_InsertLast[chat_number] = Date.now();
+        Chat_div[chat_number].appendChild(pending);
+    }
+}
+
+//Drop the lines not inserted yet, they belong to the chat being cleared
+function ChatLive_InsertClear(chat_number) {
+    Main_clearTimeout(ChatLive_InsertTimer[chat_number]);
+    ChatLive_InsertTimer[chat_number] = null;
+    ChatLive_InsertPending[chat_number] = null;
+}
+
 function ChatLive_ElementAdd(messageObj) {
     var style = '',
         classname = 'chat_line';
@@ -2408,7 +2455,7 @@ function ChatLive_ElementAdd(messageObj) {
         //and above ChatLive_AniRateMax lines per second to spare the renderer
         chat_line_holder.className = ChatLive_AniClassName(messageObj.chat_number);
         ChatLive_ElementAddCheckExtra(messageObj);
-        Chat_div[messageObj.chat_number].appendChild(chat_line_holder);
+        ChatLive_InsertLine(messageObj.chat_number, chat_line_holder);
     } else {
         chat_line_holder.className = 'chat_line_holder';
         Chat_div[messageObj.chat_number].insertBefore(chat_line_holder, Chat_div[messageObj.chat_number].childNodes[0]);
@@ -2473,6 +2520,7 @@ function ChatLive_SetLatency(chat_number, latency) {
 
 function ChatLive_ClearIds(chat_number, keepSender) {
     ChatLive_DelayClear(chat_number);
+    ChatLive_InsertClear(chat_number);
     ChatLive_CheckClear(chat_number);
     if (!keepSender) Main_clearTimeout(ChatLive_socketSendCheckID);
     Main_clearTimeout(ChatLive_loadBadgesChannelId);
