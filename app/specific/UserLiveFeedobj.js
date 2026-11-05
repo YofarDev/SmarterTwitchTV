@@ -1487,6 +1487,7 @@ function UserLiveFeedobj_loadDataBaseVodSuccess(responseText, pos) {
         response_items,
         id,
         mArray,
+        game,
         i = 0,
         itemsCount = UserLiveFeed_itemsCount[pos],
         hasData =
@@ -1503,7 +1504,9 @@ function UserLiveFeedobj_loadDataBaseVodSuccess(responseText, pos) {
         UserLiveFeed_obj[pos].cursor = response && response && response.length ? response[response.length - 1].cursor : null;
 
         for (i; i < response_items; i++) {
-            mArray = ScreensObj_VodCellArray(response[i].node, true, response[i].node.game.id, response[i].node.game.displayName);
+            //VODs without a category have a null game
+            game = response[i].node.game;
+            mArray = ScreensObj_VodCellArray(response[i].node, true, game ? game.id : null, game ? game.displayName : null);
             id = mArray[7];
 
             if (!UserLiveFeed_idObject[pos].hasOwnProperty(id)) {
