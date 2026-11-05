@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2017–present YofarDev
  *
- * This file is part of SmarterTwitchTV <https://github.com/YofarDev/SmarterTwitchTV>
+ * This file is part of SmarterPurpleTV <https://github.com/YofarDev/SmarterPurpleTV>
  *
- * SmarterTwitchTV is free software: you can redistribute it and/or modify
+ * SmarterPurpleTV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.

@@ -45,7 +45,7 @@ Relevant files:
 | `release/scripts/maker.js`, `tools.js` | Build and lint integration. File collection is not recursive. |
 | `app/general/version.js` | Web version and changelog source of truth. |
 | `firebase.json` | Hosting publishes `release/`; confirm new generated files are not excluded. |
-| `apk/.../Constants.java` | Read only: current canonical TV hosting URL is under `https://yofardev.github.io/SmarterTwitchTV/release/`. |
+| `apk/.../Constants.java` | Read only: current canonical TV hosting URL is under `https://yofardev.github.io/SmarterPurpleTV/release/`. |
 
 All TV source is concatenated into one global scope and wrapped by `release/api.js`. Use ES5-compatible syntax for app source, particularly code loaded by the TV. Avoid imports/modules, arrow functions, optional chaining, async functions, and framework tooling. Use the established formatting and JSHint rules. Node build scripts may retain their existing modern Node syntax.
 
@@ -86,7 +86,7 @@ Suggested mobile namespace: `window.SPTVPhoneChat`, with small sub-objects for A
 The production page path is `phonechat.html`. The TV link is:
 
 ```text
-https://yofardev.github.io/SmarterTwitchTV/release/phonechat.html?channel=<login>
+https://yofardev.github.io/SmarterPurpleTV/release/phonechat.html?channel=<login>
 ```
 
 This is the proposed new route on the host configured in this repo, not a claim that the page is deployed already. Verify it after deployment. A channel login is lowercase and URL-encoded. Use `Play_data.data[6]` as the existing main channel login source after checking its actual assignment; do not use the display name at `data[1]`. Validate against Twitch login characters and a sensible length limit. Resolve the real broadcaster ID on the phone via Helix `GET /users?login=...`; do not trust a user-supplied ID as identity.
@@ -105,7 +105,7 @@ Do not derive the TV link from `window.location`: the TV can load from app asset
 Examples of exact callback URLs to register, depending on enabled hosts:
 
 ```text
-https://yofardev.github.io/SmarterTwitchTV/release/phonechat.html
+https://yofardev.github.io/SmarterPurpleTV/release/phonechat.html
 https://smarttv-client-for-twitch.web.app/phonechat.html
 http://localhost:5000/app/PhoneChat/index.html
 ```

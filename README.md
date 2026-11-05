@@ -5,8 +5,8 @@
 <img src="docs/ui-redesign-screenshots/production-browse-720.png" alt="Smarter Purple TV — Browse screen" width="720">
 
 ![Android TV](https://img.shields.io/badge/platform-Android%20TV-9146FF?logo=android&logoColor=white)
-[![Latest release](https://img.shields.io/github/v/release/YofarDev/SmarterTwitchTV?label=latest%20release)](https://github.com/YofarDev/SmarterTwitchTV/releases/latest)
-[![License](https://img.shields.io/github/license/YofarDev/SmarterTwitchTV)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/YofarDev/SmarterPurpleTV?label=latest%20release)](https://github.com/YofarDev/SmarterPurpleTV/releases/latest)
+[![License](https://img.shields.io/github/license/YofarDev/SmarterPurpleTV)](LICENSE)
 
 **An unofficial Twitch client for Android TV and Google TV.**
 
@@ -32,7 +32,7 @@ Smarter Purple TV (SPTV) is [SmartTwitchTV](https://github.com/fgl27/SmartTwitch
 
 ## Install
 
-1. Download the [latest APK](https://github.com/YofarDev/SmarterTwitchTV/releases/latest).
+1. Download the [latest APK](https://github.com/YofarDev/SmarterPurpleTV/releases/latest).
 2. Sideload it on Android TV or Google TV. You may need to allow your file manager or downloader to install unknown apps.
 
 The TV web interface can update independently of the APK, so many improvements do not require a reinstall.

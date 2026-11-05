@@ -43,7 +43,7 @@ var PhoneChatConfig = {
 
     //Canonical HTTPS page URL used by the TV to generate the QR code.
     //Do not derive this from window.location: the TV can load from app assets or an alternate origin
-    pageUrl: 'https://yofardev.github.io/SmarterTwitchTV/release/phonechat.html',
+    pageUrl: 'https://yofardev.github.io/SmarterPurpleTV/release/phonechat.html',
 
     //Explicit allowlist of page/callback origins the phone may recognize.
     //The phone selects only its OWN actual page URL from this list; an unknown
@@ -52,8 +52,10 @@ var PhoneChatConfig = {
     //application callback registration.
     allowedOrigins: ['https://yofardev.github.io'],
 
-    //Paths (per origin) accepted as the phone page
-    allowedPaths: ['/SmarterTwitchTV/release/phonechat.html', '/phonechat.html'],
+    //Paths (per origin) accepted as the phone page; the old repository path stays
+    //accepted because the legacy OAuth callback registered on Twitch still uses it
+    //(GitHub redirects it to the new address)
+    allowedPaths: ['/SmarterPurpleTV/release/phonechat.html', '/SmarterTwitchTV/release/phonechat.html', '/phonechat.html'],
 
     //Required Twitch scopes for the phone session (minimum set, do not add unrelated scopes)
     scopes: ['chat:read', 'chat:edit', 'user:read:emotes'],

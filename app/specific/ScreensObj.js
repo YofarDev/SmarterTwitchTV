@@ -436,7 +436,7 @@ function ScreensObj_StartAllVars() {
             var bannerString = this.enable_mature ? refreshProblemString : STR_MATURE_DISABLED;
             ScreensObj_addBanner(
                 {
-                    image: 'https://yofardev.github.io/SmarterTwitchTV/apk/app/src/main/res/mipmap-nodpi/ic_splash.png',
+                    image: 'https://yofardev.github.io/SmarterPurpleTV/apk/app/src/main/res/mipmap-nodpi/ic_splash.png',
                     text: this.emptyContent_STR ? this.emptyContent_STR() : bannerString,
                     empty: true
                 },

@@ -922,8 +922,8 @@
     var STR_BITCOIN;
     var STR_BITCOIN_WALLET = '1DuhCT6L3VfBtFcS8FNfVXgBzE2rwCPx3x';
     var STR_APP_LAG = 'https://tinyurl.com/applag';
-    var STR_ABOUT_INFO_5 = 'https://github.com/YofarDev/SmarterTwitchTV';
-    var STR_ABOUT_INFO_20 = 'https://github.com/YofarDev/SmarterTwitchTV/releases';
+    var STR_ABOUT_INFO_5 = 'https://github.com/YofarDev/SmarterPurpleTV';
+    var STR_ABOUT_INFO_20 = 'https://github.com/YofarDev/SmarterPurpleTV/releases';
 
     // This function is called after the main language is loaded, the above are initialized empty so it doesn't cause loading exceptions
     function DefaultLang() {
@@ -8055,7 +8055,7 @@
 
         //Canonical HTTPS page URL used by the TV to generate the QR code.
         //Do not derive this from window.location: the TV can load from app assets or an alternate origin
-        pageUrl: 'https://yofardev.github.io/SmarterTwitchTV/release/phonechat.html',
+        pageUrl: 'https://yofardev.github.io/SmarterPurpleTV/release/phonechat.html',
 
         //Explicit allowlist of page/callback origins the phone may recognize.
         //The phone selects only its OWN actual page URL from this list; an unknown
@@ -8064,8 +8064,10 @@
         //application callback registration.
         allowedOrigins: ['https://yofardev.github.io'],
 
-        //Paths (per origin) accepted as the phone page
-        allowedPaths: ['/SmarterTwitchTV/release/phonechat.html', '/phonechat.html'],
+        //Paths (per origin) accepted as the phone page; the old repository path stays
+        //accepted because the legacy OAuth callback registered on Twitch still uses it
+        //(GitHub redirects it to the new address)
+        allowedPaths: ['/SmarterPurpleTV/release/phonechat.html', '/SmarterTwitchTV/release/phonechat.html', '/phonechat.html'],
 
         //Required Twitch scopes for the phone session (minimum set, do not add unrelated scopes)
         scopes: ['chat:read', 'chat:edit', 'user:read:emotes'],
@@ -8369,11 +8371,17 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 396, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterTwitchTV/releases/download/396/SmarterPurpleTV_3_0_396.apk',
+        publishVersionCode: 397, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/397/SmarterPurpleTV_3_0_397.apk',
         WebVersion: 'November 5 2026',
-        WebTag: 777, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 778, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 5 2026 (Web 778 / APK 397)',
+                changes: [
+                    "General: the repository is now github.com/YofarDev/SmarterPurpleTV — the update check, the About dialog project and releases links, the hosted phone chat page and the APK now use the new addresses (old links keep working through GitHub's redirect); the app is named Smarter Purple TV everywhere"
+                ]
+            },
             {
                 title: 'November 5 2026 (Web 777 / APK 396)',
                 changes: [
@@ -18877,7 +18885,7 @@
             if (Main_HasUpdate && Main_isUpdateDialogVisible() && Settings_value.update_background.defaultValue && !forceUpdate) return;
 
             BaseXmlHttpGet(
-                'https://yofardev.github.io/SmarterTwitchTV/release/githubio/version/version.json',
+                'https://yofardev.github.io/SmarterPurpleTV/release/githubio/version/version.json',
                 Main_CheckUpdateResult,
                 Main_CheckUpdateFail
             );
@@ -34176,9 +34184,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     /*
      * Copyright (c) 2017–present YofarDev
      *
-     * This file is part of SmarterTwitchTV <https://github.com/YofarDev/SmarterTwitchTV>
+     * This file is part of SmarterPurpleTV <https://github.com/YofarDev/SmarterPurpleTV>
      *
-     * SmarterTwitchTV is free software: you can redistribute it and/or modify
+     * SmarterPurpleTV is free software: you can redistribute it and/or modify
      * it under the terms of the GNU General Public License as published by
      * the Free Software Foundation, either version 3 of the License, or
      * (at your option) any later version.
@@ -42543,7 +42551,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 var bannerString = this.enable_mature ? refreshProblemString : STR_MATURE_DISABLED;
                 ScreensObj_addBanner(
                     {
-                        image: 'https://yofardev.github.io/SmarterTwitchTV/apk/app/src/main/res/mipmap-nodpi/ic_splash.png',
+                        image: 'https://yofardev.github.io/SmarterPurpleTV/apk/app/src/main/res/mipmap-nodpi/ic_splash.png',
                         text: this.emptyContent_STR ? this.emptyContent_STR() : bannerString,
                         empty: true
                     },

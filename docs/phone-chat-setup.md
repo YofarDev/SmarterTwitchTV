@@ -91,7 +91,7 @@ continues to be read directly through the phone's own IRC connection.
    [Device Code Flow](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#device-code-grant-flow)
    for public clients without a client secret. For the console's required HTTPS
    redirect field, enter
-   `https://yofardev.github.io/SmarterTwitchTV/release/phonechat.html` and click
+   `https://yofardev.github.io/SmarterPurpleTV/release/phonechat.html` and click
    **Add**. Device authorization does not use this redirect; the phone page stays
    on the TV's LAN address. Do not register every TV's LAN address.
 3. Set `PhoneChatConfig.clientId` in `app/general/PhoneChatConfig.js`.

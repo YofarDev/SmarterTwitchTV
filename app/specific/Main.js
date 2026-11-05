@@ -1138,7 +1138,7 @@ function Main_CheckUpdate(forceUpdate) {
         if (Main_HasUpdate && Main_isUpdateDialogVisible() && Settings_value.update_background.defaultValue && !forceUpdate) return;
 
         BaseXmlHttpGet(
-            'https://yofardev.github.io/SmarterTwitchTV/release/githubio/version/version.json',
+            'https://yofardev.github.io/SmarterPurpleTV/release/githubio/version/version.json',
             Main_CheckUpdateResult,
             Main_CheckUpdateFail
         );

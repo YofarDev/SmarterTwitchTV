@@ -71,7 +71,7 @@ function loadSandbox(overrides) {
         crypto: require('crypto').webcrypto,
         Uint8Array: Uint8Array,
         fetch: () => Promise.reject(new Error('offline-stub')),
-        location: {origin: 'https://yofardev.github.io', pathname: '/SmarterTwitchTV/release/phonechat.html', search: '', hash: '', assign: () => {}},
+        location: {origin: 'https://yofardev.github.io', pathname: "/SmarterPurpleTV/release/phonechat.html", search: '', hash: '', assign: () => {}},
         history: {replaceState: () => {}},
         WebSocket: function () {
             this.readyState = 0;
@@ -1121,7 +1121,7 @@ function loadAppSandbox(setup) {
         crypto: require('crypto').webcrypto,
         Uint8Array: Uint8Array,
         fetch: () => Promise.reject(new Error('no fetch router')),
-        location: {origin: 'https://yofardev.github.io', pathname: '/SmarterTwitchTV/release/phonechat.html', search: '', hash: '', assign: () => {}},
+        location: {origin: 'https://yofardev.github.io', pathname: "/SmarterPurpleTV/release/phonechat.html", search: '', hash: '', assign: () => {}},
         history: {replaceState: (...args) => replaceStateCalls.push(args)},
         AbortController: class {
             constructor() {
@@ -1286,7 +1286,7 @@ asyncSections.push(async () => {
             JSON.stringify({
                 state: 'abc123',
                 channel: 'TwitchDev',
-                redirect: 'https://yofardev.github.io/SmarterTwitchTV/release/phonechat.html',
+                redirect: 'https://yofardev.github.io/SmarterPurpleTV/release/phonechat.html',
                 created: Date.now()
             })
         );
@@ -1303,7 +1303,7 @@ asyncSections.push(async () => {
     ok(app.replaceStateCalls.length > 0, 'boot: callback URL scrubbed');
     const cleanUrl = app.replaceStateCalls[app.replaceStateCalls.length - 1][2];
     ok(cleanUrl.indexOf('access_token') === -1 && cleanUrl.indexOf('#') === -1, 'boot: clean URL carries no token fragment');
-    eq(cleanUrl, 'https://yofardev.github.io/SmarterTwitchTV/release/phonechat.html?channel=twitchdev', 'boot: clean ?channel= URL restored');
+    eq(cleanUrl, 'https://yofardev.github.io/SmarterPurpleTV/release/phonechat.html?channel=twitchdev', 'boot: clean ?channel= URL restored');
 
     //Pending consumed exactly once
     eq(app.sandbox.sessionStorage.getItem('sptv_phone_chat_pending'), null, 'boot: pending state consumed');
@@ -1375,7 +1375,7 @@ asyncSections.push(async () => {
             JSON.stringify({
                 state: 'abc123',
                 channel: 'twitchdev',
-                redirect: 'https://yofardev.github.io/SmarterTwitchTV/release/phonechat.html',
+                redirect: 'https://yofardev.github.io/SmarterPurpleTV/release/phonechat.html',
                 created: Date.now()
             })
         );
@@ -1385,7 +1385,7 @@ asyncSections.push(async () => {
     eq(denied.ids.get('pc-banner-action').textContent, 'Try again', 'denial: retry action offered');
     eq(denied.ids.get('pc-channel-name').textContent, 'twitchdev', 'denial: channel still recovered for retry');
     const deniedUrl = denied.replaceStateCalls[denied.replaceStateCalls.length - 1][2];
-    eq(deniedUrl, 'https://yofardev.github.io/SmarterTwitchTV/release/phonechat.html?channel=twitchdev', 'denial: clean channel URL restored');
+    eq(deniedUrl, 'https://yofardev.github.io/SmarterPurpleTV/release/phonechat.html?channel=twitchdev', 'denial: clean channel URL restored');
     eq(denied.fetchCalls.length, 0, 'denial: no network request made');
 
     //Tampered state: token discarded, generic auth error
@@ -1399,7 +1399,7 @@ asyncSections.push(async () => {
             JSON.stringify({
                 state: 'abc123',
                 channel: 'twitchdev',
-                redirect: 'https://yofardev.github.io/SmarterTwitchTV/release/phonechat.html',
+                redirect: 'https://yofardev.github.io/SmarterPurpleTV/release/phonechat.html',
                 created: Date.now()
             })
         );

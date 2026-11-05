@@ -47,8 +47,8 @@ var STR_PIX;
 var STR_BITCOIN;
 var STR_BITCOIN_WALLET = '1DuhCT6L3VfBtFcS8FNfVXgBzE2rwCPx3x';
 var STR_APP_LAG = 'https://tinyurl.com/applag';
-var STR_ABOUT_INFO_5 = 'https://github.com/YofarDev/SmarterTwitchTV';
-var STR_ABOUT_INFO_20 = 'https://github.com/YofarDev/SmarterTwitchTV/releases';
+var STR_ABOUT_INFO_5 = 'https://github.com/YofarDev/SmarterPurpleTV';
+var STR_ABOUT_INFO_20 = 'https://github.com/YofarDev/SmarterPurpleTV/releases';
 
 // This function is called after the main language is loaded, the above are initialized empty so it doesn't cause loading exceptions
 function DefaultLang() {

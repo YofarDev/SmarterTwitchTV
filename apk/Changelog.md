@@ -1,4 +1,4 @@
-SmartTV Twitch AndroidTV APP latest changes
+Smarter Purple TV latest changes
 ==============
 
 Bellow changes are just a resume of all changes made to the repo to check the full changelog list check the [commit list](https://github.com/fgl27/SmartTwitchTV/commits/master).
@@ -8,6 +8,12 @@ The App is divided in two part, **Apk** and **Web** you can check it version in 
 * The **Web** is update every time that the app is closed and you re-open it (of course if a update is available in the web server), it contains the user interface and related functions. If the app is open and you change apps that process doesn't closes the app only minimizes it unless the system run out of memory and close the app, to manually close it's needed to select close on the exit dialog or simply holding the return key to force close it.
 
 The app has a building update check function, so whenever there is a update a red text will show up bellow the main pages clock, also a short warning will pop on the screen let you know if is a **Apk** or **Web** update.
+
+November 5 2026 (3.0.397)
+==============
+
+* General: the repository is now github.com/YofarDev/SmarterPurpleTV — the app's update check, hosted pages (main, keys and phone chat) and home channel images now use the new addresses; old addresses keep working through GitHub's redirect.
+* Install this APK to switch the TV page and update check to the new repository address; the web update alone cannot replace these APK constants.
 
 November 5 2026 (3.0.396)
 ==============
