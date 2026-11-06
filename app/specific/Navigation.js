@@ -120,6 +120,7 @@ function Navigation_Startup(options) {
 var Navigation_Region = '';
 var Navigation_Position = 0;
 var Navigation_Callback = null;
+var Navigation_UtilityOpen = false;
 var Navigation_Onboarding = false;
 var Navigation_LastScreen = null;
 var Navigation_RequestSerial = 0;
@@ -522,6 +523,7 @@ function Navigation_Handle(event, up) {
 function Navigation_Activate(index) {
     Navigation_Close(false);
     if (index >= 7) {
+        Navigation_UtilityOpen = index === 7 || index === 8;
         if (index === 7) Main_showAboutDialog(Navigation_Callback, Navigation_UtilityReturn);
         else if (index === 8) Main_showControlsDialog(Navigation_Callback, Navigation_UtilityReturn);
         else {
@@ -620,8 +622,18 @@ function Navigation_UtilityReturn(event) {
     if (event.keyCode !== KEY_ENTER && event.keyCode !== KEY_RETURN && event.keyCode !== KEY_KEYBOARD_BACKSPACE) return;
     Main_HideAboutDialog();
     Main_HideControlsDialog();
+    Navigation_UtilityOpen = false;
     Main_removeEventListener('keydown', Navigation_UtilityReturn);
     Navigation_Open(Navigation_Callback);
+}
+
+// Home with About or Controls open from the rail: Main_CheckStop hides the dialog.
+// Drop its way back to the rail and give the screen its keys back, like closing the rail does.
+function Navigation_UtilityCancel() {
+    if (!Navigation_UtilityOpen) return;
+    Navigation_UtilityOpen = false;
+    Main_removeEventListener('keydown', Navigation_UtilityReturn);
+    if (Navigation_Callback) Main_addEventListener('keydown', Navigation_Callback);
 }
 
 function Navigation_Refresh() {

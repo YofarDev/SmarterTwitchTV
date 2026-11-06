@@ -18,6 +18,8 @@ const wanted = [
     'Screens_IsDivFocused',
     'Screens_Isfocused',
     'Navigation_Activate',
+    'Navigation_UtilityReturn',
+    'Navigation_UtilityCancel',
     'Main_SwitchScreen',
     'Main_CheckAccessibilitySet',
     'Main_CheckAccessibilityHide',
@@ -173,6 +175,33 @@ s = setup('Main_Live', {Main_isAboutDialogVisible: () => true});
 s.Main_CheckDialogs();
 check(called('Main_addEventListener', 'keydown') && called('Screens_addFocus'), 'Live: stop with About open restores the grid keys');
 
+// About or Controls opened from the rail, then Home: the stop cleanup hides the dialog and drops its way back to the rail.
+function listened(name, fun) {
+    return calls.some(call => call[0] === name && call[1] === 'keydown' && call[2] === fun);
+}
+['Main_Live', 'Main_Search', 'Main_addUser'].forEach(screen => {
+    [7, 8].forEach(index => {
+        const handler = function screenHandler() {};
+        s = setup(screen, {Navigation_Callback: handler});
+        s.Navigation_Activate(index);
+        s.Main_isAboutDialogVisible = () => index === 7;
+        s.Main_isControlsDialogVisible = () => index === 8;
+        calls = [];
+        s.Main_CheckDialogs();
+        check(listened('Main_removeEventListener', s.Navigation_UtilityReturn), screen + ' ' + index + ': stop drops the return to the rail');
+        check(listened('Main_addEventListener', handler), screen + ' ' + index + ': stop gives the screen its keys back');
+        check(s.Navigation_UtilityOpen === false, screen + ' ' + index + ': the rail dialog is no longer open');
+    });
+});
+
+s = setup('Main_Live', {Main_isAboutDialogVisible: () => true, Navigation_Callback: function stale() {}});
+s.Main_CheckDialogs();
+check(!listened('Main_addEventListener', s.Navigation_Callback), 'About not opened from the rail leaves the rail handlers alone');
+
+s = setup('Main_Live', {Navigation_Callback: function screenHandler() {}, KEY_ENTER: 13, KEY_RETURN: 113, KEY_KEYBOARD_BACKSPACE: 8});
+s.Navigation_Activate(7);
+s.Navigation_UtilityReturn({keyCode: 113});
+check(s.Navigation_UtilityOpen === false && called('Navigation_Open'), 'Back from a rail dialog still returns to the rail');
 // History VOD and clip checks: stopped by Main_CheckStop, restarted on resume, run once when overdue.
 const sixHours = 1000 * 60 * 360,
     workers = {Main_RunVODWorker: function Main_RunVODWorker() {}, Main_RunClipWorker: function Main_RunClipWorker() {}};
