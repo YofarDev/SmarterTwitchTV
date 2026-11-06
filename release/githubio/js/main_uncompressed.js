@@ -8554,8 +8554,16 @@
         publishVersionCode: 400, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/400/SmarterPurpleTV_3_0_400.apk',
         WebVersion: 'November 6 2026',
-        WebTag: 785, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 786, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 6 2026 (Web 786)',
+                changes: [
+                    'Fix: going Home on Search or Add User threw errors that left the clock, history and update check timers running in the background, and on those screens Updates & Changelog from the rail froze the remote (by @Dryness, #26)',
+                    'Navigation: Back in the followed live panel now returns to the rail like Right does. It used to drop to the grid and then Left reopened the panel in a loop, and Search could lose its key handling after the panel closed (by @Dryness, #27)',
+                    'Chat: the 7TV global emote set is downloaded once and reused in every chat afterwards, including the second chat of picture in picture and multistream, which never received it; it used to be downloaded again on every chat start (by @Dryness, #28)'
+                ]
+            },
             {
                 title: 'November 6 2026 (Web 785)',
                 changes: [
@@ -17567,7 +17575,7 @@
     }
 
     function Chat_loadSeven_tvGlobalEmotes() {
-        if (!extraEmotesDone.Seven_tvGlobal) {
+        if (!extraEmotesDone.seven_tvGlobal) {
             Chat_BaseLoadUrl('https://7tv.io/v3/emote-sets/global', Chat_loadEmotesSuccessSeven_tv, noop_fun);
         } else {
             ChatLive_updateExtraEmotes(extraEmotesDone.seven_tvGlobal, 0);
@@ -19558,7 +19566,8 @@
         } else if (UserLiveFeed_isPreviewShowing()) {
             UserLiveFeed_FeedAddFocus(true, UserLiveFeed_FeedPosX);
         } else if (Main_isScene1DocVisible() && !Sidepannel_isShowingMenus()) {
-            ScreenObj[Main_values.Main_Go].init_fun();
+            //Search and Add User have no ScreenObj, their key handler stays registered under the dialog
+            if (ScreenObj[Main_values.Main_Go]) ScreenObj[Main_values.Main_Go].init_fun();
         }
     }
 
@@ -21259,11 +21268,8 @@
         } else Main_CheckDialogs();
 
         //Reset Screen img if hiden
-        var doc = ScreenObj[Main_values.Main_Go].ids
-            ? Main_getElementById(
-                  ScreenObj[Main_values.Main_Go].ids[1] + ScreenObj[Main_values.Main_Go].posY + '_' + ScreenObj[Main_values.Main_Go].posX
-              )
-            : null;
+        var obj = ScreenObj[Main_values.Main_Go];
+        var doc = obj && obj.ids ? Main_getElementById(obj.ids[1] + obj.posY + '_' + obj.posX) : null;
 
         if (doc) Main_RemoveClassWithEle(doc, 'opacity_zero');
         else if (ChannelContent_Isfocused()) {
@@ -21279,6 +21285,10 @@
             Main_HideChangeDialog();
             Main_HideUpdateDialog();
             Main_HideAboutDialog();
+
+            //Search and Add User have no ScreenObj
+            if (!ScreenObj[Main_values.Main_Go]) return;
+
             Main_removeEventListener('keydown', ScreenObj[Main_values.Main_Go].key_controls);
 
             Main_addEventListener('keydown', ScreenObj[Main_values.Main_Go].key_fun);
@@ -22248,8 +22258,11 @@
                 }
             } else if (code === KEY_LEFT || code === KEY_3) {
                 Navigation_Close(false);
-                if (AddUser_UserHasToken()) Sidepannel_StartFeed();
-                else {
+                if (AddUser_UserHasToken()) {
+                    // The followed panel returns to the rail with this screen's keys (Right or Back).
+                    Sidepannel_Callback = Navigation_Callback;
+                    Sidepannel_StartFeed();
+                } else {
                     Sidepannel_ShowNoUserWarning();
                     Navigation_Open(Navigation_Callback);
                 }
@@ -22294,7 +22307,12 @@
         if (index >= 7) {
             if (index === 7) Main_showAboutDialog(Navigation_Callback, Navigation_UtilityReturn);
             else if (index === 8) Main_showControlsDialog(Navigation_Callback, Navigation_UtilityReturn);
-            else Main_UpdateDialogShowCheck();
+            else {
+                // The update dialog blocks the screen keys while open and on close re-inits only screens with a ScreenObj.
+                // Give the screen its handler back now, so Search and Add User still have it after the dialog closes.
+                if (Navigation_Callback) Main_addEventListener('keydown', Navigation_Callback);
+                Main_UpdateDialogShowCheck();
+            }
             return;
         }
         var id = Navigation_Destinations()[index].id;
@@ -40726,7 +40744,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     function Screens_ClearAnimation(key) {
+        //Search and Add User have no ScreenObj
         if (
+            ScreenObj[key] &&
             ScreenObj[key].HasAnimateThumb &&
             ScreenObj[key].posY > -1 &&
             ScreenObj[key].itemsCount &&
@@ -42820,7 +42840,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     function Screens_Isfocused() {
-        return Screens_IsDivFocused(Main_values.Main_Go) && Main_isScene1DocVisible();
+        //Search and Add User have no ScreenObj
+        return Boolean(ScreenObj[Main_values.Main_Go]) && Screens_IsDivFocused(Main_values.Main_Go) && Main_isScene1DocVisible();
     }
 
     //TODO add screen.isInuse prop to adress this fun use
@@ -52674,7 +52695,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         switch (event.keyCode) {
             case KEY_KEYBOARD_BACKSPACE:
             case KEY_RETURN:
+                // Back returns to the rail like Right, so Left on the grid opens the rail again afterwards.
+                Sidepannel_userLiveKeyRight();
+                break;
             case KEY_3:
+                // The shortcut closes the panel to the grid. Left there should open the rail, not this panel again.
+                Sidepannel_IsMain = true;
                 Sidepannel_Hide();
                 Main_SwitchScreen();
                 break;

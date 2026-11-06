@@ -24,8 +24,16 @@ var version = {
     publishVersionCode: 400, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/400/SmarterPurpleTV_3_0_400.apk',
     WebVersion: 'November 6 2026',
-    WebTag: 785, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 786, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 6 2026 (Web 786)',
+            changes: [
+                'Fix: going Home on Search or Add User threw errors that left the clock, history and update check timers running in the background, and on those screens Updates & Changelog from the rail froze the remote (by @Dryness, #26)',
+                'Navigation: Back in the followed live panel now returns to the rail like Right does. It used to drop to the grid and then Left reopened the panel in a loop, and Search could lose its key handling after the panel closed (by @Dryness, #27)',
+                'Chat: the 7TV global emote set is downloaded once and reused in every chat afterwards, including the second chat of picture in picture and multistream, which never received it; it used to be downloaded again on every chat start (by @Dryness, #28)'
+            ]
+        },
         {
             title: 'November 6 2026 (Web 785)',
             changes: ['Browse: the active tab uses a filled route capsule while remote focus keeps a separate violet outline, making location and focus easier to distinguish from the sofa']
