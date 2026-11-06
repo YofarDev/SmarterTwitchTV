@@ -103,11 +103,42 @@ public final class AdPlaylistFilter {
         "#EXT-X-MEDIA-SEQUENCE:",
         "#EXT-X-DISCONTINUITY-SEQUENCE:"
     };
+    private static final String END_LIST_TAG = "#EXT-X-ENDLIST";
+
+    //While a freeze frame is served the player stalls on it or reports its playlist as stuck.
+    //That is the ad break, not a dead stream, so the player checks must not count it as a failure
+    private static volatile long freezeStartedAt;
+    private static volatile long freezeServedAt;
+    //Freeze frames are served on every playlist refresh, a few seconds apart; a longer gap means
+    //the freeze is over (live content is back, or the playlist requests fail)
+    static final long FREEZE_ACTIVE_MS = 10000;
+    //Longer than any ad break. A freeze lasting more than this no longer excuses player failures,
+    //so a stream that never comes back from a break is still declared ended
+    static final long FREEZE_EXCUSE_MAX_MS = 300000;
 
     private AdPlaylistFilter() {}
 
     public static void setEnabled(boolean value) {
         enabled = value;
+    }
+
+    /**
+     * Whether an ad freeze frame is being served right now, so a player stall or stuck playlist
+     * is the ad break and not a dead stream. Stays false for a freeze older than
+     * FREEZE_EXCUSE_MAX_MS.
+     */
+    public static boolean isAdFreezeActive() {
+        return isAdFreezeActive(System.currentTimeMillis());
+    }
+
+    static boolean isAdFreezeActive(long now) {
+        return freezeServedAt > 0 && now - freezeServedAt <= FREEZE_ACTIVE_MS && now - freezeStartedAt <= FREEZE_EXCUSE_MAX_MS;
+    }
+
+    static void onFreezeServed(long now) {
+        if (now - freezeServedAt > FREEZE_ACTIVE_MS) freezeStartedAt = now;
+
+        freezeServedAt = now;
     }
 
     public static void setAdReloadListener(AdReloadListener listener) {
@@ -298,6 +329,7 @@ public final class AdPlaylistFilter {
 
             if (liveSegment != null) {
                 Log.i(TAG, "playlist is all ad content, freezing on the last live segment");
+                onFreezeServed(System.currentTimeMillis());
 
                 return new FilterResult(freezePlaylist(lines, liveSegment), true);
             }
@@ -332,12 +364,15 @@ public final class AdPlaylistFilter {
      * picture freezes until the original playlist serves live content again.
      */
     private static byte[] freezePlaylist(String[] lines, String[] liveSegment) {
-        List<String> out = new ArrayList<>(FREEZE_HEADER_TAGS.length + 3);
+        List<String> out = new ArrayList<>(FREEZE_HEADER_TAGS.length + 4);
+        boolean endList = false;
 
         out.add("#EXTM3U");
 
         for (String line : lines) {
             String trimmed = line.trim();
+
+            if (trimmed.equals(END_LIST_TAG)) endList = true;
 
             for (String tag : FREEZE_HEADER_TAGS) {
                 if (trimmed.startsWith(tag)) {
@@ -349,6 +384,10 @@ public final class AdPlaylistFilter {
 
         out.add(liveSegment[0]);
         out.add(liveSegment[1]);
+
+        //The stream ended during the break: keep the end mark so the player ends normally
+        //instead of waiting on the freeze for live content that will never come
+        if (endList) out.add(END_LIST_TAG);
 
         return joinLines(out);
     }

@@ -91,6 +91,7 @@ public final class AdPlaylistFilterTest {
         //A clean playlist passes through untouched
         byte[] r = filter(url, live);
         check(r != null && Arrays.equals(r, live.getBytes(StandardCharsets.UTF_8)), "clean playlist served unchanged");
+        check(!AdPlaylistFilter.isAdFreezeActive(), "no freeze reported before one is served");
 
         //The whole window is ad content and live content was seen before: freeze on the last
         //live segment instead of playing the ad
@@ -108,6 +109,32 @@ public final class AdPlaylistFilterTest {
         //The freeze holds across refreshes of the all-ads window
         r = filter(url, allAds);
         check(s(r).contains("live_3.ts") && !hasAdSegment(s(r)), "freeze frame stable across refreshes");
+        check(!frozen.contains("#EXT-X-ENDLIST"), "freeze frame of a live window has no end mark");
+
+        //While a freeze is served, player failures are the ad break and not a dead stream
+        long now = System.currentTimeMillis();
+        check(AdPlaylistFilter.isAdFreezeActive(), "freeze reported active while it is served");
+        check(AdPlaylistFilter.isAdFreezeActive(now + AdPlaylistFilter.FREEZE_ACTIVE_MS / 2), "freeze still active between refreshes");
+        check(!AdPlaylistFilter.isAdFreezeActive(now + AdPlaylistFilter.FREEZE_ACTIVE_MS + 1000), "freeze over once no freeze frame is served");
+
+        //A freeze longer than any ad break stops excusing failures, so a stream that never comes
+        //back is still declared ended; a later freeze (new break) is excused again
+        long start = now + 10 * AdPlaylistFilter.FREEZE_ACTIVE_MS;
+        long t = start;
+        for (; t <= start + AdPlaylistFilter.FREEZE_EXCUSE_MAX_MS; t += 2000) AdPlaylistFilter.onFreezeServed(t);
+        check(AdPlaylistFilter.isAdFreezeActive(start + AdPlaylistFilter.FREEZE_EXCUSE_MAX_MS), "long freeze excused up to the limit");
+        AdPlaylistFilter.onFreezeServed(t);
+        check(!AdPlaylistFilter.isAdFreezeActive(t), "freeze past the limit no longer excused");
+        long nextBreak = t + AdPlaylistFilter.FREEZE_ACTIVE_MS + 1000;
+        AdPlaylistFilter.onFreezeServed(nextBreak);
+        check(AdPlaylistFilter.isAdFreezeActive(nextBreak), "a new freeze after a gap is excused again");
+
+        //The stream ends during the break: the end mark survives the freeze so the player ends
+        //normally instead of waiting for live content that never comes
+        r = filter(url, allAds + "#EXT-X-ENDLIST\n");
+        String frozenEnd = s(r);
+        check(frozenEnd.contains("live_3.ts") && !hasAdSegment(frozenEnd), "ended all-ads window still frozen on live content");
+        check(frozenEnd.trim().endsWith("#EXT-X-ENDLIST"), "freeze frame keeps the end mark, after the segment");
 
         //An all-ads window with no live segment ever seen (a preroll on a brand new session)
         //fails open: there is nothing to freeze on and an empty playlist would stall the player

@@ -2249,6 +2249,19 @@ public class PlayerActivity extends Activity {
             PlayerObj[position].player.setPlayWhenReady(false);
         }
 
+        //The ad filter's freeze frame stalls the player or gets its playlist reported as stuck.
+        //That is an ad break, not a dead stream: reset the player without counting a failure.
+        //A stream that ends during the break still ends: its playlist gets an end mark (kept in
+        //the freeze) or fails to load (no freeze served, so failures count again)
+        if (AdPlaylistFilter.isAdFreezeActive()) {
+            if (BuildConfig.DEBUG) {
+                Log.i(TAG, "PlayerEventListenerCheckCounter ad freeze, not counted position " + position);
+            }
+
+            PlayerEventListenerCheckCounterEnd(position);
+            return;
+        }
+
         PlayerObj[position].CheckCounter++;
 
         if (position < 4) {
