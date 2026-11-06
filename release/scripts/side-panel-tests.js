@@ -1,12 +1,15 @@
-/* Followed live side panel keys: Back returns to the rail like Right, the 3 shortcut closes to the grid.
+/* Followed live side panel keys: Back returns to the rail like Right, the 3 shortcut closes to the grid,
+ * Settings, About and Controls also work over Search and Add User (no ScreenObj).
  * Runs the production functions below; every other call is a recording stub. */
 const fs = require('fs'),
     vm = require('vm'),
     assert = require('assert'),
     UglifyJS = require('uglify-js');
 const built = process.argv.includes('--built');
-const source = built ? fs.readFileSync('release/githubio/js/main_uncompressed.js', 'utf8') : fs.readFileSync('app/specific/Sidepannel.js', 'utf8');
-const wanted = ['Sidepannel_handleKeyDown', 'Sidepannel_userLiveKeyRight', 'Sidepannel_StartMain'];
+const source = built
+    ? fs.readFileSync('release/githubio/js/main_uncompressed.js', 'utf8')
+    : fs.readFileSync('app/specific/Sidepannel.js', 'utf8') + ';' + fs.readFileSync('app/specific/Main.js', 'utf8');
+const wanted = ['Sidepannel_handleKeyDown', 'Sidepannel_userLiveKeyRight', 'Sidepannel_StartMain', 'Sidepannel_ShowUtility', 'Main_showSettings'];
 const definitions = {};
 UglifyJS.parse(source).walk(
     new UglifyJS.TreeWalker(node => {
@@ -56,6 +59,13 @@ function setup() {
         Sidepannel_IsMain: false,
         Sidepannel_Callback: function screenKeys() {},
         Main_values: {Main_Go: 1},
+        ScreenObj: {1: {key_controls: function gridControls() {}}},
+        Main_showAboutDialog: function () {
+            calls.push(['Main_showAboutDialog'].concat(Array.prototype.slice.call(arguments)));
+        },
+        Main_showControlsDialog: function () {
+            calls.push(['Main_showControlsDialog'].concat(Array.prototype.slice.call(arguments)));
+        },
         UserLiveFeed_loadingData: [],
         UserLiveFeedobj_UserLivePos: 0
     });
@@ -81,5 +91,41 @@ const s = setup();
 s.Sidepannel_handleKeyDown({keyCode: s.KEY_3});
 check(called('Sidepannel_Hide') && called('Main_SwitchScreen') && !called('Navigation_Open'), 'the 3 shortcut closes the panel to the grid');
 check(s.Sidepannel_IsMain === true, 'after the 3 shortcut, Left on the grid opens the rail again');
+
+// Settings from the panel exits the screen like the rail Settings entry, so Search and Add User are left too
+['KEY_6', 'KEY_PAUSE'].forEach(name => {
+    const p = setup();
+    p.Main_values.Main_Go = 0; // Search: no ScreenObj
+    p.Sidepannel_handleKeyDown({keyCode: p[name]});
+    check(called('Navigation_ExitCurrent') && !called('Main_ExitCurrent'), name + ': Settings exits the screen like the rail Settings entry');
+    check(called('Settings_init') && called('Sidepannel_Hide'), name + ': Settings opens and the panel hides');
+});
+
+// About and Controls: a screen with a ScreenObj keeps its dialog controls, Search and Add User go back to the rail
+[
+    ['KEY_7', 'Main_showAboutDialog', 7],
+    ['KEY_8', 'Main_showControlsDialog', 8]
+].forEach(([name, dialog, railIndex]) => {
+    const grid = setup();
+    grid.Sidepannel_handleKeyDown({keyCode: grid[name]});
+    check(
+        calls.some(call => call[0] === dialog && call[1] === grid.Sidepannel_Callback && call[2] === grid.ScreenObj[1].key_controls),
+        name + ' on a grid: the dialog closes with the screen controls'
+    );
+    check(
+        grid.Navigation_Callback === undefined && !called('Navigation_Activate') && called('Sidepannel_Hide'),
+        name + ' on a grid: the rail is not involved'
+    );
+
+    const search = setup();
+    search.Main_values.Main_Go = 0;
+    search.Sidepannel_handleKeyDown({keyCode: search[name]});
+    check(
+        called('Navigation_Activate', railIndex) && !called(dialog),
+        name + ' on Search: the rail entry opens the dialog, so it closes back to the rail'
+    );
+    check(search.Navigation_Callback === search.Sidepannel_Callback, name + ' on Search: the rail returns with the Search keys');
+    check(called('Sidepannel_Hide'), name + ' on Search: the panel hides');
+});
 
 console.log(checks + ' side panel checks passed' + (built ? ' (built)' : ''));

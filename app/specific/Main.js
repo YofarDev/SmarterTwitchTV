@@ -859,7 +859,8 @@ function Main_isAboutDialogVisible() {
 function Main_showSettings() {
     Main_HideControlsDialog();
     Main_HideWarningDialog();
-    Main_ExitCurrent(Main_values.Main_Go);
+    // Like the rail Settings entry: also exits Search and Add User, which have no ScreenObj exit.
+    Navigation_ExitCurrent();
     Main_CounterDialogRst();
     Settings_init();
 }

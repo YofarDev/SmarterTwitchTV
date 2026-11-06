@@ -881,13 +881,11 @@ function Sidepannel_handleKeyDown(event) {
             break;
         case KEY_A:
         case KEY_7:
-            Main_showAboutDialog(Sidepannel_Callback, ScreenObj[Main_values.Main_Go].key_controls);
-            Sidepannel_Hide();
+            Sidepannel_ShowUtility(Main_showAboutDialog, 7);
             break;
         case KEY_C:
         case KEY_8:
-            Main_showControlsDialog(Sidepannel_Callback, ScreenObj[Main_values.Main_Go].key_controls);
-            Sidepannel_Hide();
+            Sidepannel_ShowUtility(Main_showControlsDialog, 8);
             break;
         case KEY_E:
         case KEY_9:
@@ -901,6 +899,20 @@ function Sidepannel_handleKeyDown(event) {
         default:
             break;
     }
+}
+
+// About or Controls from the panel. Search and Add User have no ScreenObj key_controls to close the dialog:
+// there the rail's own About (7) or Controls (8) entry opens it, so it closes back to the rail.
+function Sidepannel_ShowUtility(showDialog, railIndex) {
+    var obj = ScreenObj[Main_values.Main_Go];
+
+    if (obj && obj.key_controls) {
+        showDialog(Sidepannel_Callback, obj.key_controls);
+    } else {
+        Navigation_Callback = Sidepannel_Callback;
+        Navigation_Activate(railIndex);
+    }
+    Sidepannel_Hide();
 }
 
 function Sidepannel_MainKeyLeft() {
