@@ -29,7 +29,9 @@ env:
     MEDIA_REPO: https://github.com/fgl27/media
     MEDIA_REF: 4d0e6705a28d55c82787ed4c2870dd3efa8b5749
     BUILD_TOOLS: 35.0.0
-    KEY_ALIAS: sptv
+    # The keystore that signed the released APKs (verified against release 400): the Android debug keystore.
+    # Keeping it preserves update-over-install for devices already running the app.
+    KEY_ALIAS: androiddebugkey
 
 jobs:
     release:
