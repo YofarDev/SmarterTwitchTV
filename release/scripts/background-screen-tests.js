@@ -27,7 +27,8 @@ UglifyJS.parse(source).walk(
 );
 wanted.forEach(name => assert(definitions[name], (built ? 'Rebuild first: ' : '') + name + ' not found'));
 const code = wanted.map(name => definitions[name]).join('\n');
-const ids = source.match(/^var Main_[A-Za-z]+ = \d+;/gm).join('\n');
+// In the built bundle the wrapper indents the app code, so the id declarations do not start the line.
+const ids = source.match(/^[ \t]*var Main_[A-Za-z]+ = \d+;/gm).join('\n');
 
 // Every global the functions call becomes a recording stub; every other global starts undefined.
 const toplevel = UglifyJS.parse(code);
