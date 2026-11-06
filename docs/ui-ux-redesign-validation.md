@@ -126,6 +126,8 @@ It did not compute contrast or certify legacy styles. No new width animation is 
 Production captures (older files without `production-` are synthetic prototype evidence):
 
 - [Browse, generated 720p](ui-redesign-screenshots/production-browse-720.png)
+- [Browse tabs, generated 720p](ui-redesign-screenshots/production-browse-tabs-720.png)
+- [Browse tabs, generated 1080p](ui-redesign-screenshots/production-browse-tabs-1080.png)
 - [Expanded rail, generated 720p](ui-redesign-screenshots/production-navigation-720.png)
 - [Chat drawer, generated 720p](ui-redesign-screenshots/production-chat-720.png)
 - [Light theme, generated 720p](ui-redesign-screenshots/production-light-720.png)

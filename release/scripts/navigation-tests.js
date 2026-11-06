@@ -130,6 +130,30 @@ const focused = () =>
     Object.values(elements)
         .filter(e => e.classList && e.classList.contains('navigation-focused'))
         .map(e => e.id);
+/* Presentation stubs for the detail band and footer hint: region transitions re-resolve both
+ * (asserted in depth by home-ui-tests.js); here they only need to resolve without a DOM. */
+s.Main_values = {Main_Go: null, Search_data: ''};
+s.ScreenObj = {};
+const shellWrites = {};
+s.Main_textContent = (id, value) => (shellWrites[id] = value);
+s.Main_innerHTML = (id, value) => (shellWrites[id] = value);
+s.Main_ShowElement = () => {};
+s.Main_HideElement = () => {};
+s.Main_RemoveClass = () => {};
+s.Settings_isVisible = () => false;
+s.Screens_DirectInputMode = () => false;
+s.Screens_SubActions = 1;
+s.STR_UI = {
+    browseHelp: 'grid',
+    browseHelpDirect: 'direct',
+    railHelp: 'rail',
+    tabsHelp: 'tabs',
+    recoveryHelp: 'recovery',
+    actionsHelp: 'actions',
+    searchHelp: 'search',
+    channelHelp: 'channel',
+    settingsNavHelp: 'settings'
+};
 s.Navigation_Region = 'recovery';
 for (const pos of [0, 1, 0, 1]) {
     s.Navigation_Position = pos;
@@ -155,6 +179,7 @@ s.Navigation_Handle({keyCode: s.KEY_LEFT});
 check(s.Navigation_Region === 'rail' && s.Navigation_Position === 0, 'Left on Add User opens the rail on Following');
 check(expanded.join() === 'navigation-rail navigation-expanded', 'the rail expands');
 check(focused().join() === 'navigation-route-0', 'only the rail destination is highlighted');
+check(shellWrites['navigation-footer'] !== undefined && shellWrites['navigation-detail-title'] === '', 'region switch re-resolved hint and cleared the detail band');
 
 // A game from the home screen Games channel opens under Browse > Categories, not the last section used
 require('vm').runInContext(

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Smarter Purple TV home tab selector proposal</title>
+  <desc id="desc">A TV browsing screen showing Front Page as the selected route with a filled purple capsule and Categories as the remote-focused tab with a pale violet outline.</desc>
+  <defs>
+    <linearGradient id="card1" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#263b46"/><stop offset="1" stop-color="#54708c"/></linearGradient>
+    <linearGradient id="card2" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4e294f"/><stop offset="1" stop-color="#9b5a92"/></linearGradient>
+    <linearGradient id="card3" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4c4527"/><stop offset="1" stop-color="#9f8954"/></linearGradient>
+    <linearGradient id="card4" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#253f3e"/><stop offset="1" stop-color="#4c897d"/></linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000000" flood-opacity="0.24"/></filter>
+  </defs>
+
+  <rect width="1920" height="1080" fill="#0b0a0e"/>
+  <rect width="118" height="1080" fill="#1e1b25"/>
+  <rect x="118" width="1802" height="1080" fill="#141219"/>
+
+  <!-- rail -->
+  <circle cx="59" cy="56" r="25" fill="#8c5cff"/>
+  <path d="M48 56h22M59 45v22" stroke="#f5f1fa" stroke-width="4" stroke-linecap="round"/>
+  <g fill="#c1b8cd" font-family="Roboto, Arial, sans-serif" font-size="30" text-anchor="middle">
+    <text x="59" y="176">♥</text><text x="59" y="262">⌁</text><text x="59" y="348">⌕</text><text x="59" y="434">◷</text><text x="59" y="520">●</text>
+  </g>
+  <rect x="28" y="136" width="62" height="62" rx="14" fill="#30253f" stroke="#bca0ff" stroke-width="3"/>
+  <text x="59" y="177" fill="#c6afff" font-family="Roboto, Arial, sans-serif" font-size="29" text-anchor="middle">♥</text>
+
+  <!-- header -->
+  <text x="176" y="94" fill="#f5f1fa" font-family="Roboto, Arial, sans-serif" font-size="48" font-weight="700">Browse</text>
+  <text x="176" y="132" fill="#c1b8cd" font-family="Roboto, Arial, sans-serif" font-size="24">YofarDev · browse live channels, categories and videos</text>
+
+  <!-- toolbar baseline -->
+  <line x1="176" y1="236" x2="1785" y2="236" stroke="#332d3c" stroke-width="2"/>
+
+  <!-- unselected tab -->
+  <g font-family="Roboto, Arial, sans-serif" font-size="28" fill="#c1b8cd">
+    <text x="190" y="197">Live</text>
+    <text x="644" y="197">Categories</text>
+    <text x="943" y="197">Videos</text>
+    <text x="1127" y="197">Clips</text>
+  </g>
+
+  <!-- selected route capsule -->
+  <rect x="300" y="157" width="295" height="62" rx="18" fill="#6f43bd" filter="url(#softShadow)"/>
+  <circle cx="329" cy="188" r="6" fill="#eadfff"/>
+  <text x="350" y="197" fill="#ffffff" font-family="Roboto, Arial, sans-serif" font-size="28" font-weight="700">Front Page</text>
+
+  <!-- remote focused tab: outline, not another filled active state -->
+  <rect x="620" y="145" width="267" height="86" rx="20" fill="#30253f" stroke="#bca0ff" stroke-width="4"/>
+  <text x="653" y="198" fill="#f5f1fa" font-family="Roboto, Arial, sans-serif" font-size="28" font-weight="700">Categories</text>
+
+  <!-- refresh -->
+  <line x1="1244" y1="165" x2="1244" y2="218" stroke="#494151" stroke-width="2"/>
+  <text x="1280" y="197" fill="#c1b8cd" font-family="Roboto, Arial, sans-serif" font-size="24">↻  Refresh</text>
+
+  <!-- cards -->
+  <g filter="url(#softShadow)">
+    <rect x="176" y="288" width="390" height="220" rx="12" fill="url(#card1)"/>
+    <rect x="600" y="288" width="390" height="220" rx="12" fill="url(#card2)"/>
+    <rect x="1024" y="288" width="390" height="220" rx="12" fill="url(#card3)"/>
+    <rect x="1448" y="288" width="390" height="220" rx="12" fill="url(#card4)"/>
+  </g>
+  <g font-family="Roboto, Arial, sans-serif">
+    <g fill="#ffffff" font-size="20" font-weight="700"><rect x="198" y="309" width="70" height="31" rx="6" fill="#b22450"/><text x="213" y="332">LIVE</text><rect x="622" y="309" width="70" height="31" rx="6" fill="#b22450"/><text x="637" y="332">LIVE</text><rect x="1046" y="309" width="70" height="31" rx="6" fill="#b22450"/><text x="1061" y="332">LIVE</text><rect x="1470" y="309" width="70" height="31" rx="6" fill="#b22450"/><text x="1485" y="332">LIVE</text></g>
+    <g fill="#ffffff" font-size="32" font-weight="700"><text x="198" y="452">Loud music, quiet chat</text><text x="622" y="452">Night shift strategy</text><text x="1046" y="452">Cozy speedrun</text><text x="1470" y="452">Creative corner</text></g>
+    <g fill="#cbd0d8" font-size="22"><text x="198" y="484">Nova · Live for 2h 14m · 21.1K viewers</text><text x="622" y="484">Mika · Live for 48m · 8.7K viewers</text><text x="1046" y="484">Ren · Live for 1h 03m · 4.2K viewers</text><text x="1470" y="484">Ari · Live for 27m · 2.8K viewers</text></g>
+  </g>
+
+  <!-- selected card focus -->
+  <rect x="590" y="278" width="410" height="240" rx="18" fill="none" stroke="#bca0ff" stroke-width="5"/>
+
+  <!-- detail band -->
+  <line x1="176" y1="770" x2="1785" y2="770" stroke="#494151" stroke-width="2"/>
+  <text x="176" y="812" fill="#c1b8cd" font-family="Roboto, Arial, sans-serif" font-size="22">JUST CHATTING</text>
+  <text x="176" y="857" fill="#f5f1fa" font-family="Roboto, Arial, sans-serif" font-size="34" font-weight="700">Night shift strategy</text>
+  <text x="176" y="895" fill="#c1b8cd" font-family="Roboto, Arial, sans-serif" font-size="23">Mika · 8.7K viewers</text>
+
+  <!-- footer -->
+  <text x="176" y="1012" fill="#f5f1fa" font-family="Roboto, Arial, sans-serif" font-size="22">←→ Navigate tabs</text>
+  <text x="500" y="1012" fill="#f5f1fa" font-family="Roboto, Arial, sans-serif" font-size="22">OK Select</text>
+  <text x="700" y="1012" fill="#f5f1fa" font-family="Roboto, Arial, sans-serif" font-size="22">Back Return</text>
+  <text x="1710" y="1012" fill="#c1b8cd" font-family="Roboto, Arial, sans-serif" font-size="22" text-anchor="end">2 / 30</text>
+</svg>

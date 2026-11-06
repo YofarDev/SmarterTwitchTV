@@ -3402,7 +3402,7 @@ function ScreensObj_ThumbInfoUpdate(obj, checkResult, check_1, check_2, check_3)
     if (data[14] !== tempData[14]) return;
 
     if (data[13] !== tempData[13]) {
-        Main_innerHTML(ScreenObj[key].ids[10] + id, STR_SPACE_HTML + STR_FOR + tempData[4] + STR_SPACE_HTML + Main_GetViewerStrings(tempData[13]));
+        Main_innerHTML(ScreenObj[key].ids[10] + id, Main_GetCompactViewerStrings(tempData[13]));
     }
     if (data[2] !== tempData[2]) {
         Main_innerHTML(ScreenObj[key].ids[11] + id, Main_ReplaceLargeFont(twemoji.parse(tempData[2])));

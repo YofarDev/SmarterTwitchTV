@@ -192,16 +192,23 @@ function Navigation_Button(parent, id, label, callback, icon) {
     return button;
 }
 
-/* Contextual footer hint, resolved from the active screen, editing state and card subtarget.
- * Updated on screen/region/subtarget changes, never per rendered frame. */
+/* Contextual footer hint, resolved from the input owner first (rail, tabs, recovery), then the
+ * active screen, editing state and card subtarget. Updated on screen/region/subtarget changes,
+ * never per rendered frame; the cache skips identical rewrites on repeated key dispatches. */
+var Navigation_LastHint = '';
 function Navigation_UpdateHint(screen) {
     var hint;
-    if (screen === Main_Search) hint = STR_UI.searchHelp;
+    if (Navigation_Region === 'rail') hint = STR_UI.railHelp;
+    else if (Navigation_Region === 'tabs') hint = STR_UI.tabsHelp;
+    else if (Navigation_Region === 'recovery') hint = STR_UI.recoveryHelp;
+    else if (screen === Main_Search) hint = STR_UI.searchHelp;
     else if (screen === Main_ChannelContent) hint = STR_UI.channelHelp;
     else if (Settings_isVisible()) hint = STR_UI.settingsNavHelp;
     else if (ScreenObj[screen] && ScreenObj[screen].posSub === Screens_SubActions) hint = STR_UI.actionsHelp;
     else if (Screens_DirectInputMode()) hint = STR_UI.browseHelpDirect;
     else hint = STR_UI.browseHelp;
+    if (hint === Navigation_LastHint) return;
+    Navigation_LastHint = hint;
     Main_innerHTML('navigation-footer', Navigation_KeyHintHtml(hint));
 }
 
@@ -288,8 +295,6 @@ function Navigation_Render(screen) {
         live = Boolean(obj && obj.screenType === 0 && !obj.isHistory && !Settings_isVisible());
     if (live && !Navigation_Onboarding) Main_AddClass('scene1', 'navigation-live');
     else Main_RemoveClass('scene1', 'navigation-live');
-    if (live && !Navigation_Onboarding) Main_ShowElement('navigation-details');
-    else Main_HideElement('navigation-details');
     Main_ShowElement('navigation-shell');
     if (Settings_isVisible()) {
         Main_AddClass('scene1', 'navigation-settings');
@@ -393,6 +398,9 @@ function Navigation_Open(callback, region) {
     });
     Main_addEventListener('keydown', Navigation_HandleListener);
     Navigation_Focus();
+    // The shell owns input now: the grid reclaims the detail band and the footer teaches rail/tab keys.
+    Navigation_UpdateDetails(Main_values.Main_Go);
+    Navigation_UpdateHint(Main_values.Main_Go);
 }
 
 function Navigation_HandleListener() {
@@ -413,6 +421,9 @@ function Navigation_Close(restore) {
         if (Main_values.Main_Go === Main_Users && !Navigation_Onboarding && Users_status) Users_addFocus();
         if (obj && obj.emptyContent && Main_values.Main_Go === Main_UserLive && !Navigation_Onboarding)
             Main_getElementById('navigation-retry').focus();
+        // Back re-owns the grid: restore its detail band and hint together with the focus treatment.
+        Navigation_UpdateDetails(Main_values.Main_Go);
+        Navigation_UpdateHint(Main_values.Main_Go);
     }
 }
 
@@ -498,6 +509,9 @@ function Navigation_Handle(event, up) {
             Navigation_Position = 0;
         }
     }
+    // Inline region switches (recovery/rail/tabs) re-resolve the detail band and the footer hint.
+    Navigation_UpdateDetails(Main_values.Main_Go);
+    Navigation_UpdateHint(Main_values.Main_Go);
     Navigation_Focus();
     return true;
 }
@@ -687,14 +701,37 @@ function Navigation_MountRestored(screen) {
     if (count === 3) obj.ScrollDoc.style.transform = 'translateY(-' + obj.offsettop + 'em)';
 }
 
-function Navigation_UpdateDetails(screen) {
+/* The focused cell's stream data, or null when the detail band must stay hidden: the rail,
+ * tabs or recovery region owns input, onboarding/settings/loading/empty state, or the focused
+ * cell is a placeholder or banner. posSub (card body or its Actions button) both count as
+ * card focus, so the band follows the card, not the subtarget. */
+function Navigation_DetailData(screen) {
     var obj = ScreenObj[screen],
         data;
-    if (!obj || !obj.DataObj) return;
+    if (!obj || !obj.DataObj || Navigation_Region || Navigation_Onboarding || Settings_isVisible()) return null;
+    if (obj.screenType !== 0 || obj.isHistory) return null;
     data = obj.DataObj[obj.posY + '_' + obj.posX];
-    Main_textContent('navigation-detail-category', data && !data.image ? data[3] : '');
-    Main_textContent('navigation-detail-title', data && !data.image ? data[2] : '');
-    Main_textContent('navigation-detail-name', data && !data.image ? data[1] + ' · ' + data[4] + ' ' + STR_VIEWERS : '');
+    return data && !data.image && !data.empty ? data : null;
+}
+
+/* Update-and-clear: every call writes all three fields, so no early return can leave stale
+ * text behind. The shell class and the hide class move together, reserving the compact band
+ * only while a real live stream card is focused. */
+function Navigation_UpdateDetails(screen) {
+    var data = screen === Main_values.Main_Go ? Navigation_DetailData(screen) : null;
+    if (data) {
+        Main_textContent('navigation-detail-category', data[3]);
+        Main_textContent('navigation-detail-title', data[2]);
+        Main_textContent('navigation-detail-name', data[1] + ' · ' + data[4] + ' ' + STR_VIEWERS);
+        Main_ShowElement('navigation-details');
+        Main_AddClass('scene1', 'navigation-detail');
+    } else {
+        Main_textContent('navigation-detail-category', '');
+        Main_textContent('navigation-detail-title', '');
+        Main_textContent('navigation-detail-name', '');
+        Main_HideElement('navigation-details');
+        Main_RemoveClass('scene1', 'navigation-detail');
+    }
 }
 
 function Navigation_ScreenContext(screen) {

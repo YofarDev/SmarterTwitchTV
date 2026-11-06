@@ -32,8 +32,11 @@ function uk_UALang() {
         welcomeTitle: 'Ваші канали разом',
         welcomeCopy: 'Додайте обліковий запис, щоб бачити, на кого ви підписані, або переглядайте канали в ефірі без нього.',
         //Key hints: keep {ok} {up} {down} {left} {right} {back} as is, they are drawn as remote key glyphs
-        browseHelp: '{ok} Дивитися    {up} Вкладки    Утримуйте {up} Оновити    {left} Навігація    Утримуйте {ok} Опції    {back} Назад',
-        browseHelpDirect: '{ok} Дивитися    {up}{down} Рядки    {left}{right} Картки та дії    {back} Назад',
+        browseHelp: '{up}{down} Прокрутка    {left}{right} Навігація    {ok} Дивитися    Утримуйте {up} Оновити    Утримуйте {ok} Опції    {back} Назад',
+        browseHelpDirect: '{up}{down} Прокрутка    {left}{right} Картки та дії    {ok} Дивитися    Утримуйте {ok} Опції    {back} Назад',
+        railHelp: '{up}{down} Навігація    {ok} Обрати    {back} Назад',
+        tabsHelp: '{left}{right} Вкладки    {ok} Обрати    {back} Назад',
+        recoveryHelp: '{left}{right} Вибір    {ok} Обрати    {back} Навігація',
         actionsHelp: '{ok} Опції    {left} Картка    {up}{down} Огляд    {back} Картка / Назад',
         searchHelp: '{ok} Редагувати пошук / ввести    {left}{right} Обрати тип    {up}{down} Форма / результати    {back} Назад',
         settingsNavHelp: '{ok} Обрати    {left}{right} Змінити    {up} Навігація    {back} Назад',
@@ -69,7 +72,14 @@ function uk_UALang() {
         nobodyLive: 'Зараз ніхто не в ефірі. Оновіть або перегляньте канали в ефірі.',
         authNeeded: 'Підключіть обліковий запис знову, щоб завантажити відстежувані канали.',
         reconnect: 'Підключити знову',
-        error: 'Не вдалося завантажити канали. Перевірте з’єднання та спробуйте ще раз.'
+        error: 'Не вдалося завантажити канали. Перевірте з’єднання та спробуйте ще раз.',
+        //Компактні одиниці карток в ефірі; decimalSeparator — лише десятковий роздільник
+        compactK: 'тис.',
+        compactM: 'млн',
+        decimalSeparator: ',',
+        durationUnderMinute: '<1хв',
+        durationMinute: 'хв',
+        durationHour: 'г'
     };
     // This is a false/true var change if day comes first in your language eg (27/12/2010) day 27 month 12 year 2010
     //Then copy this and set it to true, if doesn't don't copy it

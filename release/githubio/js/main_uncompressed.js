@@ -1465,9 +1465,12 @@
             welcomeTitle: 'Your channels, together',
             welcomeCopy: 'Add an account to see who you follow, or browse live channels without one.',
             //Key hints: keep {ok} {up} {down} {left} {right} {back} as is, they are drawn as remote key glyphs
-            browseHelp: '{ok} Watch    {up} Tabs    Hold {up} Refresh    {left} Navigation    Hold {ok} Options    {back} Return',
+            browseHelp: '{up}{down} Scroll    {left}{right} Navigate    {ok} Watch    Hold {up} Refresh    Hold {ok} Options    {back} Return',
             channelHelp: '{ok} Watch    {up} Tabs    Hold {up} Refresh    {left} Navigation    {back} Return',
-            browseHelpDirect: '{ok} Watch    {up}{down} Rows    {left}{right} Cards and Actions    {back} Return',
+            browseHelpDirect: '{up}{down} Scroll    {left}{right} Cards and Actions    {ok} Watch    Hold {ok} Options    {back} Return',
+            railHelp: '{up}{down} Navigate    {ok} Select    {back} Return',
+            tabsHelp: '{left}{right} Navigate tabs    {ok} Select    {back} Return',
+            recoveryHelp: '{left}{right} Choose    {ok} Select    {back} Navigation',
             actionsHelp: '{ok} Options    {left} Card    {up}{down} Browse    {back} Card / Return',
             searchHelp: '{ok} Edit search / type    {left}{right} Choose type    {up}{down} Form / results    {back} Return',
             settingsNavHelp: '{ok} Select    {left}{right} Adjust    {up} Navigation    {back} Return',
@@ -1503,7 +1506,15 @@
             nobodyLive: 'Nobody is live right now. Refresh or browse live channels.',
             authNeeded: 'Reconnect your account to load followed channels.',
             reconnect: 'Reconnect account',
-            error: 'Could not load channels. Check your connection and try again.'
+            error: 'Could not load channels. Check your connection and try again.',
+            //Compact live-card units: Main_formatLiveDuration/Main_formatCompactViewers build the
+            //card metadata line from these, no Intl; decimalSeparator is the decimal point only
+            compactK: 'K',
+            compactM: 'M',
+            decimalSeparator: '.',
+            durationUnderMinute: '<1m',
+            durationMinute: 'm',
+            durationHour: 'h'
         };
         // This is a false/true var change if day comes first in your language eg (27/12/2010) day 27 month 12 year 2010
         //Then copy this and set it to true, if doesn't don't copy it
@@ -7115,8 +7126,12 @@
             welcomeTitle: 'Ваші канали разом',
             welcomeCopy: 'Додайте обліковий запис, щоб бачити, на кого ви підписані, або переглядайте канали в ефірі без нього.',
             //Key hints: keep {ok} {up} {down} {left} {right} {back} as is, they are drawn as remote key glyphs
-            browseHelp: '{ok} Дивитися    {up} Вкладки    Утримуйте {up} Оновити    {left} Навігація    Утримуйте {ok} Опції    {back} Назад',
-            browseHelpDirect: '{ok} Дивитися    {up}{down} Рядки    {left}{right} Картки та дії    {back} Назад',
+            browseHelp:
+                '{up}{down} Прокрутка    {left}{right} Навігація    {ok} Дивитися    Утримуйте {up} Оновити    Утримуйте {ok} Опції    {back} Назад',
+            browseHelpDirect: '{up}{down} Прокрутка    {left}{right} Картки та дії    {ok} Дивитися    Утримуйте {ok} Опції    {back} Назад',
+            railHelp: '{up}{down} Навігація    {ok} Обрати    {back} Назад',
+            tabsHelp: '{left}{right} Вкладки    {ok} Обрати    {back} Назад',
+            recoveryHelp: '{left}{right} Вибір    {ok} Обрати    {back} Навігація',
             actionsHelp: '{ok} Опції    {left} Картка    {up}{down} Огляд    {back} Картка / Назад',
             searchHelp: '{ok} Редагувати пошук / ввести    {left}{right} Обрати тип    {up}{down} Форма / результати    {back} Назад',
             settingsNavHelp: '{ok} Обрати    {left}{right} Змінити    {up} Навігація    {back} Назад',
@@ -7152,7 +7167,14 @@
             nobodyLive: 'Зараз ніхто не в ефірі. Оновіть або перегляньте канали в ефірі.',
             authNeeded: 'Підключіть обліковий запис знову, щоб завантажити відстежувані канали.',
             reconnect: 'Підключити знову',
-            error: 'Не вдалося завантажити канали. Перевірте з’єднання та спробуйте ще раз.'
+            error: 'Не вдалося завантажити канали. Перевірте з’єднання та спробуйте ще раз.',
+            //Компактні одиниці карток в ефірі; decimalSeparator — лише десятковий роздільник
+            compactK: 'тис.',
+            compactM: 'млн',
+            decimalSeparator: ',',
+            durationUnderMinute: '<1хв',
+            durationMinute: 'хв',
+            durationHour: 'г'
         };
         // This is a false/true var change if day comes first in your language eg (27/12/2010) day 27 month 12 year 2010
         //Then copy this and set it to true, if doesn't don't copy it
@@ -8531,9 +8553,15 @@
         VersionBase: '3.0',
         publishVersionCode: 400, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/400/SmarterPurpleTV_3_0_400.apk',
-        WebVersion: 'November 5 2026',
-        WebTag: 784, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebVersion: 'November 6 2026',
+        WebTag: 785, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 6 2026 (Web 785)',
+                changes: [
+                    'Browse: the active tab uses a filled route capsule while remote focus keeps a separate violet outline, making location and focus easier to distinguish from the sofa'
+                ]
+            },
             {
                 title: 'November 5 2026 (Web 784)',
                 changes: [
@@ -18999,6 +19027,42 @@
         return value === 1 ? STR_VIEWER : STR_VIEWERS;
     }
 
+    /* Compact live-card metadata helpers. Plain ES5 string building: old TV WebViews cannot be
+     * relied on for Intl. Full numbers keep Main_formatNumber for settings, dialogs, the player
+     * surfaces and accessibility labels. */
+
+    /* One decimal with the translated decimal separator: 21.074 -> '21.1'. */
+    function Main_formatCompactScaled(value, scale, suffix) {
+        var tenth = Math.round((value / scale) * 10);
+        return Math.floor(tenth / 10) + STR_UI.decimalSeparator + (tenth % 10) + suffix;
+    }
+
+    /* 999 -> '999'; thousands/millions as one decimal ('21.1K', '1.2M'); a rounded 1000K
+     * promotes to 1.0M so a count never reads as '1000.0K'. */
+    function Main_formatCompactViewers(value) {
+        value = parseInt(value, 10);
+        if (!value || value < 0) return '0';
+        if (value < 1000) return value + '';
+        if (value < 995000) return Main_formatCompactScaled(value, 1000, STR_UI.compactK);
+        return Main_formatCompactScaled(value, 1000000, STR_UI.compactM);
+    }
+
+    /* '21.1K viewers' / '999 viewers' for the live-card metadata span. */
+    function Main_GetCompactViewerStrings(value) {
+        return Main_formatCompactViewers(value) + STR_SPACE + Main_GetViewerStrings(parseInt(value, 10));
+    }
+
+    /* Short live duration from the raw started_at timestamp: '<1m', '59m', '1h', '7h 19m'.
+     * Minutes and hours only, no seconds; the exact clock time stays in the data fields. */
+    function Main_formatLiveDuration(startedAt, now) {
+        var minutes = Math.floor(((now || new Date().getTime()) - new Date(startedAt).getTime()) / 60000);
+        if (!minutes || minutes < 0) return STR_UI.durationUnderMinute;
+        var hours = Math.floor(minutes / 60);
+        if (!hours) return minutes + STR_UI.durationMinute;
+        minutes %= 60;
+        return hours + STR_UI.durationHour + (minutes ? ' ' + minutes + STR_UI.durationMinute : '');
+    }
+
     function Main_GetViewsStrings(value) {
         return value === 1 ? STR_VIEW : STR_VIEWS;
     }
@@ -21896,16 +21960,23 @@
         return button;
     }
 
-    /* Contextual footer hint, resolved from the active screen, editing state and card subtarget.
-     * Updated on screen/region/subtarget changes, never per rendered frame. */
+    /* Contextual footer hint, resolved from the input owner first (rail, tabs, recovery), then the
+     * active screen, editing state and card subtarget. Updated on screen/region/subtarget changes,
+     * never per rendered frame; the cache skips identical rewrites on repeated key dispatches. */
+    var Navigation_LastHint = '';
     function Navigation_UpdateHint(screen) {
         var hint;
-        if (screen === Main_Search) hint = STR_UI.searchHelp;
+        if (Navigation_Region === 'rail') hint = STR_UI.railHelp;
+        else if (Navigation_Region === 'tabs') hint = STR_UI.tabsHelp;
+        else if (Navigation_Region === 'recovery') hint = STR_UI.recoveryHelp;
+        else if (screen === Main_Search) hint = STR_UI.searchHelp;
         else if (screen === Main_ChannelContent) hint = STR_UI.channelHelp;
         else if (Settings_isVisible()) hint = STR_UI.settingsNavHelp;
         else if (ScreenObj[screen] && ScreenObj[screen].posSub === Screens_SubActions) hint = STR_UI.actionsHelp;
         else if (Screens_DirectInputMode()) hint = STR_UI.browseHelpDirect;
         else hint = STR_UI.browseHelp;
+        if (hint === Navigation_LastHint) return;
+        Navigation_LastHint = hint;
         Main_innerHTML('navigation-footer', Navigation_KeyHintHtml(hint));
     }
 
@@ -21997,8 +22068,6 @@
             live = Boolean(obj && obj.screenType === 0 && !obj.isHistory && !Settings_isVisible());
         if (live && !Navigation_Onboarding) Main_AddClass('scene1', 'navigation-live');
         else Main_RemoveClass('scene1', 'navigation-live');
-        if (live && !Navigation_Onboarding) Main_ShowElement('navigation-details');
-        else Main_HideElement('navigation-details');
         Main_ShowElement('navigation-shell');
         if (Settings_isVisible()) {
             Main_AddClass('scene1', 'navigation-settings');
@@ -22102,6 +22171,9 @@
         });
         Main_addEventListener('keydown', Navigation_HandleListener);
         Navigation_Focus();
+        // The shell owns input now: the grid reclaims the detail band and the footer teaches rail/tab keys.
+        Navigation_UpdateDetails(Main_values.Main_Go);
+        Navigation_UpdateHint(Main_values.Main_Go);
     }
 
     function Navigation_HandleListener() {
@@ -22122,6 +22194,9 @@
             if (Main_values.Main_Go === Main_Users && !Navigation_Onboarding && Users_status) Users_addFocus();
             if (obj && obj.emptyContent && Main_values.Main_Go === Main_UserLive && !Navigation_Onboarding)
                 Main_getElementById('navigation-retry').focus();
+            // Back re-owns the grid: restore its detail band and hint together with the focus treatment.
+            Navigation_UpdateDetails(Main_values.Main_Go);
+            Navigation_UpdateHint(Main_values.Main_Go);
         }
     }
 
@@ -22207,6 +22282,9 @@
                 Navigation_Position = 0;
             }
         }
+        // Inline region switches (recovery/rail/tabs) re-resolve the detail band and the footer hint.
+        Navigation_UpdateDetails(Main_values.Main_Go);
+        Navigation_UpdateHint(Main_values.Main_Go);
         Navigation_Focus();
         return true;
     }
@@ -22396,14 +22474,37 @@
         if (count === 3) obj.ScrollDoc.style.transform = 'translateY(-' + obj.offsettop + 'em)';
     }
 
-    function Navigation_UpdateDetails(screen) {
+    /* The focused cell's stream data, or null when the detail band must stay hidden: the rail,
+     * tabs or recovery region owns input, onboarding/settings/loading/empty state, or the focused
+     * cell is a placeholder or banner. posSub (card body or its Actions button) both count as
+     * card focus, so the band follows the card, not the subtarget. */
+    function Navigation_DetailData(screen) {
         var obj = ScreenObj[screen],
             data;
-        if (!obj || !obj.DataObj) return;
+        if (!obj || !obj.DataObj || Navigation_Region || Navigation_Onboarding || Settings_isVisible()) return null;
+        if (obj.screenType !== 0 || obj.isHistory) return null;
         data = obj.DataObj[obj.posY + '_' + obj.posX];
-        Main_textContent('navigation-detail-category', data && !data.image ? data[3] : '');
-        Main_textContent('navigation-detail-title', data && !data.image ? data[2] : '');
-        Main_textContent('navigation-detail-name', data && !data.image ? data[1] + ' · ' + data[4] + ' ' + STR_VIEWERS : '');
+        return data && !data.image && !data.empty ? data : null;
+    }
+
+    /* Update-and-clear: every call writes all three fields, so no early return can leave stale
+     * text behind. The shell class and the hide class move together, reserving the compact band
+     * only while a real live stream card is focused. */
+    function Navigation_UpdateDetails(screen) {
+        var data = screen === Main_values.Main_Go ? Navigation_DetailData(screen) : null;
+        if (data) {
+            Main_textContent('navigation-detail-category', data[3]);
+            Main_textContent('navigation-detail-title', data[2]);
+            Main_textContent('navigation-detail-name', data[1] + ' · ' + data[4] + ' ' + STR_VIEWERS);
+            Main_ShowElement('navigation-details');
+            Main_AddClass('scene1', 'navigation-detail');
+        } else {
+            Main_textContent('navigation-detail-category', '');
+            Main_textContent('navigation-detail-title', '');
+            Main_textContent('navigation-detail-name', '');
+            Main_HideElement('navigation-details');
+            Main_RemoveClass('scene1', 'navigation-detail');
+        }
     }
 
     function Navigation_ScreenContext(screen) {
@@ -39423,22 +39524,40 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             '</div><div id="' +
             idArray[4] +
             id +
-            '" class="stream_info_live"><span id="' +
-            idArray[9] +
-            id +
-            '" >' +
-            STR_SINCE +
-            valuesArray[11] +
-            '</span><span id="' +
-            idArray[10] +
-            id +
-            '" >' +
-            STR_SPACE_HTML +
-            STR_FOR +
-            valuesArray[4] +
-            STR_SPACE_HTML +
-            Main_GetViewerStrings(valuesArray[13]) +
-            '</span></div>' +
+            '" class="stream_info_live">' +
+            // Compact scan line for real live streams ('Live for 7h 19m · 21.1K viewers'); VOD-badge
+            // history cells keep the Since/for copy because a live duration would be wrong there.
+            (Extra_vodimg || force_VOD
+                ? '<span id="' +
+                  idArray[9] +
+                  id +
+                  '" >' +
+                  STR_SINCE +
+                  valuesArray[11] +
+                  '</span><span id="' +
+                  idArray[10] +
+                  id +
+                  '" >' +
+                  STR_SPACE_HTML +
+                  STR_FOR +
+                  valuesArray[4] +
+                  STR_SPACE_HTML +
+                  Main_GetViewerStrings(valuesArray[13]) +
+                  '</span>'
+                : '<span id="' +
+                  idArray[9] +
+                  id +
+                  '" class="stream_info_live_duration" >' +
+                  Screens_AriaEscape(STR_UI.liveFor + Main_formatLiveDuration(valuesArray[12])) +
+                  '</span><span class="stream_info_live_meta" aria-hidden="true">' +
+                  STR_UI.separator +
+                  '</span><span id="' +
+                  idArray[10] +
+                  id +
+                  '" class="stream_info_live_viewers" >' +
+                  Main_GetCompactViewerStrings(valuesArray[13]) +
+                  '</span>') +
+            '</div>' +
             (Extra_when
                 ? '<div class="stream_info_live">' +
                   STR_WATCHED +
@@ -39459,6 +39578,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     function Screens_loadDataSuccessFinish(key) {
         Navigation_Restore(key);
         Navigation_LoadState(key, ScreenObj[key].emptyContent ? ScreenObj[key].navigationLoadState || 'empty' : null);
+        Navigation_UpdateDetails(key); // load/refresh reconciliation must not leave a stale detail band
         //Main_Log('Screens_loadDataSuccessFinish ' + ScreenObj[key].screen);
         ScreenObj[key].FirstRunEnd = true;
         if (!ScreenObj[key].status) {
@@ -40406,19 +40526,20 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                     var ArrayPos = Main_values_History_data[AddUser_UsernameArray[0].id].live[index];
 
                     if (!ArrayPos.forceVod) {
-                        Main_textContent(ScreenObj[key].ids[9] + id, STR_SINCE + Play_streamLiveAtWitDate(new Date().getTime(), data[12]));
+                        Main_textContent(ScreenObj[key].ids[9] + id, Screens_AriaEscape(STR_UI.liveFor + Main_formatLiveDuration(data[12])));
                     }
                 }
             } else {
-                Main_textContent(ScreenObj[key].ids[9] + id, STR_SINCE + Play_streamLiveAtWitDate(new Date().getTime(), data[12]));
+                Main_textContent(ScreenObj[key].ids[9] + id, Screens_AriaEscape(STR_UI.liveFor + Main_formatLiveDuration(data[12])));
             }
         }
 
+        // Seconds are no longer visible: the next refresh only matters at the next minute boundary.
         Screens_UpdateSinceId = Main_setTimeout(
             function () {
                 Screens_UpdateSince(key);
             },
-            1000,
+            (60 - new Date().getSeconds()) * 1000 + 50,
             Screens_UpdateSinceId
         );
     }
@@ -46347,10 +46468,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (data[14] !== tempData[14]) return;
 
         if (data[13] !== tempData[13]) {
-            Main_innerHTML(
-                ScreenObj[key].ids[10] + id,
-                STR_SPACE_HTML + STR_FOR + tempData[4] + STR_SPACE_HTML + Main_GetViewerStrings(tempData[13])
-            );
+            Main_innerHTML(ScreenObj[key].ids[10] + id, Main_GetCompactViewerStrings(tempData[13]));
         }
         if (data[2] !== tempData[2]) {
             Main_innerHTML(ScreenObj[key].ids[11] + id, Main_ReplaceLargeFont(twemoji.parse(tempData[2])));
@@ -51341,9 +51459,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             '#player-ui-buttons .player-ui-origin{box-shadow:inset 0 -0.12em 0 ' +
             focusColor +
             ';}' +
-            '#navigation-shell #navigation-tabs [aria-selected="true"]{box-shadow:0 0.12em 0 ' +
-            focusColor +
-            ';}' +
+            '#navigation-shell #navigation-tabs [aria-selected="true"]{background:' +
+            (pos === 0 ? '#6f43bd' : focusColor) +
+            ';color:' +
+            (pos === 0 ? '#ffffff' : background) +
+            ';box-shadow:none;border-radius:0.55em;}' +
             '.navigation-enabled .stream_thumbnail_live{background:' +
             background +
             ';color:' +
@@ -54170,14 +54290,15 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             var id = pos + '_' + UserLiveFeed_FeedPosY[pos];
             var data = UserLiveFeed_GetObj(pos);
 
-            Main_innerHTML(UserLiveFeed_ids[5] + id, STR_SINCE + Play_streamLiveAtWitDate(new Date().getTime(), data[12]));
+            Main_textContent(UserLiveFeed_ids[5] + id, Screens_AriaEscape(STR_UI.liveFor + Main_formatLiveDuration(data[12])));
         }
 
+        // Seconds are no longer visible: the next refresh only matters at the next minute boundary.
         UserLiveFeed_UpdateSinceId = Main_setTimeout(
             function () {
                 UserLiveFeed_UpdateSince(pos);
             },
-            1000,
+            (60 - new Date().getSeconds()) * 1000 + 50,
             UserLiveFeed_UpdateSinceId
         );
     }
@@ -54237,7 +54358,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         var data = UserLiveFeed_GetObj(pos);
 
         if (data[13] !== tempData[13]) {
-            Main_innerHTML(UserLiveFeed_ids[6] + id, STR_SPACE_HTML + STR_FOR + tempData[4] + STR_SPACE_HTML + Main_GetViewerStrings(tempData[13]));
+            Main_innerHTML(UserLiveFeed_ids[6] + id, Main_GetCompactViewerStrings(tempData[13]));
         }
         if (data[2] !== tempData[2]) {
             Main_innerHTML(UserLiveFeed_ids[7] + id, Main_ReplaceLargeFont(twemoji.parse(tempData[2])));
@@ -55338,22 +55459,39 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             '</div><div id="' +
             UserLiveFeed_ids[4] +
             id +
-            '" class="stream_info_live"><span id="' +
-            UserLiveFeed_ids[5] +
-            id +
-            '" >' +
-            STR_SINCE +
-            data[11] +
-            '</span><span id="' +
-            UserLiveFeed_ids[6] +
-            id +
-            '" >' +
-            STR_SPACE_HTML +
-            STR_FOR +
-            data[4] +
-            STR_SPACE_HTML +
-            Main_GetViewerStrings(data[13]) +
-            '</span></div>' +
+            '" class="stream_info_live">' +
+            // Same compact scan line as the browse cards; VOD-badge feed cells keep the Since/for copy.
+            (Extra_vodimg || force_VOD
+                ? '<span id="' +
+                  UserLiveFeed_ids[5] +
+                  id +
+                  '" >' +
+                  STR_SINCE +
+                  data[11] +
+                  '</span><span id="' +
+                  UserLiveFeed_ids[6] +
+                  id +
+                  '" >' +
+                  STR_SPACE_HTML +
+                  STR_FOR +
+                  data[4] +
+                  STR_SPACE_HTML +
+                  Main_GetViewerStrings(data[13]) +
+                  '</span>'
+                : '<span id="' +
+                  UserLiveFeed_ids[5] +
+                  id +
+                  '" class="stream_info_live_duration" >' +
+                  Screens_AriaEscape(STR_UI.liveFor + Main_formatLiveDuration(data[12])) +
+                  '</span><span class="stream_info_live_meta" aria-hidden="true">' +
+                  STR_UI.separator +
+                  '</span><span id="' +
+                  UserLiveFeed_ids[6] +
+                  id +
+                  '" class="stream_info_live_viewers" >' +
+                  Main_GetCompactViewerStrings(data[13]) +
+                  '</span>') +
+            '</div>' +
             (Extra_when
                 ? '<div class="stream_info_live">' +
                   STR_WATCHED +

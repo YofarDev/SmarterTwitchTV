@@ -501,9 +501,11 @@ function SettingsColor_SetAnimationStyle(pos) {
         '#player-ui-buttons .player-ui-origin{box-shadow:inset 0 -0.12em 0 ' +
         focusColor +
         ';}' +
-        '#navigation-shell #navigation-tabs [aria-selected="true"]{box-shadow:0 0.12em 0 ' +
-        focusColor +
-        ';}' +
+        '#navigation-shell #navigation-tabs [aria-selected="true"]{background:' +
+        (pos === 0 ? '#6f43bd' : focusColor) +
+        ';color:' +
+        (pos === 0 ? '#ffffff' : background) +
+        ';box-shadow:none;border-radius:0.55em;}' +
         '.navigation-enabled .stream_thumbnail_live{background:' +
         background +
         ';color:' +

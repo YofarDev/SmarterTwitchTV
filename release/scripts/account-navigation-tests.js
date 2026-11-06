@@ -42,6 +42,26 @@ Object.assign(s, {
     Main_ThumbNull: (y, x) => Boolean(thumbs[y + '_' + x]),
     Main_addEventListener: (type, fn) => calls.push('listen:' + (fn === s.Users_handleKeyDown ? 'users' : 'other')),
     Settings_isVisible: () => false,
+    // Presentation sinks for the detail band and footer hint that region transitions re-resolve.
+    Main_textContent: () => {},
+    Main_innerHTML: () => {},
+    Main_ShowElement: () => {},
+    Main_HideElement: () => {},
+    Main_RemoveClass: () => {},
+    Screens_SubActions: 1,
+    Screens_DirectInputMode: () => false,
+    Screens_AriaEscape: text => String(text === undefined || text === null ? '' : text),
+    STR_UI: {
+        browseHelp: 'grid',
+        browseHelpDirect: 'direct',
+        railHelp: 'rail',
+        tabsHelp: 'tabs',
+        recoveryHelp: 'recovery',
+        actionsHelp: 'actions',
+        searchHelp: 'search',
+        channelHelp: 'channel',
+        settingsNavHelp: 'settings'
+    },
     Navigation_Open: (callback, region) => calls.push('open:' + region + ':' + (callback === s.Users_handleKeyDown ? 'users' : 'other')),
     Users_removeFocus: () => calls.push('remove:' + s.Users_cursorY + '_' + s.Users_cursorX),
     Users_addFocus: () => calls.push('focus:' + s.Users_cursorY + '_' + s.Users_cursorX)

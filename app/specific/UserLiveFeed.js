@@ -1312,14 +1312,15 @@ function UserLiveFeed_UpdateSince(pos) {
         var id = pos + '_' + UserLiveFeed_FeedPosY[pos];
         var data = UserLiveFeed_GetObj(pos);
 
-        Main_innerHTML(UserLiveFeed_ids[5] + id, STR_SINCE + Play_streamLiveAtWitDate(new Date().getTime(), data[12]));
+        Main_textContent(UserLiveFeed_ids[5] + id, Screens_AriaEscape(STR_UI.liveFor + Main_formatLiveDuration(data[12])));
     }
 
+    // Seconds are no longer visible: the next refresh only matters at the next minute boundary.
     UserLiveFeed_UpdateSinceId = Main_setTimeout(
         function () {
             UserLiveFeed_UpdateSince(pos);
         },
-        1000,
+        (60 - new Date().getSeconds()) * 1000 + 50,
         UserLiveFeed_UpdateSinceId
     );
 }
@@ -1379,7 +1380,7 @@ function UserLiveFeed_ThumbInfoUpdate(obj, checkResult, check_1) {
     var data = UserLiveFeed_GetObj(pos);
 
     if (data[13] !== tempData[13]) {
-        Main_innerHTML(UserLiveFeed_ids[6] + id, STR_SPACE_HTML + STR_FOR + tempData[4] + STR_SPACE_HTML + Main_GetViewerStrings(tempData[13]));
+        Main_innerHTML(UserLiveFeed_ids[6] + id, Main_GetCompactViewerStrings(tempData[13]));
     }
     if (data[2] !== tempData[2]) {
         Main_innerHTML(UserLiveFeed_ids[7] + id, Main_ReplaceLargeFont(twemoji.parse(tempData[2])));

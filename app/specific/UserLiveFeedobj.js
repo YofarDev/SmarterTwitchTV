@@ -1087,22 +1087,39 @@ function UserLiveFeedobj_CreatFeed(pos, y, id, data, Extra_when, Extra_vodimg, f
         '</div><div id="' +
         UserLiveFeed_ids[4] +
         id +
-        '" class="stream_info_live"><span id="' +
-        UserLiveFeed_ids[5] +
-        id +
-        '" >' +
-        STR_SINCE +
-        data[11] +
-        '</span><span id="' +
-        UserLiveFeed_ids[6] +
-        id +
-        '" >' +
-        STR_SPACE_HTML +
-        STR_FOR +
-        data[4] +
-        STR_SPACE_HTML +
-        Main_GetViewerStrings(data[13]) +
-        '</span></div>' +
+        '" class="stream_info_live">' +
+        // Same compact scan line as the browse cards; VOD-badge feed cells keep the Since/for copy.
+        (Extra_vodimg || force_VOD
+            ? '<span id="' +
+              UserLiveFeed_ids[5] +
+              id +
+              '" >' +
+              STR_SINCE +
+              data[11] +
+              '</span><span id="' +
+              UserLiveFeed_ids[6] +
+              id +
+              '" >' +
+              STR_SPACE_HTML +
+              STR_FOR +
+              data[4] +
+              STR_SPACE_HTML +
+              Main_GetViewerStrings(data[13]) +
+              '</span>'
+            : '<span id="' +
+              UserLiveFeed_ids[5] +
+              id +
+              '" class="stream_info_live_duration" >' +
+              Screens_AriaEscape(STR_UI.liveFor + Main_formatLiveDuration(data[12])) +
+              '</span><span class="stream_info_live_meta" aria-hidden="true">' +
+              STR_UI.separator +
+              '</span><span id="' +
+              UserLiveFeed_ids[6] +
+              id +
+              '" class="stream_info_live_viewers" >' +
+              Main_GetCompactViewerStrings(data[13]) +
+              '</span>') +
+        '</div>' +
         (Extra_when
             ? '<div class="stream_info_live">' +
               STR_WATCHED +

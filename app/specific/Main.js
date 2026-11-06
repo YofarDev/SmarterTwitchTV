@@ -936,6 +936,42 @@ function Main_GetViewerStrings(value) {
     return value === 1 ? STR_VIEWER : STR_VIEWERS;
 }
 
+/* Compact live-card metadata helpers. Plain ES5 string building: old TV WebViews cannot be
+ * relied on for Intl. Full numbers keep Main_formatNumber for settings, dialogs, the player
+ * surfaces and accessibility labels. */
+
+/* One decimal with the translated decimal separator: 21.074 -> '21.1'. */
+function Main_formatCompactScaled(value, scale, suffix) {
+    var tenth = Math.round(value / scale * 10);
+    return Math.floor(tenth / 10) + STR_UI.decimalSeparator + (tenth % 10) + suffix;
+}
+
+/* 999 -> '999'; thousands/millions as one decimal ('21.1K', '1.2M'); a rounded 1000K
+ * promotes to 1.0M so a count never reads as '1000.0K'. */
+function Main_formatCompactViewers(value) {
+    value = parseInt(value, 10);
+    if (!value || value < 0) return '0';
+    if (value < 1000) return value + '';
+    if (value < 995000) return Main_formatCompactScaled(value, 1000, STR_UI.compactK);
+    return Main_formatCompactScaled(value, 1000000, STR_UI.compactM);
+}
+
+/* '21.1K viewers' / '999 viewers' for the live-card metadata span. */
+function Main_GetCompactViewerStrings(value) {
+    return Main_formatCompactViewers(value) + STR_SPACE + Main_GetViewerStrings(parseInt(value, 10));
+}
+
+/* Short live duration from the raw started_at timestamp: '<1m', '59m', '1h', '7h 19m'.
+ * Minutes and hours only, no seconds; the exact clock time stays in the data fields. */
+function Main_formatLiveDuration(startedAt, now) {
+    var minutes = Math.floor(((now || new Date().getTime()) - new Date(startedAt).getTime()) / 60000);
+    if (!minutes || minutes < 0) return STR_UI.durationUnderMinute;
+    var hours = Math.floor(minutes / 60);
+    if (!hours) return minutes + STR_UI.durationMinute;
+    minutes %= 60;
+    return hours + STR_UI.durationHour + (minutes ? ' ' + minutes + STR_UI.durationMinute : '');
+}
+
 function Main_GetViewsStrings(value) {
     return value === 1 ? STR_VIEW : STR_VIEWS;
 }

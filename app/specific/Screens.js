@@ -1056,22 +1056,40 @@ function Screens_createCellLive(id, idArray, valuesArray, key, Extra_when, Extra
         '</div><div id="' +
         idArray[4] +
         id +
-        '" class="stream_info_live"><span id="' +
-        idArray[9] +
-        id +
-        '" >' +
-        STR_SINCE +
-        valuesArray[11] +
-        '</span><span id="' +
-        idArray[10] +
-        id +
-        '" >' +
-        STR_SPACE_HTML +
-        STR_FOR +
-        valuesArray[4] +
-        STR_SPACE_HTML +
-        Main_GetViewerStrings(valuesArray[13]) +
-        '</span></div>' +
+        '" class="stream_info_live">' +
+        // Compact scan line for real live streams ('Live for 7h 19m · 21.1K viewers'); VOD-badge
+        // history cells keep the Since/for copy because a live duration would be wrong there.
+        (Extra_vodimg || force_VOD
+            ? '<span id="' +
+              idArray[9] +
+              id +
+              '" >' +
+              STR_SINCE +
+              valuesArray[11] +
+              '</span><span id="' +
+              idArray[10] +
+              id +
+              '" >' +
+              STR_SPACE_HTML +
+              STR_FOR +
+              valuesArray[4] +
+              STR_SPACE_HTML +
+              Main_GetViewerStrings(valuesArray[13]) +
+              '</span>'
+            : '<span id="' +
+              idArray[9] +
+              id +
+              '" class="stream_info_live_duration" >' +
+              Screens_AriaEscape(STR_UI.liveFor + Main_formatLiveDuration(valuesArray[12])) +
+              '</span><span class="stream_info_live_meta" aria-hidden="true">' +
+              STR_UI.separator +
+              '</span><span id="' +
+              idArray[10] +
+              id +
+              '" class="stream_info_live_viewers" >' +
+              Main_GetCompactViewerStrings(valuesArray[13]) +
+              '</span>') +
+        '</div>' +
         (Extra_when
             ? '<div class="stream_info_live">' +
               STR_WATCHED +
@@ -1092,6 +1110,7 @@ function Screens_createCellLive(id, idArray, valuesArray, key, Extra_when, Extra
 function Screens_loadDataSuccessFinish(key) {
     Navigation_Restore(key);
     Navigation_LoadState(key, ScreenObj[key].emptyContent ? ScreenObj[key].navigationLoadState || 'empty' : null);
+    Navigation_UpdateDetails(key); // load/refresh reconciliation must not leave a stale detail band
     //Main_Log('Screens_loadDataSuccessFinish ' + ScreenObj[key].screen);
     ScreenObj[key].FirstRunEnd = true;
     if (!ScreenObj[key].status) {
@@ -2039,19 +2058,20 @@ function Screens_UpdateSince(key) {
                 var ArrayPos = Main_values_History_data[AddUser_UsernameArray[0].id].live[index];
 
                 if (!ArrayPos.forceVod) {
-                    Main_textContent(ScreenObj[key].ids[9] + id, STR_SINCE + Play_streamLiveAtWitDate(new Date().getTime(), data[12]));
+                    Main_textContent(ScreenObj[key].ids[9] + id, Screens_AriaEscape(STR_UI.liveFor + Main_formatLiveDuration(data[12])));
                 }
             }
         } else {
-            Main_textContent(ScreenObj[key].ids[9] + id, STR_SINCE + Play_streamLiveAtWitDate(new Date().getTime(), data[12]));
+            Main_textContent(ScreenObj[key].ids[9] + id, Screens_AriaEscape(STR_UI.liveFor + Main_formatLiveDuration(data[12])));
         }
     }
 
+    // Seconds are no longer visible: the next refresh only matters at the next minute boundary.
     Screens_UpdateSinceId = Main_setTimeout(
         function () {
             Screens_UpdateSince(key);
         },
-        1000,
+        (60 - new Date().getSeconds()) * 1000 + 50,
         Screens_UpdateSinceId
     );
 }

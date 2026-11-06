@@ -32,9 +32,12 @@ function en_USLang() {
         welcomeTitle: 'Your channels, together',
         welcomeCopy: 'Add an account to see who you follow, or browse live channels without one.',
         //Key hints: keep {ok} {up} {down} {left} {right} {back} as is, they are drawn as remote key glyphs
-        browseHelp: '{ok} Watch    {up} Tabs    Hold {up} Refresh    {left} Navigation    Hold {ok} Options    {back} Return',
+        browseHelp: '{up}{down} Scroll    {left}{right} Navigate    {ok} Watch    Hold {up} Refresh    Hold {ok} Options    {back} Return',
         channelHelp: '{ok} Watch    {up} Tabs    Hold {up} Refresh    {left} Navigation    {back} Return',
-        browseHelpDirect: '{ok} Watch    {up}{down} Rows    {left}{right} Cards and Actions    {back} Return',
+        browseHelpDirect: '{up}{down} Scroll    {left}{right} Cards and Actions    {ok} Watch    Hold {ok} Options    {back} Return',
+        railHelp: '{up}{down} Navigate    {ok} Select    {back} Return',
+        tabsHelp: '{left}{right} Navigate tabs    {ok} Select    {back} Return',
+        recoveryHelp: '{left}{right} Choose    {ok} Select    {back} Navigation',
         actionsHelp: '{ok} Options    {left} Card    {up}{down} Browse    {back} Card / Return',
         searchHelp: '{ok} Edit search / type    {left}{right} Choose type    {up}{down} Form / results    {back} Return',
         settingsNavHelp: '{ok} Select    {left}{right} Adjust    {up} Navigation    {back} Return',
@@ -70,7 +73,15 @@ function en_USLang() {
         nobodyLive: 'Nobody is live right now. Refresh or browse live channels.',
         authNeeded: 'Reconnect your account to load followed channels.',
         reconnect: 'Reconnect account',
-        error: 'Could not load channels. Check your connection and try again.'
+        error: 'Could not load channels. Check your connection and try again.',
+        //Compact live-card units: Main_formatLiveDuration/Main_formatCompactViewers build the
+        //card metadata line from these, no Intl; decimalSeparator is the decimal point only
+        compactK: 'K',
+        compactM: 'M',
+        decimalSeparator: '.',
+        durationUnderMinute: '<1m',
+        durationMinute: 'm',
+        durationHour: 'h'
     };
     // This is a false/true var change if day comes first in your language eg (27/12/2010) day 27 month 12 year 2010
     //Then copy this and set it to true, if doesn't don't copy it

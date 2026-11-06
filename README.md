@@ -2,7 +2,9 @@
 
 <div align="center">
 
-<img src="docs/ui-redesign-screenshots/production-browse-720.png" alt="Smarter Purple TV Browse screen" width="720">
+<img src="docs/ui-redesign-screenshots/production-browse-tabs-1080.png" alt="Smarter Purple TV Browse screen with selected and focused tabs" width="720">
+
+<a href="docs/ui-redesign-screenshots/production-browse-tabs-720.png">View the 720p Browse capture</a>
 
 ![Android TV](https://img.shields.io/badge/platform-Android%20TV-9146FF?logo=android&logoColor=white)
 [![Latest release](https://img.shields.io/github/v/release/YofarDev/SmarterPurpleTV?label=latest%20release)](https://github.com/YofarDev/SmarterPurpleTV/releases/latest)

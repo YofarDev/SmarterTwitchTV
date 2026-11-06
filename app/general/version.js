@@ -23,9 +23,13 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 400, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/400/SmarterPurpleTV_3_0_400.apk',
-    WebVersion: 'November 5 2026',
-    WebTag: 784, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'November 6 2026',
+    WebTag: 785, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 6 2026 (Web 785)',
+            changes: ['Browse: the active tab uses a filled route capsule while remote focus keeps a separate violet outline, making location and focus easier to distinguish from the sofa']
+        },
         {
             title: 'November 5 2026 (Web 784)',
             changes: [
