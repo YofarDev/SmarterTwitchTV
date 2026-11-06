@@ -9,6 +9,12 @@ The App is divided in two part, **Apk** and **Web** you can check it version in 
 
 The app has a building update check function, so whenever there is a update a red text will show up bellow the main pages clock, also a short warning will pop on the screen let you know if is a **Apk** or **Web** update.
 
+November 7 2026 (3.0.401)
+==============
+
+* APK: an ad break the filter can only freeze no longer ends the stream. The frozen picture used to trip the player failure counter and show the stream ended screen about ten seconds into the break; failures during a freeze reset the player without counting, and a stream that really ends during a break still ends (by @Dryness, #35).
+* Points: watch time reporting keeps running after the main stream changes without a new stream load — picture in picture swaps, multistream main window changes and broadcast restarts — so channel points, drop progress and bonus claims continue (by @Dryness, #34).
+
 November 5 2026 (3.0.400)
 ==============
 

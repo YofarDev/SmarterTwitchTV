@@ -21,11 +21,18 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 400, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/400/SmarterPurpleTV_3_0_400.apk',
-    WebVersion: 'November 6 2026',
-    WebTag: 787, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    publishVersionCode: 401, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/401/SmarterPurpleTV_3_0_401.apk',
+    WebVersion: 'November 7 2026',
+    WebTag: 788, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 7 2026 (Web 788 / APK 401)',
+            changes: [
+                'Points: watch time reporting keeps running after the main stream changes without a new stream load — picture in picture swaps, multistream main window changes and broadcast restarts — so channel points, drop progress and bonus claims continue instead of stopping until a stream is opened again (by @Dryness, #34)',
+                'APK: an ad break the filter can only freeze no longer ends the stream — the frozen picture used to trip the player failure counter and show the stream ended screen about ten seconds into the break; failures during a freeze reset the player without counting, and a stream that really ends during a break still ends (by @Dryness, #35)'
+            ]
+        },
         {
             title: 'November 6 2026 (Web 787)',
             changes: [
