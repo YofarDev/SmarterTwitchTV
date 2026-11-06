@@ -1,0 +1,168 @@
+# Builds, signs and publishes the APK when publishVersionCode in apk/versions.gradle changes on master.
+# The web part is not built here: release/ is committed to master and GitHub Pages serves it as is.
+# Required repository secrets: SPTV_KEYSTORE_BASE64, SPTV_KEYSTORE_PASSWORD, SPTV_KEY_PASSWORD.
+# KEY_ALIAS below must match the alias inside the release keystore.
+# Adapted from the release workflow of LordBoos/SmarterTwitchTV.
+name: Release APK
+
+on:
+    push:
+        branches: [master]
+        paths: [apk/versions.gradle]
+    workflow_dispatch:
+        inputs:
+            dry_run:
+                description: Build and sign only, upload the APK as a workflow artifact instead of publishing a release
+                type: boolean
+                default: true
+
+permissions:
+    contents: write
+
+concurrency:
+    group: release-apk
+    cancel-in-progress: false
+
+env:
+    # Custom AndroidX Media3 fork the APK builds against (apk/settings.gradle reads ../media), pinned for reproducible builds.
+    # Bump deliberately when the fork gains changes the app needs.
+    MEDIA_REPO: https://github.com/fgl27/media
+    MEDIA_REF: 4d0e6705a28d55c82787ed4c2870dd3efa8b5749
+    BUILD_TOOLS: 35.0.0
+    KEY_ALIAS: sptv
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Read version
+              id: version
+              run: |
+                  code=$(grep -oP 'publishVersionCode:\s*\K[0-9]+' apk/versions.gradle)
+                  web=$(grep -oP 'WebTag:\s*\K[0-9]+' app/general/version.js)
+                  echo "code=$code" >> "$GITHUB_OUTPUT"
+                  echo "web=$web" >> "$GITHUB_OUTPUT"
+                  echo "apk=SmarterPurpleTV_3_0_${code}.apk" >> "$GITHUB_OUTPUT"
+                  # version.js must point devices at the APK this run publishes
+                  grep -q "releases/download/${code}/SmarterPurpleTV_3_0_${code}.apk" app/general/version.js || {
+                      echo "::error::ApkUrl in app/general/version.js does not match publishVersionCode ${code}"
+                      exit 1
+                  }
+
+            - name: Skip when the release already exists
+              id: existing
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  if gh release view "${{ steps.version.outputs.code }}" > /dev/null 2>&1; then
+                      echo "exists=true" >> "$GITHUB_OUTPUT"
+                      echo "Release ${{ steps.version.outputs.code }} already exists"
+                  else
+                      echo "exists=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Decide whether to publish
+              id: plan
+              run: |
+                  publish=true
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then publish=false; fi
+                  build=true
+                  if [ "$publish" = "true" ] && [ "${{ steps.existing.outputs.exists }}" = "true" ]; then build=false; fi
+                  echo "publish=$publish" >> "$GITHUB_OUTPUT"
+                  echo "build=$build" >> "$GITHUB_OUTPUT"
+
+            - uses: actions/setup-node@v4
+              if: steps.plan.outputs.build == 'true'
+              with:
+                  node-version: 22
+
+            # ad-filter and request-dispatcher compile and run Java fixtures, so the JDK must be up before the tests
+            - uses: actions/setup-java@v4
+              if: steps.plan.outputs.build == 'true'
+              with:
+                  distribution: temurin
+                  java-version: 21
+
+            - name: Tests and lint
+              if: steps.plan.outputs.build == 'true'
+              run: |
+                  # package-lock.json is git-ignored in this repo, so npm ci cannot be used
+                  npm install --no-audit --no-fund
+                  # phonechat-server-tests stays out: it needs a local server and the Android SDK
+                  for t in ad-filter background-screen chat-badge chat-optimization emote grid-window phonechat phonechat-collector \
+                      request-dispatcher search-navigation side-panel update vod-nosub; do
+                      node "release/scripts/${t}-tests.js"
+                  done
+                  node release/scripts/maker.js jsh
+
+            - uses: android-actions/setup-android@v3
+              if: steps.plan.outputs.build == 'true'
+              with:
+                  # The default also installs the obsolete "tools" package, which no longer exists and fails the step
+                  packages: platform-tools
+
+            - name: Android SDK packages and media dependency
+              if: steps.plan.outputs.build == 'true'
+              run: |
+                  sdkmanager "platforms;android-35" "build-tools;${BUILD_TOOLS}"
+                  git clone "$MEDIA_REPO" "$GITHUB_WORKSPACE/../media"
+                  git -C "$GITHUB_WORKSPACE/../media" checkout --quiet "$MEDIA_REF"
+
+            - name: Build release APK
+              if: steps.plan.outputs.build == 'true'
+              working-directory: apk
+              run: |
+                  chmod +x gradlew
+                  ./gradlew assembleRelease --no-daemon
+
+            - name: Sign APK
+              if: steps.plan.outputs.build == 'true'
+              env:
+                  SPTV_KEYSTORE_BASE64: ${{ secrets.SPTV_KEYSTORE_BASE64 }}
+                  SPTV_KEYSTORE_PASSWORD: ${{ secrets.SPTV_KEYSTORE_PASSWORD }}
+                  SPTV_KEY_PASSWORD: ${{ secrets.SPTV_KEY_PASSWORD }}
+              run: |
+                  if [ -z "$SPTV_KEYSTORE_BASE64" ]; then echo "::error::Secret SPTV_KEYSTORE_BASE64 is missing"; exit 1; fi
+                  if [ -z "$SPTV_KEYSTORE_PASSWORD" ]; then echo "::error::Secret SPTV_KEYSTORE_PASSWORD is missing"; exit 1; fi
+                  if [ -z "$SPTV_KEY_PASSWORD" ]; then echo "::error::Secret SPTV_KEY_PASSWORD is missing"; exit 1; fi
+                  bt="$ANDROID_HOME/build-tools/${BUILD_TOOLS}"
+                  ks="$RUNNER_TEMP/sptv-release.jks"
+                  echo "$SPTV_KEYSTORE_BASE64" | base64 -d > "$ks"
+                  "$bt/zipalign" -p -f 4 apk/app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
+                  "$bt/apksigner" sign --ks "$ks" --ks-key-alias "$KEY_ALIAS" \
+                      --ks-pass env:SPTV_KEYSTORE_PASSWORD --key-pass env:SPTV_KEY_PASSWORD \
+                      --out "${{ steps.version.outputs.apk }}" "$RUNNER_TEMP/aligned.apk"
+                  "$bt/apksigner" verify --verbose "${{ steps.version.outputs.apk }}"
+                  rm -f "$ks"
+
+            - name: Release notes
+              if: steps.plan.outputs.build == 'true'
+              run: |
+                  # The entry of this version in apk/Changelog.md, without its title and underline
+                  awk -v v="(3.0.${{ steps.version.outputs.code }})" '
+                      index($0, v) { found = 1; skip = 2; next }
+                      found && skip > 0 { skip--; next }
+                      found && /^[A-Z][a-z]+ [0-9]+ [0-9]{4} \(/ { exit }
+                      found { print }
+                  ' apk/Changelog.md > notes.md
+                  if [ ! -s notes.md ]; then echo "See apk/Changelog.md" > notes.md; fi
+                  cat notes.md
+
+            - name: Upload APK artifact (dry run)
+              if: steps.plan.outputs.build == 'true' && steps.plan.outputs.publish == 'false'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ steps.version.outputs.apk }}
+                  path: ${{ steps.version.outputs.apk }}
+
+            - name: Publish GitHub release
+              if: steps.plan.outputs.build == 'true' && steps.plan.outputs.publish == 'true'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh release create "${{ steps.version.outputs.code }}" "${{ steps.version.outputs.apk }}" \
+                      --target "$GITHUB_SHA" \
+                      --title "3.0.${{ steps.version.outputs.code }} (Web ${{ steps.version.outputs.web }})" \
+                      --notes-file notes.md
