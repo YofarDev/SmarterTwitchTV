@@ -72,7 +72,16 @@ function ChatLive_CacheTrim() {
         for (provider = 0; provider < providers.length; provider++) delete extraEmotesDone[providers[provider]][channel];
         delete cheers[channel];
         delete ChatLive_sharedProfileImg[channel];
+        delete ChatLive_EmoteMeta[channel];
     }
+}
+
+var ChatLive_EmoteMeta = {};
+
+function ChatLive_EmoteMetaGet(channel) {
+    channel = String(channel);
+    if (!ChatLive_EmoteMeta[channel]) ChatLive_EmoteMeta[channel] = {};
+    return ChatLive_EmoteMeta[channel];
 }
 
 function ChatLive_CacheTouch(channel) {
@@ -89,7 +98,9 @@ function ChatLive_CacheRelease(chat_number) {
     extraEmotes[chat_number] = {};
     ChatLive_selectedChannel_id[chat_number] = null;
     ChatLive_CachePins[chat_number] = {};
+    ChatLive_EmoteLive[chat_number] = 0;
     ChatLive_CacheTrim();
+    ChatLive_SevenTvSync();
 }
 
 function ChatLive_CacheSetPins(chat_number, participants) {
@@ -197,6 +208,7 @@ function ChatLive_Init(chat_number, SkipClear) {
             !chat_number ? Play_data.data[6] : PlayExtra_data.data[6]
         );
         ChatLive_StartShared(chat_number, Chat_Id[chat_number]);
+        ChatLive_EmoteLiveStart(chat_number, Chat_Id[chat_number]);
 
         if (!SkipClear) {
             ChatLive_PreLoadChat(chat_number, Chat_Id[chat_number]);
@@ -833,6 +845,7 @@ function ChatLive_loadEmotesChannelBTTV(chat_number, id) {
         );
     } else {
         ChatLive_updateExtraEmotes(extraEmotesDone.bttv[ChatLive_selectedChannel_id[chat_number]], chat_number);
+        if (ChatLive_EmoteStale(ChatLive_selectedChannel_id[chat_number], 'bttv')) ChatLive_EmoteRefresh(chat_number, id, 'bttv');
     }
 }
 
@@ -847,6 +860,7 @@ function ChatLive_loadEmotesChannelBTTVSuccess(data, chat_number, id) {
 
 function ChatLive_loadEmotesbttv(data, chat_number) {
     extraEmotesDone.bttv[ChatLive_selectedChannel_id[chat_number]] = {};
+    ChatLive_EmoteMetaGet(ChatLive_selectedChannel_id[chat_number]).bttv = new Date().getTime();
 
     try {
         ChatLive_loadEmotesbttvChannel(data.channelEmotes, chat_number);
@@ -865,37 +879,32 @@ function ChatLive_loadEmotesbttv(data, chat_number) {
 }
 
 function ChatLive_loadEmotesbttvChannel(data, chat_number) {
-    var url, srcset, chat_div, chat_div_static, id;
+    var entry;
 
     try {
         data.forEach(function (emote) {
-            srcset = ChatLive_bttv_srcset(emote.id);
-            url = ChatLive_Base_BTTV_url + emote.id + '/3x';
-            chat_div = emoteTemplate(url, srcset);
-            chat_div_static = ChatLive_bttv_static(emote);
-            id = emote.code + emote.id;
+            entry = ChatLive_bttv_entry(emote);
 
-            extraEmotes[chat_number][emote.code] = {
-                code: emote.code,
-                id: id,
-                chat_div: chat_div,
-                chat_div_static: chat_div_static,
-                '4x': url,
-                srcset: srcset
-            };
-
-            extraEmotesDone.bttv[ChatLive_selectedChannel_id[chat_number]][emote.code] = {
-                code: emote.code,
-                id: id,
-                chat_div: chat_div,
-                chat_div_static: chat_div_static,
-                '4x': url,
-                srcset: srcset
-            };
+            extraEmotes[chat_number][emote.code] = ChatLive_copyExtraEmote(entry);
+            extraEmotesDone.bttv[ChatLive_selectedChannel_id[chat_number]][emote.code] = entry;
         });
     } catch (e) {
         Main_Log('ChatLive_loadEmotesbttvChannel ' + e);
     }
+}
+
+function ChatLive_bttv_entry(emote) {
+    var srcset = ChatLive_bttv_srcset(emote.id),
+        url = ChatLive_Base_BTTV_url + emote.id + '/3x';
+
+    return {
+        code: emote.code,
+        id: emote.code + emote.id,
+        chat_div: emoteTemplate(url, srcset),
+        chat_div_static: ChatLive_bttv_static(emote),
+        '4x': url,
+        srcset: srcset
+    };
 }
 
 function ChatLive_bttv_srcset(id) {
@@ -960,16 +969,20 @@ function ChatLive_loadCheersChannelSuccess(responseText, chat_number, id) {
 function ChatLive_updateExtraEmotes(obj, chat_number) {
     //We need to update the main obj as some channel have the same code for different emotes image
     for (var property in obj) {
-        extraEmotes[chat_number][property] = {
-            code: obj[property].code,
-            id: obj[property].id,
-            chat_div: obj[property].chat_div,
-            chat_div_static: obj[property].chat_div_static,
-            chat_div_zero: obj[property].chat_div_zero,
-            '4x': obj[property]['4x'],
-            srcset: obj[property].srcset
-        };
+        extraEmotes[chat_number][property] = ChatLive_copyExtraEmote(obj[property]);
     }
+}
+
+function ChatLive_copyExtraEmote(emote) {
+    return {
+        code: emote.code,
+        id: emote.id,
+        chat_div: emote.chat_div,
+        chat_div_static: emote.chat_div_static,
+        chat_div_zero: emote.chat_div_zero,
+        '4x': emote['4x'],
+        srcset: emote.srcset
+    };
 }
 
 function ChatLive_loadEmotesChannelFFZ(chat_number, id) {
@@ -986,6 +999,7 @@ function ChatLive_loadEmotesChannelFFZ(chat_number, id) {
         );
     } else {
         ChatLive_updateExtraEmotes(extraEmotesDone.ffz[ChatLive_selectedChannel_id[chat_number]], chat_number);
+        if (ChatLive_EmoteStale(ChatLive_selectedChannel_id[chat_number], 'ffz')) ChatLive_EmoteRefresh(chat_number, id, 'ffz');
     }
 }
 
@@ -1000,53 +1014,28 @@ function ChatLive_loadEmotesChannelFFZSuccess(data, chat_number, id) {
 
 function ChatLive_loadEmotesffz(data, chat_number, isGlobal) {
     if (isGlobal) extraEmotesDone.ffzGlobal = {};
-    else extraEmotesDone.ffz[ChatLive_selectedChannel_id[chat_number]] = {};
+    else {
+        extraEmotesDone.ffz[ChatLive_selectedChannel_id[chat_number]] = {};
+        ChatLive_EmoteMetaGet(ChatLive_selectedChannel_id[chat_number]).ffz = new Date().getTime();
+    }
 
-    var url, srcset, chat_div, id;
+    var entry;
 
     try {
         Object.keys(data.sets).forEach(function (set) {
             set = data.sets[set];
             if (set.emoticons || Array.isArray(set.emoticons)) {
                 set.emoticons.forEach(function (emoticon) {
-                    if (!emoticon.name || !emoticon.id) return;
-                    if (typeof emoticon.name !== 'string' || typeof emoticon.id !== 'number') return;
+                    entry = ChatLive_ffz_entry(emoticon);
+                    if (!entry) return;
 
-                    if (!emoticon.urls || typeof emoticon.urls !== 'object') return;
-
-                    if (typeof emoticon.urls[1] !== 'string') return;
-                    if (emoticon.urls[2] && typeof emoticon.urls[2] !== 'string') return;
-
-                    srcset = ChatLive_ffz_srcset(emoticon.urls);
-                    url = emoticon.urls[4] || emoticon.urls[2] || emoticon.urls[1];
-                    chat_div = emoteTemplate(url, srcset);
-                    id = emoticon.name + emoticon.id;
-
-                    extraEmotes[chat_number][emoticon.name] = {
-                        code: emoticon.name,
-                        id: id,
-                        chat_div: chat_div,
-                        '4x': url,
-                        srcset: srcset
-                    };
+                    extraEmotes[chat_number][entry.code] = ChatLive_copyExtraEmote(entry);
 
                     //Don't copy to prevent shallow clone
                     if (isGlobal) {
-                        extraEmotesDone.ffzGlobal[emoticon.name] = {
-                            code: emoticon.name,
-                            id: id,
-                            chat_div: chat_div,
-                            '4x': url,
-                            srcset: srcset
-                        };
+                        extraEmotesDone.ffzGlobal[entry.code] = entry;
                     } else {
-                        extraEmotesDone.ffz[ChatLive_selectedChannel_id[chat_number]][emoticon.name] = {
-                            code: emoticon.name,
-                            id: id,
-                            chat_div: chat_div,
-                            '4x': url,
-                            srcset: srcset
-                        };
+                        extraEmotesDone.ffz[ChatLive_selectedChannel_id[chat_number]][entry.code] = entry;
                     }
                 });
             }
@@ -1055,6 +1044,27 @@ function ChatLive_loadEmotesffz(data, chat_number, isGlobal) {
         if (!isGlobal) delete extraEmotesDone.ffz[ChatLive_selectedChannel_id[chat_number]];
         Main_Log('ChatLive_loadEmotesffz ' + e);
     }
+}
+
+function ChatLive_ffz_entry(emoticon) {
+    if (!emoticon.name || !emoticon.id) return null;
+    if (typeof emoticon.name !== 'string' || typeof emoticon.id !== 'number') return null;
+
+    if (!emoticon.urls || typeof emoticon.urls !== 'object') return null;
+
+    if (typeof emoticon.urls[1] !== 'string') return null;
+    if (emoticon.urls[2] && typeof emoticon.urls[2] !== 'string') return null;
+
+    var srcset = ChatLive_ffz_srcset(emoticon.urls),
+        url = emoticon.urls[4] || emoticon.urls[2] || emoticon.urls[1];
+
+    return {
+        code: emoticon.name,
+        id: emoticon.name + emoticon.id,
+        chat_div: emoteTemplate(url, srcset),
+        '4x': url,
+        srcset: srcset
+    };
 }
 
 function ChatLive_ffz_srcset(obj) {
@@ -1085,6 +1095,7 @@ function ChatLive_loadEmotesChannelSeven_tv(chat_number, id) {
         );
     } else {
         ChatLive_updateExtraEmotes(extraEmotesDone.seven_tv[ChatLive_selectedChannel_id[chat_number]], chat_number);
+        if (ChatLive_EmoteStale(ChatLive_selectedChannel_id[chat_number], 'seven_tv')) ChatLive_EmoteRefresh(chat_number, id, 'seven_tv');
     }
 }
 
@@ -1095,10 +1106,13 @@ function ChatLive_loadEmotesChannelSeven_tvSuccess(data, chat_number, id) {
     data = JSON.parse(data);
     if (!data || !data.id) return;
     ChatLive_loadEmotesseven_tv(data, chat_number, false);
+    ChatLive_SevenTvSync();
 }
 
 function ChatLive_loadEmotesseven_tv(data, chat_number, isGlobal) {
-    var emotes = [];
+    var emotes = [],
+        entry,
+        meta;
 
     if (isGlobal) {
         if (data && data.emotes) {
@@ -1112,77 +1126,68 @@ function ChatLive_loadEmotesseven_tv(data, chat_number, isGlobal) {
         }
 
         extraEmotesDone.seven_tv[ChatLive_selectedChannel_id[chat_number]] = {};
+        // Live updates follow this set (and the owner's set switches) while the chat is open
+        meta = ChatLive_EmoteMetaGet(ChatLive_selectedChannel_id[chat_number]);
+        meta.seven_tv = new Date().getTime();
+        meta.set = data && data.emote_set ? data.emote_set.id : null;
+        meta.user = data && data.user ? data.user.id : null;
+        meta.ids = {};
     }
-
-    var url, srcset, chat_div, chat_div_static, chat_div_zero, id, emoteUrls, baseEmoteUrl, emote;
 
     try {
         emotes.forEach(function (seven_tv_emote) {
-            emote = seven_tv_emote.data;
-            if (!emote || !emote.name || !emote.host || !emote.host.url || !emote.host.files) {
-                return;
-            }
+            entry = ChatLive_seven_tv_entry(seven_tv_emote);
+            if (!entry) return;
 
-            // the name on the outer emote object is the actual name to use
-            emote.name = seven_tv_emote.name;
-
-            // files can contain multiple emote formats
-            emoteUrls = ChatLive_seven_tv_filterEmoteFiles(emote.host.files);
-
-            if (!emoteUrls.length) {
-                return;
-            }
-
-            // emote url is made up of host.url and the image file names (1x.webp, 2x.webp, etc)
-            baseEmoteUrl = emote.host.url;
-            url = ChatLive_seven_tv_getEmoteUrl(baseEmoteUrl, emoteUrls[emoteUrls.length - 1]);
-
-            srcset = ChatLive_seven_tv_srcset(baseEmoteUrl, emoteUrls);
-            chat_div = emoteTemplate(url, srcset);
-            chat_div_static = emote.animated ? ChatLive_seven_tv_static(baseEmoteUrl, emoteUrls) : null;
-            id = emote.name + emote.id;
-            chat_div_zero = emote.flags === 256 ? chat_div.replace('emoticon', 'emoticon zero-width-emote') : null;
-
-            extraEmotes[chat_number][emote.name] = {
-                code: emote.name,
-                id: id,
-                chat_div: chat_div,
-                chat_div_static: chat_div_static,
-                chat_div_zero: chat_div_zero,
-
-                '4x': url,
-                srcset: srcset
-            };
+            extraEmotes[chat_number][entry.code] = ChatLive_copyExtraEmote(entry);
 
             //Don't copy to prevent shallow clone
             if (isGlobal) {
-                extraEmotesDone.seven_tvGlobal[emote.name] = {
-                    code: emote.name,
-                    id: id,
-                    chat_div: chat_div,
-                    chat_div_static: chat_div_static,
-                    chat_div_zero: chat_div_zero,
-
-                    '4x': url,
-                    srcset: srcset
-                };
+                extraEmotesDone.seven_tvGlobal[entry.code] = entry;
             } else {
-                extraEmotesDone.seven_tv[ChatLive_selectedChannel_id[chat_number]][emote.name] = {
-                    code: emote.name,
-                    id: id,
-                    chat_div: chat_div,
-                    chat_div_static: chat_div_static,
-                    chat_div_zero: chat_div_zero,
-
-                    '4x': url,
-                    srcset: srcset
-                };
+                extraEmotesDone.seven_tv[ChatLive_selectedChannel_id[chat_number]][entry.code] = entry;
+                meta.ids[seven_tv_emote.id] = entry.code;
             }
         });
     } catch (e) {
         if (!isGlobal) delete extraEmotesDone.seven_tv[ChatLive_selectedChannel_id[chat_number]];
         Main_Log('ChatLive_loadEmotesseven_tvChannel ' + e);
     }
+}
+
+//One 7TV set entry (an emote of a set, or a live update's value) to the chat emote object, null when unusable
+function ChatLive_seven_tv_entry(seven_tv_emote) {
+    var emote = seven_tv_emote && seven_tv_emote.data;
+    if (!emote || !emote.name || !emote.host || !emote.host.url || !emote.host.files) {
+        return null;
+    }
+
+    // the name on the outer emote object is the actual name to use
+    emote.name = seven_tv_emote.name;
+
+    // files can contain multiple emote formats
+    var emoteUrls = ChatLive_seven_tv_filterEmoteFiles(emote.host.files);
+
+    if (!emoteUrls.length) {
+        return null;
+    }
+
+    // emote url is made up of host.url and the image file names (1x.webp, 2x.webp, etc)
+    var baseEmoteUrl = emote.host.url,
+        url = ChatLive_seven_tv_getEmoteUrl(baseEmoteUrl, emoteUrls[emoteUrls.length - 1]),
+        srcset = ChatLive_seven_tv_srcset(baseEmoteUrl, emoteUrls),
+        chat_div = emoteTemplate(url, srcset);
+
+    return {
+        code: emote.name,
+        id: emote.name + emote.id,
+        chat_div: chat_div,
+        chat_div_static: emote.animated ? ChatLive_seven_tv_static(baseEmoteUrl, emoteUrls) : null,
+        chat_div_zero: emote.flags === 256 ? chat_div.replace('emoticon', 'emoticon zero-width-emote') : null,
+
+        '4x': url,
+        srcset: srcset
+    };
 }
 
 function ChatLive_seven_tv_getEmoteUrl(emoteBaseUrl, emote) {
@@ -1228,6 +1233,436 @@ function ChatLive_seven_tv_static(emoteUrl, files) {
     if (!stills.length) return null;
 
     return emoteTemplate(ChatLive_seven_tv_getEmoteUrl(emoteUrl, stills[stills.length - 1]), ChatLive_seven_tv_srcset(emoteUrl, stills));
+}
+
+//Live emote updates, live chat only (VOD chat also runs ChatLive_SetOptions). 7TV announces each change of a
+//followed set on its event socket; BTTV and FFZ channel sets are checked every 15 minutes. Only the emotes that
+//changed are touched in the open chats, and a cached set older than that is checked again when a chat opens it.
+var ChatLive_EmoteRefreshMs = 15 * 60 * 1000;
+var ChatLive_EmoteRefreshId = [];
+var ChatLive_EmoteLive = [0, 0];
+var ChatLive_EmoteRefreshUrl = {
+    bttv: 'https://api.betterttv.net/3/cached/users/twitch/',
+    ffz: 'https://api.frankerfacez.com/v1/room/id/',
+    seven_tv: 'https://7tv.io/v3/users/twitch/'
+};
+
+function ChatLive_EmoteLiveStart(chat_number, id) {
+    ChatLive_EmoteLive[chat_number] = id;
+    ChatLive_EmoteRefreshId[chat_number] = Main_setInterval(
+        function () {
+            ChatLive_EmoteRefresh(chat_number, id, 'bttv');
+            ChatLive_EmoteRefresh(chat_number, id, 'ffz');
+        },
+        ChatLive_EmoteRefreshMs,
+        ChatLive_EmoteRefreshId[chat_number]
+    );
+    ChatLive_SevenTvSync();
+}
+
+function ChatLive_EmoteIsLive(chat_number) {
+    return Boolean(Chat_Id[chat_number] && ChatLive_EmoteLive[chat_number] === Chat_Id[chat_number] && ChatLive_selectedChannel_id[chat_number]);
+}
+
+function ChatLive_EmoteStale(channel, provider) {
+    var meta = ChatLive_EmoteMeta[channel];
+    return Boolean(meta && meta[provider] && new Date().getTime() - meta[provider] > ChatLive_EmoteRefreshMs);
+}
+
+function ChatLive_EmoteRefresh(chat_number, id, provider) {
+    if (id !== Chat_Id[chat_number] || !ChatLive_selectedChannel_id[chat_number]) return;
+
+    BaseXmlHttpGet(
+        ChatLive_EmoteRefreshUrl[provider] + ChatLive_selectedChannel_id[chat_number],
+        provider === 'bttv' ? ChatLive_EmoteRefreshBTTV : provider === 'ffz' ? ChatLive_EmoteRefreshFFZ : ChatLive_EmoteRefreshSeven_tv,
+        noop_fun,
+        chat_number,
+        id
+    );
+}
+
+function ChatLive_EmoteRefreshBTTV(data, chat_number, id) {
+    if (id !== Chat_Id[chat_number]) return;
+
+    data = JSON.parse(data);
+    if (!data || !Array.isArray(data.channelEmotes) || !Array.isArray(data.sharedEmotes)) return;
+
+    var next = {};
+    data.channelEmotes.concat(data.sharedEmotes).forEach(function (emote) {
+        next[emote.code] = ChatLive_bttv_entry(emote);
+    });
+    ChatLive_EmoteSetChannel(ChatLive_selectedChannel_id[chat_number], 'bttv', next);
+}
+
+function ChatLive_EmoteRefreshFFZ(data, chat_number, id) {
+    if (id !== Chat_Id[chat_number]) return;
+
+    data = JSON.parse(data);
+    if (!data || !data.sets) return;
+
+    var next = {},
+        entry;
+    Object.keys(data.sets).forEach(function (set) {
+        set = data.sets[set];
+        if (!set || !Array.isArray(set.emoticons)) return;
+        set.emoticons.forEach(function (emoticon) {
+            entry = ChatLive_ffz_entry(emoticon);
+            if (entry) next[entry.code] = entry;
+        });
+    });
+    ChatLive_EmoteSetChannel(ChatLive_selectedChannel_id[chat_number], 'ffz', next);
+}
+
+//Also the answer to a set switch: the channel's new active set replaces the old one
+function ChatLive_EmoteRefreshSeven_tv(data, chat_number, id) {
+    if (id !== Chat_Id[chat_number]) return;
+
+    data = JSON.parse(data);
+    if (!data || !data.id) return;
+
+    var next = {},
+        ids = {},
+        entry,
+        emotes = data.emote_set && Array.isArray(data.emote_set.emotes) ? data.emote_set.emotes : [],
+        meta = ChatLive_EmoteMetaGet(ChatLive_selectedChannel_id[chat_number]);
+
+    emotes.forEach(function (seven_tv_emote) {
+        entry = ChatLive_seven_tv_entry(seven_tv_emote);
+        if (!entry) return;
+        next[entry.code] = entry;
+        ids[seven_tv_emote.id] = entry.code;
+    });
+    meta.set = data.emote_set ? data.emote_set.id : null;
+    meta.user = data.user ? data.user.id : null;
+    meta.ids = ids;
+    ChatLive_EmoteSetChannel(ChatLive_selectedChannel_id[chat_number], 'seven_tv', next);
+    ChatLive_SevenTvSync();
+}
+
+function ChatLive_EmoteHas(obj, name) {
+    return Boolean(obj) && Object.prototype.hasOwnProperty.call(obj, name);
+}
+
+//Replace a channel's cached set and update only the names that differ
+function ChatLive_EmoteSetChannel(channel, provider, next) {
+    var prev = extraEmotesDone[provider][channel] || {},
+        changed = [],
+        name;
+
+    for (name in prev) {
+        if (!ChatLive_EmoteHas(next, name) || next[name].id !== prev[name].id || next[name].chat_div !== prev[name].chat_div) changed.push(name);
+    }
+    for (name in next) {
+        if (!ChatLive_EmoteHas(prev, name)) changed.push(name);
+    }
+
+    extraEmotesDone[provider][channel] = next;
+    ChatLive_EmoteMetaGet(channel)[provider] = new Date().getTime();
+    ChatLive_CacheTouch(channel);
+    ChatLive_EmoteResolve(channel, changed);
+}
+
+//A chat's emote for a name comes from the last set loaded at chat start that has it:
+//7TV channel, then FFZ channel, BTTV channel, 7TV global, FFZ global, BTTV global
+function ChatLive_EmoteResolve(channel, names) {
+    var chat_number, i, j, sources, found;
+
+    for (chat_number = 0; chat_number < 2 && names.length; chat_number++) {
+        if (!ChatLive_EmoteIsLive(chat_number) || String(ChatLive_selectedChannel_id[chat_number]) !== String(channel)) continue;
+
+        sources = [
+            extraEmotesDone.seven_tv[channel],
+            extraEmotesDone.ffz[channel],
+            extraEmotesDone.bttv[channel],
+            extraEmotesDone.seven_tvGlobal,
+            extraEmotesDone.ffzGlobal,
+            extraEmotesDone.bttvGlobal
+        ];
+
+        for (i = 0; i < names.length; i++) {
+            found = null;
+            for (j = 0; j < sources.length && !found; j++) {
+                if (ChatLive_EmoteHas(sources[j], names[i])) found = sources[j][names[i]];
+            }
+            if (found) extraEmotes[chat_number][names[i]] = ChatLive_copyExtraEmote(found);
+            else delete extraEmotes[chat_number][names[i]];
+        }
+    }
+}
+
+//7TV event socket (EventAPI v3): one socket for both chats, open only while a live chat follows a 7TV set
+var ChatLive_SevenTvSocket = null;
+var ChatLive_SevenTvReady = false;
+var ChatLive_SevenTvSubs = {};
+var ChatLive_SevenTvRetry = 0;
+var ChatLive_SevenTvRetryId;
+var ChatLive_SevenTvAliveId;
+var ChatLive_SevenTvHeartbeat = 45000;
+//Close codes that mean a client bug: log and don't reconnect (EventAPI docs)
+var ChatLive_SevenTvNoRetry = {4001: 1, 4002: 1, 4003: 1, 4004: 1, 4009: 1, 4010: 1};
+
+function ChatLive_SevenTvWanted() {
+    var wanted = {},
+        any = false,
+        chat_number,
+        meta;
+
+    for (chat_number = 0; chat_number < 2; chat_number++) {
+        if (!ChatLive_EmoteIsLive(chat_number)) continue;
+        meta = ChatLive_EmoteMeta[String(ChatLive_selectedChannel_id[chat_number])];
+        if (!meta || !meta.set) continue;
+
+        wanted['emote_set.update:' + meta.set] = {type: 'emote_set.update', id: meta.set};
+        //The owner's account update tells when the channel switches to another set
+        if (meta.user) wanted['user.update:' + meta.user] = {type: 'user.update', id: meta.user};
+        any = true;
+    }
+
+    return any ? wanted : null;
+}
+
+function ChatLive_SevenTvSync() {
+    var wanted = ChatLive_SevenTvWanted(),
+        key;
+
+    if (!wanted) {
+        ChatLive_SevenTvClose();
+        return;
+    }
+    if (!ChatLive_SevenTvSocket) {
+        ChatLive_SevenTvOpen();
+        return;
+    }
+    if (!ChatLive_SevenTvReady) return;
+
+    for (key in ChatLive_SevenTvSubs) {
+        if (!wanted[key]) {
+            ChatLive_SevenTvSend(36, ChatLive_SevenTvSubs[key]);
+            delete ChatLive_SevenTvSubs[key];
+        }
+    }
+    for (key in wanted) {
+        if (!ChatLive_SevenTvSubs[key]) {
+            ChatLive_SevenTvSend(35, wanted[key]);
+            ChatLive_SevenTvSubs[key] = wanted[key];
+        }
+    }
+}
+
+function ChatLive_SevenTvSend(op, sub) {
+    try {
+        ChatLive_SevenTvSocket.send(JSON.stringify({op: op, d: {type: sub.type, condition: {object_id: sub.id}}}));
+    } catch (e) {
+        Main_Log('ChatLive_SevenTvSend ' + e);
+    }
+}
+
+function ChatLive_SevenTvOpen() {
+    var socket;
+
+    Main_clearTimeout(ChatLive_SevenTvRetryId);
+    try {
+        socket = new WebSocket('wss://events.7tv.io/v3');
+    } catch (e) {
+        Main_Log('ChatLive_SevenTvOpen ' + e);
+        ChatLive_SevenTvRetryLater(0);
+        return;
+    }
+
+    ChatLive_SevenTvSocket = socket;
+    ChatLive_SevenTvReady = false;
+    ChatLive_SevenTvSubs = {};
+    socket.onmessage = function (event) {
+        if (socket === ChatLive_SevenTvSocket) ChatLive_SevenTvMessage(event.data);
+    };
+    socket.onclose = function (event) {
+        if (socket === ChatLive_SevenTvSocket) ChatLive_SevenTvClosed(event.code);
+    };
+    //A socket that never says hello is dropped like a silent one
+    ChatLive_SevenTvAlive();
+}
+
+//No live chat follows a set anymore
+function ChatLive_SevenTvClose() {
+    var socket = ChatLive_SevenTvSocket;
+
+    ChatLive_SevenTvSocket = null;
+    ChatLive_SevenTvReady = false;
+    ChatLive_SevenTvSubs = {};
+    ChatLive_SevenTvRetry = 0;
+    Main_clearTimeout(ChatLive_SevenTvRetryId);
+    Main_clearTimeout(ChatLive_SevenTvAliveId);
+    if (socket) ChatLive_SevenTvCloseSocket(socket);
+}
+
+function ChatLive_SevenTvCloseSocket(socket) {
+    try {
+        socket.close();
+    } catch (e) {
+        Main_Log('ChatLive_SevenTvCloseSocket ' + e);
+    }
+}
+
+function ChatLive_SevenTvClosed(code) {
+    ChatLive_SevenTvSocket = null;
+    ChatLive_SevenTvReady = false;
+    ChatLive_SevenTvSubs = {};
+    Main_clearTimeout(ChatLive_SevenTvAliveId);
+
+    if (ChatLive_SevenTvNoRetry[code]) {
+        Main_Log('ChatLive_SevenTv closed ' + code);
+        return;
+    }
+    //4007 is maintenance: wait at least 5 minutes
+    ChatLive_SevenTvRetryLater(code === 4007 ? 300000 : 0);
+}
+
+function ChatLive_SevenTvRetryLater(min) {
+    var delay = Math.max(min, Math.min(60000, 2000 * Math.pow(2, ChatLive_SevenTvRetry)));
+
+    ChatLive_SevenTvRetry++;
+    ChatLive_SevenTvRetryId = Main_setTimeout(ChatLive_SevenTvSync, delay, ChatLive_SevenTvRetryId);
+}
+
+//Silent socket or a server reconnect request: let it go now, the retry opens a new one
+function ChatLive_SevenTvDrop() {
+    var socket = ChatLive_SevenTvSocket;
+
+    if (!socket) return;
+    ChatLive_SevenTvClosed(0);
+    ChatLive_SevenTvCloseSocket(socket);
+}
+
+function ChatLive_SevenTvAlive() {
+    ChatLive_SevenTvAliveId = Main_setTimeout(ChatLive_SevenTvDrop, ChatLive_SevenTvHeartbeat * 3, ChatLive_SevenTvAliveId);
+}
+
+function ChatLive_SevenTvMessage(text) {
+    var message;
+
+    try {
+        message = JSON.parse(text);
+    } catch (e) {
+        return;
+    }
+    if (!message) return;
+
+    if (message.op === 1) {
+        ChatLive_SevenTvHeartbeat = (message.d && message.d.heartbeat_interval) || 45000;
+        ChatLive_SevenTvReady = true;
+        ChatLive_SevenTvRetry = 0;
+        ChatLive_SevenTvSync();
+    } else if (message.op === 2) {
+        ChatLive_SevenTvFresh();
+    } else if (message.op === 0) {
+        ChatLive_SevenTvDispatch(message.d);
+    } else if (message.op === 4) {
+        ChatLive_SevenTvDrop();
+        return;
+    } else if (message.op === 6 || message.op === 7) {
+        Main_Log('ChatLive_SevenTv op ' + message.op + ' ' + text);
+    }
+    ChatLive_SevenTvAlive();
+}
+
+//While the socket is alive, the followed sets are current: a later chat start can reuse them
+function ChatLive_SevenTvFresh() {
+    var now = new Date().getTime(),
+        chat_number,
+        meta;
+
+    for (chat_number = 0; chat_number < 2; chat_number++) {
+        if (!ChatLive_EmoteIsLive(chat_number)) continue;
+        meta = ChatLive_EmoteMeta[String(ChatLive_selectedChannel_id[chat_number])];
+        if (meta && meta.seven_tv && ChatLive_SevenTvSubs['emote_set.update:' + meta.set]) meta.seven_tv = now;
+    }
+}
+
+function ChatLive_SevenTvDispatch(data) {
+    if (!data || !data.body) return;
+
+    var channel, meta, chat_number;
+
+    for (channel in ChatLive_EmoteMeta) {
+        meta = ChatLive_EmoteMeta[channel];
+        if (data.type === 'emote_set.update' && meta.set && meta.set === data.body.id) {
+            ChatLive_SevenTvSetChanges(channel, meta, data.body);
+        } else if (data.type === 'user.update' && meta.user && meta.user === data.body.id && ChatLive_SevenTvSetSwitched(data.body)) {
+            for (chat_number = 0; chat_number < 2; chat_number++) {
+                if (ChatLive_EmoteIsLive(chat_number) && String(ChatLive_selectedChannel_id[chat_number]) === channel) {
+                    ChatLive_EmoteRefresh(chat_number, Chat_Id[chat_number], 'seven_tv');
+                    break;
+                }
+            }
+        }
+    }
+}
+
+//An emote_set.update lists the emotes pushed (added), updated (renamed) and pulled (removed)
+function ChatLive_SevenTvSetChanges(channel, meta, body) {
+    var cache = extraEmotesDone.seven_tv[channel],
+        changed = [];
+
+    if (!cache) return;
+    meta.ids = meta.ids || {};
+
+    ChatLive_SevenTvEach(body.pulled, function (field) {
+        ChatLive_SevenTvRemove(cache, meta, field.old_value, changed);
+    });
+    ChatLive_SevenTvEach(body.updated, function (field) {
+        ChatLive_SevenTvRemove(cache, meta, field.old_value || field.value, changed);
+        ChatLive_SevenTvAdd(cache, meta, field.value, changed);
+    });
+    ChatLive_SevenTvEach(body.pushed, function (field) {
+        ChatLive_SevenTvAdd(cache, meta, field.value, changed);
+    });
+
+    ChatLive_EmoteResolve(channel, changed);
+}
+
+function ChatLive_SevenTvEach(fields, fun) {
+    if (!Array.isArray(fields)) return;
+
+    for (var i = 0; i < fields.length; i++) {
+        if (fields[i] && fields[i].key === 'emotes') fun(fields[i]);
+    }
+}
+
+function ChatLive_SevenTvRemove(cache, meta, emote, changed) {
+    if (!emote) return;
+
+    //A set can hold the same emote twice under two names: the name in the message is the one to remove
+    var name = emote.name || meta.ids[emote.id];
+    if (!name) return;
+
+    delete cache[name];
+    if (meta.ids[emote.id] === name) delete meta.ids[emote.id];
+    changed.push(name);
+}
+
+function ChatLive_SevenTvAdd(cache, meta, emote, changed) {
+    var entry = ChatLive_seven_tv_entry(emote);
+    if (!entry) return;
+
+    cache[entry.code] = entry;
+    meta.ids[emote.id] = entry.code;
+    changed.push(entry.code);
+}
+
+function ChatLive_SevenTvSetSwitched(body) {
+    var i, j, values;
+
+    if (!Array.isArray(body.updated)) return false;
+
+    for (i = 0; i < body.updated.length; i++) {
+        if (!body.updated[i] || body.updated[i].key !== 'connections' || !Array.isArray(body.updated[i].value)) continue;
+        values = body.updated[i].value;
+        for (j = 0; j < values.length; j++) {
+            if (values[j] && (values[j].key === 'emote_set' || values[j].key === 'emote_set_id')) return true;
+        }
+    }
+
+    return false;
 }
 
 function ChatLive_PreLoadChat(chat_number, id) {
@@ -2565,6 +3000,7 @@ function ChatLive_ClearIds(chat_number, keepSender) {
     Main_clearInterval(ChatLive_loadChattersId[chat_number]);
     Main_clearInterval(ChatLive_StartSharedId[chat_number]);
     Main_clearInterval(ChatLive_PingId[chat_number]);
+    Main_clearInterval(ChatLive_EmoteRefreshId[chat_number]);
     if (!keepSender) Main_clearInterval(ChatLive_SendPingId);
 }
 

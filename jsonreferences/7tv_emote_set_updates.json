@@ -1,0 +1,786 @@
+[
+    {
+        "type": "user.update",
+        "body": {
+            "id": "USER7TV",
+            "kind": 1,
+            "updated": [
+                {
+                    "key": "connections",
+                    "index": 0,
+                    "nested": true,
+                    "type": "",
+                    "value": [
+                        {
+                            "key": "emote_set",
+                            "index": null,
+                            "type": "object",
+                            "value": {
+                                "id": "SET1",
+                                "name": "test",
+                                "flags": 0,
+                                "immutable": false,
+                                "privileged": false,
+                                "capacity": 1000
+                            }
+                        },
+                        {
+                            "key": "emote_set_id",
+                            "index": null,
+                            "type": "string",
+                            "value": "SET1"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "type": "emote_set.update",
+        "body": {
+            "id": "SET1",
+            "kind": 3,
+            "pushed": [
+                {
+                    "key": "emotes",
+                    "index": 0,
+                    "type": "object",
+                    "value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "COPIUM",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "type": "emote_set.update",
+        "body": {
+            "id": "SET1",
+            "kind": 3,
+            "pulled": [
+                {
+                    "key": "emotes",
+                    "index": 0,
+                    "type": "object",
+                    "old_value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "COPIUM",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "value": null
+                }
+            ]
+        }
+    },
+    {
+        "type": "emote_set.update",
+        "body": {
+            "id": "SET1",
+            "kind": 3,
+            "pushed": [
+                {
+                    "key": "emotes",
+                    "index": 0,
+                    "type": "object",
+                    "value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "COPIUM",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "type": "emote_set.update",
+        "body": {
+            "id": "SET1",
+            "kind": 3,
+            "updated": [
+                {
+                    "key": "emotes",
+                    "index": 0,
+                    "type": "object",
+                    "old_value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "COPIUM",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "copium",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "type": "emote_set.update",
+        "body": {
+            "id": "SET1",
+            "kind": 3,
+            "pushed": [
+                {
+                    "key": "emotes",
+                    "index": 1,
+                    "type": "object",
+                    "value": {
+                        "id": "01F6MQ33FG000FFJ97ZB8MWV52",
+                        "name": "catJAM",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6MQ33FG000FFJ97ZB8MWV52",
+                            "name": "catJAM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "PERSONAL",
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6MQ33FG000FFJ97ZB8MWV52",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "type": "emote_set.update",
+        "body": {
+            "id": "SET1",
+            "kind": 3,
+            "pushed": [
+                {
+                    "key": "emotes",
+                    "index": 0,
+                    "type": "object",
+                    "value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "copitest",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "type": "emote_set.update",
+        "body": {
+            "id": "SET1",
+            "kind": 3,
+            "pulled": [
+                {
+                    "key": "emotes",
+                    "index": 0,
+                    "type": "object",
+                    "old_value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "copium",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "value": null
+                },
+                {
+                    "key": "emotes",
+                    "index": 2,
+                    "type": "object",
+                    "old_value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "copitest",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "value": null
+                }
+            ]
+        }
+    },
+    {
+        "type": "emote_set.update",
+        "body": {
+            "id": "SET1",
+            "kind": 3,
+            "pushed": [
+                {
+                    "key": "emotes",
+                    "index": 1,
+                    "type": "object",
+                    "value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "COPIUM",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "type": "emote_set.update",
+        "body": {
+            "id": "SET1",
+            "kind": 3,
+            "updated": [
+                {
+                    "key": "emotes",
+                    "index": 1,
+                    "type": "object",
+                    "old_value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "COPIUM",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "cope",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "type": "emote_set.update",
+        "body": {
+            "id": "SET1",
+            "kind": 3,
+            "pulled": [
+                {
+                    "key": "emotes",
+                    "index": 1,
+                    "type": "object",
+                    "old_value": {
+                        "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                        "name": "cope",
+                        "flags": 0,
+                        "data": {
+                            "id": "01F6ME7ADR0000WDA7ERT9H30R",
+                            "name": "COPIUM",
+                            "flags": 0,
+                            "lifecycle": 3,
+                            "state": [
+                                "LISTED"
+                            ],
+                            "listed": true,
+                            "animated": true,
+                            "host": {
+                                "url": "//cdn.7tv.app/emote/01F6ME7ADR0000WDA7ERT9H30R",
+                                "files": [
+                                    {
+                                        "name": "1x.webp",
+                                        "static_name": "1x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "2x.webp",
+                                        "static_name": "2x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "3x.webp",
+                                        "static_name": "3x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "4x.webp",
+                                        "static_name": "4x_static.webp",
+                                        "format": "WEBP"
+                                    },
+                                    {
+                                        "name": "1x.avif",
+                                        "static_name": "1x_static.avif",
+                                        "format": "AVIF"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "value": null
+                }
+            ]
+        }
+    }
+]
