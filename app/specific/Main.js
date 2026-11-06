@@ -1470,7 +1470,8 @@ function Main_HideUpdateDialog(preventFocus) {
     } else if (UserLiveFeed_isPreviewShowing()) {
         UserLiveFeed_FeedAddFocus(true, UserLiveFeed_FeedPosX);
     } else if (Main_isScene1DocVisible() && !Sidepannel_isShowingMenus()) {
-        ScreenObj[Main_values.Main_Go].init_fun();
+        //Search and Add User have no ScreenObj, their key handler stays registered under the dialog
+        if (ScreenObj[Main_values.Main_Go]) ScreenObj[Main_values.Main_Go].init_fun();
     }
 }
 
@@ -3164,9 +3165,8 @@ function Main_CheckStop() {
     } else Main_CheckDialogs();
 
     //Reset Screen img if hiden
-    var doc = ScreenObj[Main_values.Main_Go].ids
-        ? Main_getElementById(ScreenObj[Main_values.Main_Go].ids[1] + ScreenObj[Main_values.Main_Go].posY + '_' + ScreenObj[Main_values.Main_Go].posX)
-        : null;
+    var obj = ScreenObj[Main_values.Main_Go];
+    var doc = obj && obj.ids ? Main_getElementById(obj.ids[1] + obj.posY + '_' + obj.posX) : null;
 
     if (doc) Main_RemoveClassWithEle(doc, 'opacity_zero');
     else if (ChannelContent_Isfocused()) {
@@ -3182,6 +3182,10 @@ function Main_CheckDialogs() {
         Main_HideChangeDialog();
         Main_HideUpdateDialog();
         Main_HideAboutDialog();
+
+        //Search and Add User have no ScreenObj
+        if (!ScreenObj[Main_values.Main_Go]) return;
+
         Main_removeEventListener('keydown', ScreenObj[Main_values.Main_Go].key_controls);
 
         Main_addEventListener('keydown', ScreenObj[Main_values.Main_Go].key_fun);

@@ -2257,7 +2257,9 @@ function Screens_KeyUpDown(y, key) {
 }
 
 function Screens_ClearAnimation(key) {
+    //Search and Add User have no ScreenObj
     if (
+        ScreenObj[key] &&
         ScreenObj[key].HasAnimateThumb &&
         ScreenObj[key].posY > -1 &&
         ScreenObj[key].itemsCount &&
@@ -4338,7 +4340,8 @@ function Screens_IsDivFocused(key) {
 }
 
 function Screens_Isfocused() {
-    return Screens_IsDivFocused(Main_values.Main_Go) && Main_isScene1DocVisible();
+    //Search and Add User have no ScreenObj
+    return Boolean(ScreenObj[Main_values.Main_Go]) && Screens_IsDivFocused(Main_values.Main_Go) && Main_isScene1DocVisible();
 }
 
 //TODO add screen.isInuse prop to adress this fun use

@@ -521,7 +521,12 @@ function Navigation_Activate(index) {
     if (index >= 7) {
         if (index === 7) Main_showAboutDialog(Navigation_Callback, Navigation_UtilityReturn);
         else if (index === 8) Main_showControlsDialog(Navigation_Callback, Navigation_UtilityReturn);
-        else Main_UpdateDialogShowCheck();
+        else {
+            // The update dialog blocks the screen keys while open and on close re-inits only screens with a ScreenObj.
+            // Give the screen its handler back now, so Search and Add User still have it after the dialog closes.
+            if (Navigation_Callback) Main_addEventListener('keydown', Navigation_Callback);
+            Main_UpdateDialogShowCheck();
+        }
         return;
     }
     var id = Navigation_Destinations()[index].id;
