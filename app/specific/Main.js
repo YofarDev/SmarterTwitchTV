@@ -1039,6 +1039,13 @@ function Main_SwitchScreen(removekey, preventRefresh) {
 
     if (ScreenObj[Main_values.Main_Go]) {
         ScreenObj[Main_values.Main_Go].init_fun(preventRefresh);
+    } else if (Main_values.Main_Go === Main_Search && Main_isElementShowing('search_scroll')) {
+        //Search and Add User have no ScreenObj. When a dialog or panel closes over them, stay there instead of opening Live.
+        //Leaving them (Back, the rail) hides them first, so those paths still fall back to Live.
+        Search_init();
+    } else if (Main_values.Main_Go === Main_addUser && Main_isElementShowing('add_user_scroll')) {
+        //Give the keys back and keep the device code on screen
+        Main_addEventListener('keydown', AddUser_handleKeyDown);
     } else {
         ScreenObj[1].init_fun(); //live
     }
@@ -3304,7 +3311,13 @@ function Main_CheckAccessibilitySet() {
 
     Main_innerHTML('dialog_accessibility_text', STR_ACCESSIBILITY_WARN_TEXT);
     Main_ShowElement('dialog_accessibility');
-    Main_removeEventListener('keydown', ScreenObj[Main_values.Main_Go].key_fun);
+    if (ScreenObj[Main_values.Main_Go]) Main_removeEventListener('keydown', ScreenObj[Main_values.Main_Go].key_fun);
+    else {
+        //Search and Add User have no ScreenObj, stop their own handlers. Closing the warning gives them back.
+        Main_removeEventListener('keydown', Search_handleKeyDown);
+        Main_removeEventListener('keydown', Search_KeyboardEvent);
+        Main_removeEventListener('keydown', AddUser_handleKeyDown);
+    }
     Main_removeEventListener('keydown', Main_CheckAccessibilityKey);
     if (!Sidepannel_isShowingUserLive() && Main_isScene1DocVisible()) {
         Sidepannel_Hide();
