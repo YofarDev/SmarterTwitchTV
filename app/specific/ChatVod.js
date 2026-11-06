@@ -460,7 +460,7 @@ function Chat_loadEmotesbttvGlobal(data) {
 }
 
 function Chat_loadSeven_tvGlobalEmotes() {
-    if (!extraEmotesDone.Seven_tvGlobal) {
+    if (!extraEmotesDone.seven_tvGlobal) {
         Chat_BaseLoadUrl('https://7tv.io/v3/emote-sets/global', Chat_loadEmotesSuccessSeven_tv, noop_fun);
     } else {
         ChatLive_updateExtraEmotes(extraEmotesDone.seven_tvGlobal, 0);

@@ -214,4 +214,30 @@ check(
     'strings declared and defined in en_US'
 );
 
-console.log(checks + ' animated emote option checks passed');
+//7TV global set: fetched once, later chats reuse the cache in both chats (like BTTV and FFZ)
+const g = sandbox(),
+    globalUrls = [];
+g.noop_fun = () => {};
+g.Chat_BaseLoadUrl = (url, success) => {
+    globalUrls.push(url);
+    success(
+        JSON.stringify({
+            emotes: [{name: 'GlobalWave', data: {id: 'gw', name: 'x', animated: false, host: {url: '//cdn.7tv.app/emote/gw', files: files()}}}]
+        })
+    );
+};
+g.Chat_loadSeven_tvGlobalEmotes();
+check(
+    globalUrls.length === 1 && g.extraEmotes[0].GlobalWave && g.extraEmotesDone.seven_tvGlobal.GlobalWave,
+    '7tv global: first chat fetches and caches the set'
+);
+g.extraEmotes = [{}, {}];
+g.Chat_loadSeven_tvGlobalEmotes();
+check(globalUrls.length === 1, '7tv global: a later chat does not fetch the set again');
+check(
+    g.extraEmotes[0].GlobalWave.chat_div === g.extraEmotesDone.seven_tvGlobal.GlobalWave.chat_div &&
+        g.extraEmotes[1].GlobalWave.chat_div === g.extraEmotesDone.seven_tvGlobal.GlobalWave.chat_div,
+    '7tv global: the cached set reaches both chats'
+);
+
+console.log(checks + ' emote checks passed');
