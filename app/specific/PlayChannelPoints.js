@@ -52,13 +52,18 @@ function PlayChannelPoints_Start() {
 
     if (!PlayChannelPoints_CanRun()) return;
 
-    PlayChannelPoints_ChannelLogin = Play_data.data[6] + '';
-    PlayChannelPoints_BroadcastId = Play_data.data[7] + '';
-    PlayChannelPoints_ChannelId = Play_data.data[14] + '';
+    PlayChannelPoints_SetStream();
 
     //The endpoint isn't tied to the channel: found once, then kept across streams until no endpoint is left (SendSuccess)
     if (PlayChannelPoints_ReportEnabled() && !PlayChannelPoints_SpadeUrl) PlayChannelPoints_DiscoverSpadeUrl();
     PlayChannelPoints_IntervalId = Main_setInterval(PlayChannelPoints_SendMinuteWatched, PlayChannelPoints_IntervalMs, PlayChannelPoints_IntervalId);
+}
+
+//Reports go to the main stream: Play_data
+function PlayChannelPoints_SetStream() {
+    PlayChannelPoints_ChannelLogin = Play_data.data[6] + '';
+    PlayChannelPoints_BroadcastId = Play_data.data[7] + '';
+    PlayChannelPoints_ChannelId = Play_data.data[14] + '';
 }
 
 function PlayChannelPoints_Stop() {
@@ -135,9 +140,16 @@ function PlayChannelPoints_SettingsSuccess(obj, key, id) {
 }
 
 function PlayChannelPoints_SendMinuteWatched() {
-    if (!PlayChannelPoints_IsCurrentStream()) {
+    if (!PlayChannelPoints_CanRun()) {
         PlayChannelPoints_Stop();
         return;
+    }
+
+    //The main stream can change without a new stream load (picture in picture or multistream swap,
+    //broadcast restarted and picked up by a stream info refresh): follow it instead of stopping
+    if (!PlayChannelPoints_IsCurrentStream()) {
+        PlayChannelPoints_SetStream();
+        PlayAutoClaim_Reset();
     }
 
     //Only report minutes that are actually playing: not paused, buffering or with the app in the background

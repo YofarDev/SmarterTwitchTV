@@ -164,13 +164,36 @@ count = requests.length;
 reply(stale, 200, '"https://assets.twitch.tv/config/settings.old.js"');
 check(requests.length === count, 'stale discovery reply ignored');
 
-//Stream changed under the interval: stop instead of reporting the new one with old ids
+//Main stream changed under the interval without a new stream load: report the new one with its own ids
 s.PlayChannelPoints_SpadeUrl = 'https://spade.twitch.tv/track';
+//Broadcast restarted, picked up by a stream info refresh
 s.Play_data.data[7] = 'bcast-2';
 count = requests.length;
 tick();
-check(requests.length === count && activeIntervals() === 0, 'changed broadcast stops reporting');
+check(requests.length === count + 1 && activeIntervals() === 1, 'changed broadcast keeps reporting');
+check(sentPayload(last()).properties.broadcast_id === 'bcast-2', 'report uses the new broadcast id');
+//Picture in picture or multistream swap: another channel becomes the main stream
+s.Play_data.data[6] = 'other';
+s.Play_data.data[7] = 'bcast-9';
+s.Play_data.data[14] = '222';
+tick();
+let swapped = sentPayload(last()).properties;
+check(requests.length === count + 2 && activeIntervals() === 1, 'swapped main stream keeps reporting');
+check(swapped.channel === 'other' && swapped.channel_id === '222' && swapped.broadcast_id === 'bcast-9', 'report follows the swapped stream');
+check(last().url === 'https://spade.twitch.tv/track', 'swap reuses the known endpoint');
+//And back
+s.Play_data.data[6] = 'streamer';
 s.Play_data.data[7] = 'bcast-1';
+s.Play_data.data[14] = '111';
+tick();
+swapped = sentPayload(last()).properties;
+check(swapped.channel === 'streamer' && swapped.channel_id === '111' && swapped.broadcast_id === 'bcast-1', 'report follows the swap back');
+//Player closed without a stop: the interval ends itself
+s.Play_isOn = false;
+count = requests.length;
+tick();
+check(requests.length === count && activeIntervals() === 0, 'closed player stops reporting');
+s.Play_isOn = true;
 
 //Stop clears everything
 s.PlayChannelPoints_Start();
@@ -257,6 +280,20 @@ s.PlayChannelPoints_Start();
 gqlCount = gql().length;
 reply(staleBonus, 200, JSON.stringify({data: {user: {id: '111', channel: {self: {communityPoints: {balance: 0, availableClaim: {id: 'old'}}}}}}}));
 check(gql().length === gqlCount, 'bonus reply from before a restart is ignored');
+//Main stream swapped under the interval: the bonus check moves to the new channel, a reply about the old one is ignored
+tick();
+const swapBonus = gql()[gql().length - 1];
+s.Play_data.data[6] = 'other';
+s.Play_data.data[7] = 'bcast-9';
+s.Play_data.data[14] = '222';
+tick();
+check(gqlBody(gql()[gql().length - 1]).query.indexOf('user(id: "222")') !== -1, 'bonus check follows the swapped stream');
+gqlCount = gql().length;
+reply(swapBonus, 200, JSON.stringify({data: {user: {id: '111', channel: {self: {communityPoints: {balance: 0, availableClaim: {id: 'old'}}}}}}}));
+check(gql().length === gqlCount, 'bonus reply from before a swap is ignored');
+s.Play_data.data[6] = 'streamer';
+s.Play_data.data[7] = 'bcast-1';
+s.Play_data.data[14] = '111';
 s._settings.auto_claim_bonus = 0;
 s._settings.auto_claim_notify_bonus = 0;
 s._notices.length = 0;
