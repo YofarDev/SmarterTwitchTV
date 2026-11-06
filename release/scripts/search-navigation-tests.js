@@ -212,4 +212,11 @@ s.Search_SessionEnter(s.Main_Live);
 s.Search_Session.submitted = 'q';
 check(s.Navigation_Tabs('search')[0] === s.STR_EDIT_SEARCH, 'session with results labels the tab Edit search');
 
+/* Left inside the rail opens the followed panel. Its way back to the rail (Right or Back) keeps Search's keys, not an older grid's. */
+s.Sidepannel_Callback = function olderGrid() {};
+s.Navigation_Region = 'rail';
+s.Navigation_Callback = s.Search_handleKeyDown;
+s.Navigation_Handle({keyCode: s.KEY_LEFT});
+check(s.Sidepannel_Callback === s.Search_handleKeyDown, 'the followed panel returns to the rail with the Search keys');
+
 console.log(checks + ' search navigation checks passed');

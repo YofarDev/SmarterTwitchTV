@@ -475,8 +475,11 @@ function Navigation_Handle(event, up) {
             }
         } else if (code === KEY_LEFT || code === KEY_3) {
             Navigation_Close(false);
-            if (AddUser_UserHasToken()) Sidepannel_StartFeed();
-            else {
+            if (AddUser_UserHasToken()) {
+                // The followed panel returns to the rail with this screen's keys (Right or Back).
+                Sidepannel_Callback = Navigation_Callback;
+                Sidepannel_StartFeed();
+            } else {
                 Sidepannel_ShowNoUserWarning();
                 Navigation_Open(Navigation_Callback);
             }

@@ -831,7 +831,12 @@ function Sidepannel_handleKeyDown(event) {
     switch (event.keyCode) {
         case KEY_KEYBOARD_BACKSPACE:
         case KEY_RETURN:
+            // Back returns to the rail like Right, so Left on the grid opens the rail again afterwards.
+            Sidepannel_userLiveKeyRight();
+            break;
         case KEY_3:
+            // The shortcut closes the panel to the grid. Left there should open the rail, not this panel again.
+            Sidepannel_IsMain = true;
             Sidepannel_Hide();
             Main_SwitchScreen();
             break;
