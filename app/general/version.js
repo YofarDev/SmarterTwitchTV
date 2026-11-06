@@ -24,8 +24,18 @@ var version = {
     publishVersionCode: 400, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/400/SmarterPurpleTV_3_0_400.apk',
     WebVersion: 'November 6 2026',
-    WebTag: 786, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 787, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 6 2026 (Web 787)',
+            changes: [
+                'Chat: channel emotes from 7TV, BTTV and FFZ update during a live stream — emotes the streamer adds, renames or removes reach a live chat right away over the 7TV event socket, while BTTV and FFZ sets are rechecked every 15 minutes; VOD chat is unchanged (by @Dryness, #29)',
+                'Fix: the History checks that remove deleted VODs and clips stopped for good after the app went to the background once; they now restart on resume, with an overdue check run shortly after (by @Dryness, #30)',
+                'Fix: closing a dialog over Search or Add User — the rail Exit dialog, the accessibility warning, the legacy side panel — opened Live under it and lost the screen; those screens stay put now, and resuming on them with an accessibility service on no longer throws (by @Dryness, #31)',
+                'Fix: opening About or Controls from the rail, pressing Home and coming back left the rail keys in charge, so the first OK or Back on a grid opened the rail instead of playing or going back (by @Dryness, #32)',
+                'Fix: Settings, About and Controls opened from the followed live panel over Search or Add User drew the Search form over Settings or threw errors; they now work from any screen (by @Dryness, #33)'
+            ]
+        },
         {
             title: 'November 6 2026 (Web 786)',
             changes: [
