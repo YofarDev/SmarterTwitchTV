@@ -2910,6 +2910,10 @@ function Main_SetHistoryworker() {
 var Main_StartHistoryworkerId;
 var Main_RunVODWorkerId;
 var Main_RunClipWorkerId;
+var Main_RunVODWorkerResumeId;
+var Main_RunClipWorkerResumeId;
+var Main_RunVODWorkerLast = 0;
+var Main_RunClipWorkerLast = 0;
 
 //Check if a live in history has become a VOD
 function Main_StartHistoryworker() {
@@ -2949,6 +2953,7 @@ function Main_StartHistoryworkerBradcast(obj, type, header) {
 //Check if a VOD in history has ben deleted
 function Main_RunVODWorker() {
     if (ScreenObj[Main_HistoryVod].histPosX[3] || Main_isStopped || !AddUser_IsUserSet() || Boolean(!BradcastCheckerWorker)) return;
+    Main_RunVODWorkerLast = new Date().getTime();
 
     var array = Main_values_History_data[AddUser_UsernameArray[0].id].vod,
         len = array.length,
@@ -3021,6 +3026,7 @@ function Main_RunLiveVODWorker() {
 //Check if a CLIP in history has ben deleted
 function Main_RunClipWorker() {
     if (ScreenObj[Main_HistoryClip].histPosX[3] || Main_isStopped || !AddUser_IsUserSet() || !BradcastCheckerWorker) return;
+    Main_RunClipWorkerLast = new Date().getTime();
 
     var array = Main_values_History_data[AddUser_UsernameArray[0].id].clip;
 
@@ -3135,6 +3141,8 @@ function Main_CheckStop() {
     Main_clearInterval(Main_checkWebVersionId);
     Main_clearInterval(Main_RunVODWorkerId);
     Main_clearInterval(Main_RunClipWorkerId);
+    Main_clearTimeout(Main_RunVODWorkerResumeId);
+    Main_clearTimeout(Main_RunClipWorkerResumeId);
     Main_clearTimeout(Main_checkWebVersionResumeId);
     Main_clearTimeout(Screens_CheckRefreshAfterResumeId);
     Main_clearTimeout(Main_CheckResumeFeedId);
@@ -3236,6 +3244,17 @@ function Main_CheckResume(skipPlay) {
 
     Main_checkWebVersionId = Main_setInterval(Main_CheckUpdate, 1000 * 60 * 30, Main_checkWebVersionId); //Check it 60 min
     Main_checkWebVersionResumeId = Main_setTimeout(Main_CheckUpdate, 3000, Main_checkWebVersionResumeId);
+
+    //Main_CheckStop clears the history VOD and clip checks. Restart them, and run a check now if its last run is older than its interval.
+    Main_RunVODWorkerId = Main_setInterval(Main_RunVODWorker, 1000 * 60 * 360, Main_RunVODWorkerId); //Check it 6 hours
+    Main_RunClipWorkerId = Main_setInterval(Main_RunClipWorker, 1000 * 60 * 370, Main_RunClipWorkerId); //Check it 6 hours
+    var now = new Date().getTime();
+    if (now > Main_RunVODWorkerLast + 1000 * 60 * 360) {
+        Main_RunVODWorkerResumeId = Main_setTimeout(Main_RunVODWorker, 50000, Main_RunVODWorkerResumeId);
+    }
+    if (now > Main_RunClipWorkerLast + 1000 * 60 * 370) {
+        Main_RunClipWorkerResumeId = Main_setTimeout(Main_RunClipWorker, 80000, Main_RunClipWorkerResumeId);
+    }
 
     //Tecnicly this are only neede if the app fail to refresh when is on background
     UserLiveFeed_CheckRefreshAfterResume();

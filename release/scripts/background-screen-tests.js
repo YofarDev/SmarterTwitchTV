@@ -161,4 +161,30 @@ s = setup('Main_Live', {Main_isAboutDialogVisible: () => true});
 s.Main_CheckDialogs();
 check(called('Main_addEventListener', 'keydown') && called('Screens_addFocus'), 'Live: stop with About open restores the grid keys');
 
+// History VOD and clip checks: stopped by Main_CheckStop, restarted on resume, run once when overdue.
+const sixHours = 1000 * 60 * 360,
+    workers = {Main_RunVODWorker: function Main_RunVODWorker() {}, Main_RunClipWorker: function Main_RunClipWorker() {}};
+function scheduled(name, fun, delay) {
+    return calls.some(call => call[0] === name && call[1] === fun && call[2] === delay);
+}
+s = setup('Main_Live', Object.assign({Main_RunVODWorkerLast: 0, Main_RunClipWorkerLast: 0}, workers));
+s.Main_CheckResume();
+check(scheduled('Main_setInterval', s.Main_RunVODWorker, sixHours), 'resume restarts the VOD history check');
+check(scheduled('Main_setInterval', s.Main_RunClipWorker, sixHours + 1000 * 60 * 10), 'resume restarts the clip history check');
+check(scheduled('Main_setTimeout', s.Main_RunVODWorker, 50000), 'resume runs an overdue VOD history check');
+check(scheduled('Main_setTimeout', s.Main_RunClipWorker, 80000), 'resume runs an overdue clip history check');
+
+const recent = Date.now() - 1000 * 60 * 60;
+s = setup('Main_Live', Object.assign({Main_RunVODWorkerLast: recent, Main_RunClipWorkerLast: recent}, workers));
+s.Main_CheckResume();
+check(scheduled('Main_setInterval', s.Main_RunVODWorker, sixHours), 'resume restarts the VOD history check after a recent run');
+check(
+    !calls.some(call => call[0] === 'Main_setTimeout' && (call[1] === s.Main_RunVODWorker || call[1] === s.Main_RunClipWorker)),
+    'resume does not repeat a recent run'
+);
+
+s = setup('Main_Live', {Main_RunVODWorkerResumeId: 'vodResume', Main_RunClipWorkerResumeId: 'clipResume'});
+s.Main_CheckStop();
+check(called('Main_clearTimeout', 'vodResume') && called('Main_clearTimeout', 'clipResume'), 'stop cancels the pending resume runs');
+
 console.log(checks + ' background screen checks passed' + (built ? ' (built)' : ''));
