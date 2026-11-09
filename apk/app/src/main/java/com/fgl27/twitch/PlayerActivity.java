@@ -884,10 +884,12 @@ public class PlayerActivity extends Activity {
 
         }
 
-        LiveOffset -= PlayerObj[0].LatencyOffSet;
+        //PlayerObjPosition, not 0: with picture in picture this runs for the small player too,
+        //reading player 0 here corrupts the small player latency and resets the main player offset
+        LiveOffset -= PlayerObj[PlayerObjPosition].LatencyOffSet;
 
         if (LiveOffset < 0) {
-            PlayerObj[0].LatencyOffSet = 0;
+            PlayerObj[PlayerObjPosition].LatencyOffSet = 0;
         }
 
         return LiveOffset;

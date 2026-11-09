@@ -153,8 +153,11 @@ public final class DebugLogServer {
             try (Socket socket = serverSocket.accept()) {
                 socket.setSoTimeout(5000);
                 handleClient(socket);
-            } catch (IOException e) {
-                return; //the server was closed (or the socket died), stop accepting
+            } catch (Exception e) {
+                //One bad client (a stall past the read timeout, an early close) must not end
+                //the accept loop: serverSocket would stay non-null so start() never brings the
+                //server back. A real stop() nulls the socket, end the loop only then.
+                if (serverSocket == null) return;
             }
         }
     }
@@ -168,8 +171,10 @@ public final class DebugLogServer {
         int end = request.indexOf(' ', 4);
         String path = end > 4 ? request.substring(4, end) : "/";
 
-        while (!reader.readLine().isEmpty()) {
-            //consume the headers, a malformed request with no blank line ends on the read timeout
+        String header;
+        while ((header = reader.readLine()) != null && !header.isEmpty()) {
+            //consume the headers, a malformed request with no blank line ends on the read timeout,
+            //a client that closes early ends on the null read instead of crashing the reader
         }
 
         byte[] body;

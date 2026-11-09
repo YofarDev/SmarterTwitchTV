@@ -1746,6 +1746,10 @@ function Main_OPenAsVod_PreshutdownStream() {
 
     Play_ClearPlay(true);
     Play_ClearPlayer();
+
+    //Key 7 opens a VOD with the stay check still running, stop it or its dialog
+    //and timer survive into the VOD player
+    Play_StopStay();
 }
 
 function Main_openStream() {
@@ -1846,7 +1850,8 @@ function Main_OpenVodStart(data, id, idsArray, handleKeyDownFunction) {
     Play_DurationSeconds = parseInt(Main_values_Play_data[11]);
 
     Main_values.Main_selectedChannel_id = Main_values_Play_data[14];
-    Main_values.Main_selectedChannelLogo = Main_values_Play_data[15];
+    //The VOD cell array has no logo field (15 is the duration), keep the current
+    //one, it is the channel's logo when opening from its VOD screen
 
     Main_openVod();
 
@@ -3109,6 +3114,10 @@ function Main_CheckStop() {
     Main_clearInterval(PlayVod_RefreshProgressBarrID);
     Main_clearInterval(PlayVod_SaveOffsetId);
 
+    //Keep the multistream replace dialog as it is for the resume instead of letting
+    //its auto-hide timer fire in the background
+    Play_clearHideMultiDialog();
+
     if (PlayVod_isOn) {
         var vodOffset = OSInterface_getsavedtime() / 1000;
         if (vodOffset) {
@@ -3411,6 +3420,12 @@ function Main_KeyOwnershipReset() {
     Main_clearTimeout(ChannelContent_KeyEnterID);
     Users_handleKeyUp(); // a lost key-up must not leave Users ignoring OK
     Screens_ThumbOptionCanKeyEnter = true; // nor the card options
+    if (Main_isScene2DocVisible() && Play_isOn) {
+        //nor the held OK that arms picture in picture: a lost key-up must not trigger it.
+        //Only the timer is cleared, keydown ownership is not touched as the chat input or a
+        //player dialog may own the keys at this moment
+        Main_clearTimeout(PlayExtra_KeyEnterID);
+    }
     if (Main_values.Main_Go === Main_ChannelContent) {
         if (Main_GridOwnsInput()) {
             Main_removeEventListener('keyup', ChannelContent_handleKeyUp);
@@ -3451,6 +3466,14 @@ function Main_clearInterval(id) {
 function Main_onNewIntentClearPlay() {
     Play_ClearPlayer();
     Main_clearAllPlayerEvents();
+
+    //An intent can land while the stay check is running, stop it or its dialog
+    //and timer survive into the next playback
+    Play_StopStay();
+
+    //Same for the multistream replace dialog
+    if (Play_MultiDialogVisible()) Play_HideMultiDialog(true);
+
     Play_isOn = false;
     PlayVod_isOn = false;
     PlayClip_isOn = false;

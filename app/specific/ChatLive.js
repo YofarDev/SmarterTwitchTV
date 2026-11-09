@@ -1588,6 +1588,9 @@ function ChatLive_SevenTvDispatch(data) {
         if (data.type === 'emote_set.update' && meta.set && meta.set === data.body.id) {
             ChatLive_SevenTvSetChanges(channel, meta, data.body);
         } else if (data.type === 'user.update' && meta.user && meta.user === data.body.id && ChatLive_SevenTvSetSwitched(data.body)) {
+            //Stop matching updates for the old set, the refresh below installs the new one
+            meta.set = null;
+
             for (chat_number = 0; chat_number < 2; chat_number++) {
                 if (ChatLive_EmoteIsLive(chat_number) && String(ChatLive_selectedChannel_id[chat_number]) === channel) {
                     ChatLive_EmoteRefresh(chat_number, Chat_Id[chat_number], 'seven_tv');

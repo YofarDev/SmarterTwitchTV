@@ -23,9 +23,23 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 401, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/401/SmarterPurpleTV_3_0_401.apk',
-    WebVersion: 'November 7 2026',
-    WebTag: 788, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'November 8 2026',
+    WebTag: 789, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 8 2026 (Web 789)',
+            changes: [
+                'Fix: opening a VOD with key 7 while the player waits for an offline stream to come back left the "Checking if stream is live" box and its timer running over the VOD until the app was restarted; opening that VOD now stops the wait cleanly',
+                'Fix: a home screen tile or notification opening the app while it waits for a stream to come back left the same wait running under the next playback',
+                'Fix: VODs opened from a list show the channel icon again; a February layout change had stored the VOD duration where the icon address belongs, so the placeholder always showed',
+                'Chat: after a streamer switches their active 7TV emote set, updates for the old set can no longer apply during the moment before the new set loads',
+                'Fix: the multistream replace dialog and its auto-hide timer survived closing multistream (the Stop key, a home screen tile, the last stream ending while it was open), overlaying the next playback and eating its keys',
+                'Fix: holding OK on a feed thumbnail and losing the key-up to a focus change could still arm picture in picture moments later',
+                'Fix: an animated VOD thumbnail whose preview image finished loading after the card lost focus kept animating in the background, and a slow preview answer could stick another VOD\'s animation onto the wrong card',
+                'Fix: the multistream replace dialog now shows the logo of the channel being added, and of slot one, when that logo was not cached yet',
+                'Fix: on some TVs, such as 720p boxes, the text of settings dialogs turned blurry once the selection moved past the first option'
+            ]
+        },
         {
             title: 'November 7 2026 (Web 788 / APK 401)',
             changes: [

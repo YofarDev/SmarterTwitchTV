@@ -3275,17 +3275,23 @@ function ScreensObj_getVodAnimatedUrl(screen) {
         ScreensObj_getVodAnimatedUrlResult,
         noop_fun,
         screen.screen,
-        screen.screen,
+        screen.posY + '_' + screen.posX, //the cell this answer belongs to, focus may move before it arrives
         'POST', //Method, null for get
         ScreensObj_getVodAnimatedUrlPost.replace('%x', screen.DataObj[screen.posY + '_' + screen.posX][7])
     );
 }
 
-function ScreensObj_getVodAnimatedUrlResult(resultObj, key) {
+function ScreensObj_getVodAnimatedUrlResult(resultObj, key, cellId) {
     if (resultObj.status === 200) {
         var obj = JSON.parse(resultObj.responseText);
 
-        if (Screens_ObjNotNull(key) && obj.data && obj.data.video && obj.data.video.animatedPreviewURL) {
+        if (
+            Screens_ObjNotNull(key) &&
+            ScreenObj[key].posY + '_' + ScreenObj[key].posX === cellId &&
+            obj.data &&
+            obj.data.video &&
+            obj.data.video.animatedPreviewURL
+        ) {
             ScreenObj[key].DataObj[ScreenObj[key].posY + '_' + ScreenObj[key].posX][8] = obj.data.video.animatedPreviewURL;
             var div = Main_getElementById(ScreenObj[key].ids[5] + ScreenObj[key].posY + '_' + ScreenObj[key].posX);
             div.style.cssText =

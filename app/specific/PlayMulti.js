@@ -103,6 +103,10 @@ function Play_Multi_UnSetPanelDiv(checkChat) {
     Main_HideElement('stream_info_multi_big');
     Main_HideElement('dialog_multi_help');
 
+    //The replace dialog is only dismissed by its own Back/Enter otherwise; leaving it
+    //open when multistream goes away leaks it and its auto-hide timer into the next playback
+    if (Play_MultiDialogVisible()) Play_HideMultiDialog(true);
+
     if (checkChat) Play_Multi_UnSetPanelDivCheckChat();
 
     Main_SaveValues();
@@ -829,7 +833,8 @@ function Play_MultiSetUpdateDialogLogo(channeiId, pos) {
 }
 
 function Play_MultiSetUpdateDialogLogoValues(responseText, i) {
-    if (!Play_MultiArray[i] || !Play_MultiArray[i].data || !Play_MultiArray[i].data.length) {
+    //i -1 is the channel being added, it has no Play_MultiArray entry
+    if (i !== -1 && (!Play_MultiArray[i] || !Play_MultiArray[i].data || !Play_MultiArray[i].data.length)) {
         return;
     }
 
@@ -840,7 +845,7 @@ function Play_MultiSetUpdateDialogLogoValues(responseText, i) {
         var objData = response.data[0];
         var extraText = Play_Multi_MainBig ? '_big' : '';
 
-        if (i > 0) {
+        if (i > -1) {
             Play_MultiArray[i].data[10] = objData.broadcaster_type === 'partner';
             Play_MultiArray[i].data[9] = objData.profile_image_url;
 

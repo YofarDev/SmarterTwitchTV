@@ -2152,6 +2152,14 @@
                 padding: 0.3em 0;
             }
 
+            /* No will-change on the dialog list: a layer kept for a transform is never re-aligned to the
+             * pixel grid, so when the list moves by a fraction of a pixel (the first option's focus outline
+             * stops overflowing it, or a scroll step) its text is resampled and turns blurry on TVs that
+             * scale the page. The scroll transition still promotes the list while it runs. */
+            #settings_scroll_container_scroll {
+                will-change: auto;
+            }
+
             .controls_holder {
                 z-index: -100;
                 position: absolute;

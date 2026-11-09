@@ -2267,6 +2267,10 @@ function Screens_ClearAnimation(key) {
     ) {
         Main_clearInterval(ScreenObj[key].AnimateThumbId);
 
+        //A image still loading starts the interval from its onload after this clear,
+        //drop the callback so a defocused thumbnail can't start animating
+        ScreenObj[key].Vod_newImg.onload = null;
+
         if (Screens_ObjNotNull(key) && ScreenObj[key].FirstRunEnd) {
             Main_getElementById(ScreenObj[key].ids[5] + ScreenObj[key].posY + '_' + ScreenObj[key].posX).style.backgroundSize = 0;
 

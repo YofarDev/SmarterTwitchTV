@@ -8553,9 +8553,23 @@
         VersionBase: '3.0',
         publishVersionCode: 401, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/401/SmarterPurpleTV_3_0_401.apk',
-        WebVersion: 'November 7 2026',
-        WebTag: 788, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebVersion: 'November 8 2026',
+        WebTag: 789, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 8 2026 (Web 789)',
+                changes: [
+                    'Fix: opening a VOD with key 7 while the player waits for an offline stream to come back left the "Checking if stream is live" box and its timer running over the VOD until the app was restarted; opening that VOD now stops the wait cleanly',
+                    'Fix: a home screen tile or notification opening the app while it waits for a stream to come back left the same wait running under the next playback',
+                    'Fix: VODs opened from a list show the channel icon again; a February layout change had stored the VOD duration where the icon address belongs, so the placeholder always showed',
+                    'Chat: after a streamer switches their active 7TV emote set, updates for the old set can no longer apply during the moment before the new set loads',
+                    'Fix: the multistream replace dialog and its auto-hide timer survived closing multistream (the Stop key, a home screen tile, the last stream ending while it was open), overlaying the next playback and eating its keys',
+                    'Fix: holding OK on a feed thumbnail and losing the key-up to a focus change could still arm picture in picture moments later',
+                    "Fix: an animated VOD thumbnail whose preview image finished loading after the card lost focus kept animating in the background, and a slow preview answer could stick another VOD's animation onto the wrong card",
+                    'Fix: the multistream replace dialog now shows the logo of the channel being added, and of slot one, when that logo was not cached yet',
+                    'Fix: on some TVs, such as 720p boxes, the text of settings dialogs turned blurry once the selection moved past the first option'
+                ]
+            },
             {
                 title: 'November 7 2026 (Web 788 / APK 401)',
                 changes: [
@@ -15009,6 +15023,9 @@
             if (data.type === 'emote_set.update' && meta.set && meta.set === data.body.id) {
                 ChatLive_SevenTvSetChanges(channel, meta, data.body);
             } else if (data.type === 'user.update' && meta.user && meta.user === data.body.id && ChatLive_SevenTvSetSwitched(data.body)) {
+                //Stop matching updates for the old set, the refresh below installs the new one
+                meta.set = null;
+
                 for (chat_number = 0; chat_number < 2; chat_number++) {
                     if (ChatLive_EmoteIsLive(chat_number) && String(ChatLive_selectedChannel_id[chat_number]) === channel) {
                         ChatLive_EmoteRefresh(chat_number, Chat_Id[chat_number], 'seven_tv');
@@ -20294,6 +20311,10 @@
 
         Play_ClearPlay(true);
         Play_ClearPlayer();
+
+        //Key 7 opens a VOD with the stay check still running, stop it or its dialog
+        //and timer survive into the VOD player
+        Play_StopStay();
     }
 
     function Main_openStream() {
@@ -20393,7 +20414,8 @@
         Play_DurationSeconds = parseInt(Main_values_Play_data[11]);
 
         Main_values.Main_selectedChannel_id = Main_values_Play_data[14];
-        Main_values.Main_selectedChannelLogo = Main_values_Play_data[15];
+        //The VOD cell array has no logo field (15 is the duration), keep the current
+        //one, it is the channel's logo when opening from its VOD screen
 
         Main_openVod();
 
@@ -21665,6 +21687,10 @@
         Main_clearInterval(PlayVod_RefreshProgressBarrID);
         Main_clearInterval(PlayVod_SaveOffsetId);
 
+        //Keep the multistream replace dialog as it is for the resume instead of letting
+        //its auto-hide timer fire in the background
+        Play_clearHideMultiDialog();
+
         if (PlayVod_isOn) {
             var vodOffset = OSInterface_getsavedtime() / 1000;
             if (vodOffset) {
@@ -21967,6 +21993,12 @@
         Main_clearTimeout(ChannelContent_KeyEnterID);
         Users_handleKeyUp(); // a lost key-up must not leave Users ignoring OK
         Screens_ThumbOptionCanKeyEnter = true; // nor the card options
+        if (Main_isScene2DocVisible() && Play_isOn) {
+            //nor the held OK that arms picture in picture: a lost key-up must not trigger it.
+            //Only the timer is cleared, keydown ownership is not touched as the chat input or a
+            //player dialog may own the keys at this moment
+            Main_clearTimeout(PlayExtra_KeyEnterID);
+        }
         if (Main_values.Main_Go === Main_ChannelContent) {
             if (Main_GridOwnsInput()) {
                 Main_removeEventListener('keyup', ChannelContent_handleKeyUp);
@@ -22007,6 +22039,14 @@
     function Main_onNewIntentClearPlay() {
         Play_ClearPlayer();
         Main_clearAllPlayerEvents();
+
+        //An intent can land while the stay check is running, stop it or its dialog
+        //and timer survive into the next playback
+        Play_StopStay();
+
+        //Same for the multistream replace dialog
+        if (Play_MultiDialogVisible()) Play_HideMultiDialog(true);
+
         Play_isOn = false;
         PlayVod_isOn = false;
         PlayClip_isOn = false;
@@ -34786,6 +34826,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_HideElement('stream_info_multi_big');
         Main_HideElement('dialog_multi_help');
 
+        //The replace dialog is only dismissed by its own Back/Enter otherwise; leaving it
+        //open when multistream goes away leaks it and its auto-hide timer into the next playback
+        if (Play_MultiDialogVisible()) Play_HideMultiDialog(true);
+
         if (checkChat) Play_Multi_UnSetPanelDivCheckChat();
 
         Main_SaveValues();
@@ -35514,7 +35558,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     function Play_MultiSetUpdateDialogLogoValues(responseText, i) {
-        if (!Play_MultiArray[i] || !Play_MultiArray[i].data || !Play_MultiArray[i].data.length) {
+        //i -1 is the channel being added, it has no Play_MultiArray entry
+        if (i !== -1 && (!Play_MultiArray[i] || !Play_MultiArray[i].data || !Play_MultiArray[i].data.length)) {
             return;
         }
 
@@ -35525,7 +35570,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             var objData = response.data[0];
             var extraText = Play_Multi_MainBig ? '_big' : '';
 
-            if (i > 0) {
+            if (i > -1) {
                 Play_MultiArray[i].data[10] = objData.broadcaster_type === 'partner';
                 Play_MultiArray[i].data[9] = objData.profile_image_url;
 
@@ -41265,6 +41310,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         ) {
             Main_clearInterval(ScreenObj[key].AnimateThumbId);
 
+            //A image still loading starts the interval from its onload after this clear,
+            //drop the callback so a defocused thumbnail can't start animating
+            ScreenObj[key].Vod_newImg.onload = null;
+
             if (Screens_ObjNotNull(key) && ScreenObj[key].FirstRunEnd) {
                 Main_getElementById(ScreenObj[key].ids[5] + ScreenObj[key].posY + '_' + ScreenObj[key].posX).style.backgroundSize = 0;
 
@@ -46873,17 +46922,23 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             ScreensObj_getVodAnimatedUrlResult,
             noop_fun,
             screen.screen,
-            screen.screen,
+            screen.posY + '_' + screen.posX, //the cell this answer belongs to, focus may move before it arrives
             'POST', //Method, null for get
             ScreensObj_getVodAnimatedUrlPost.replace('%x', screen.DataObj[screen.posY + '_' + screen.posX][7])
         );
     }
 
-    function ScreensObj_getVodAnimatedUrlResult(resultObj, key) {
+    function ScreensObj_getVodAnimatedUrlResult(resultObj, key, cellId) {
         if (resultObj.status === 200) {
             var obj = JSON.parse(resultObj.responseText);
 
-            if (Screens_ObjNotNull(key) && obj.data && obj.data.video && obj.data.video.animatedPreviewURL) {
+            if (
+                Screens_ObjNotNull(key) &&
+                ScreenObj[key].posY + '_' + ScreenObj[key].posX === cellId &&
+                obj.data &&
+                obj.data.video &&
+                obj.data.video.animatedPreviewURL
+            ) {
                 ScreenObj[key].DataObj[ScreenObj[key].posY + '_' + ScreenObj[key].posX][8] = obj.data.video.animatedPreviewURL;
                 var div = Main_getElementById(ScreenObj[key].ids[5] + ScreenObj[key].posY + '_' + ScreenObj[key].posX);
                 div.style.cssText =
