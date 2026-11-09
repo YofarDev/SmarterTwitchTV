@@ -1570,6 +1570,7 @@ function PlayVod_get_vod_infoResult(responseObj) {
                 if (obj.data.video.creator) {
                     Main_values.Main_selectedChannelPartner = obj.data.video.creator.roles.isPartner;
                     Play_LoadLogo(Main_getElementById('stream_info_icon'), obj.data.video.creator.profileImageURL);
+                    Main_values.Main_selectedChannelLogo = obj.data.video.creator.profileImageURL;
 
                     Main_values.Main_selectedChannelDisplayname = obj.data.video.creator.displayName;
 

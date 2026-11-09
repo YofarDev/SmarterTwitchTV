@@ -1849,9 +1849,13 @@ function Main_OpenVodStart(data, id, idsArray, handleKeyDownFunction) {
     ChannelVod_title = Main_values_Play_data[10];
     Play_DurationSeconds = parseInt(Main_values_Play_data[11]);
 
-    Main_values.Main_selectedChannel_id = Main_values_Play_data[14];
     //The VOD cell array has no logo field (15 is the duration), keep the current
-    //one, it is the channel's logo when opening from its VOD screen
+    //one, it is the channel's logo when opening from its VOD screen. From any other
+    //list it may belong to another channel, drop it, the VOD info fills it in
+    if (String(Main_values.Main_selectedChannel_id) !== String(Main_values_Play_data[14])) {
+        Main_values.Main_selectedChannelLogo = '';
+    }
+    Main_values.Main_selectedChannel_id = Main_values_Play_data[14];
 
     Main_openVod();
 
