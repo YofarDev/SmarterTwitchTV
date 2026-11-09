@@ -162,7 +162,9 @@ Object.assign(s, {
     ChannelContent_KeyEnterID: null,
     Main_ChannelContent: 14,
     Main_values: {Main_Go: key},
-    Main_GridOwnsInput: () => true
+    Main_GridOwnsInput: () => true,
+    Main_isScene2DocVisible: () => false, // the grid, no player
+    Play_isOn: false
 });
 direct = 0;
 reset();
@@ -177,5 +179,12 @@ send('keyup', s.KEY_LEFT);
 check(dialogShown, 'blur: holding Left still opens the options');
 send('keydown', s.KEY_ENTER);
 check(picks === 1, 'blur: OK picks an option after a lost key-up');
+
+/* In the player, a lost key-up also drops the held OK timer that arms picture in picture. */
+const cleared = [];
+s.Main_clearTimeout = id => cleared.push(id);
+Object.assign(s, {Main_isScene2DocVisible: () => true, Play_isOn: true, PlayExtra_KeyEnterID: 'pip'});
+s.Main_KeyOwnershipReset();
+check(cleared.indexOf('pip') !== -1, 'player: the reset drops the held OK picture in picture timer');
 
 console.log(checks + ' hold options checks passed');

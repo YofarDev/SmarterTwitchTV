@@ -94,6 +94,7 @@ function setup(screen, overrides) {
     s.ScreenObj[s.Main_Live] = {
         HasAnimateThumb: true,
         AnimateThumbId: 'animate',
+        Vod_newImg: {onload: function onload() {}},
         itemsCount: 1,
         posY: 0,
         posX: 0,
@@ -161,6 +162,7 @@ function check(condition, message) {
 let s = setup('Main_Live');
 s.Main_CheckStop();
 check(called('Main_clearInterval', 'animate'), 'Live: stop clears the thumbnail animation');
+check(s.ScreenObj[s.Main_Live].Vod_newImg.onload === null, 'Live: stop drops a preview image still loading');
 check(called('Main_clearInterval', 'clock'), 'Live: stop runs to the end');
 
 s = setup('Main_Live');
