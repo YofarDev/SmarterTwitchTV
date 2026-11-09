@@ -3269,25 +3269,29 @@ function ScreensObj_AnimateThumbId(screen) {
 var ScreensObj_getVodAnimatedUrlPost = '{"query":"{video(id:\\"%x\\"){animatedPreviewURL}}"}';
 
 function ScreensObj_getVodAnimatedUrl(screen) {
+    var vodId = screen.DataObj[screen.posY + '_' + screen.posX][7];
+
     FullxmlHttpGet(
         PlayClip_BaseUrl,
         Play_base_backup_headers_Array,
         ScreensObj_getVodAnimatedUrlResult,
         noop_fun,
         screen.screen,
-        screen.posY + '_' + screen.posX, //the cell this answer belongs to, focus may move before it arrives
+        //The VOD this answer belongs to, focus may move before it arrives. It must be a number:
+        //the Android bridge takes it as a long and turns a string into 0
+        parseInt(vodId, 10),
         'POST', //Method, null for get
-        ScreensObj_getVodAnimatedUrlPost.replace('%x', screen.DataObj[screen.posY + '_' + screen.posX][7])
+        ScreensObj_getVodAnimatedUrlPost.replace('%x', vodId)
     );
 }
 
-function ScreensObj_getVodAnimatedUrlResult(resultObj, key, cellId) {
+function ScreensObj_getVodAnimatedUrlResult(resultObj, key, vodId) {
     if (resultObj.status === 200) {
         var obj = JSON.parse(resultObj.responseText);
 
         if (
             Screens_ObjNotNull(key) &&
-            ScreenObj[key].posY + '_' + ScreenObj[key].posX === cellId &&
+            parseInt(ScreenObj[key].DataObj[ScreenObj[key].posY + '_' + ScreenObj[key].posX][7], 10) === vodId &&
             obj.data &&
             obj.data.video &&
             obj.data.video.animatedPreviewURL
