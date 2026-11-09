@@ -1410,12 +1410,19 @@ function ChatLive_SevenTvWanted() {
     for (chat_number = 0; chat_number < 2; chat_number++) {
         if (!ChatLive_EmoteIsLive(chat_number)) continue;
         meta = ChatLive_EmoteMeta[String(ChatLive_selectedChannel_id[chat_number])];
-        if (!meta || !meta.set) continue;
+        if (!meta) continue;
 
-        wanted['emote_set.update:' + meta.set] = {type: 'emote_set.update', id: meta.set};
-        //The owner's account update tells when the channel switches to another set
-        if (meta.user) wanted['user.update:' + meta.user] = {type: 'user.update', id: meta.user};
-        any = true;
+        if (meta.set) {
+            wanted['emote_set.update:' + meta.set] = {type: 'emote_set.update', id: meta.set};
+            any = true;
+        }
+        //The owner's account update tells when the channel switches to another set.
+        //Followed even with no set: a switch clears the set until its refresh answers,
+        //and a failed refresh must not stop the next switch from being seen
+        if (meta.user) {
+            wanted['user.update:' + meta.user] = {type: 'user.update', id: meta.user};
+            any = true;
+        }
     }
 
     return any ? wanted : null;

@@ -261,6 +261,31 @@ check(sentOps(ws).join('|') === '36 emote_set.update SET1|35 emote_set.update SE
 ws.server({op: 0, d: {type: 'user.update', body: {id: 'USER7TV', updated: [{key: 'display_name', value: 'x'}]}}});
 check(requests.length === 0, 'other account changes fetch nothing');
 
+//Set switch whose refresh fails: the owner stays followed, so the next switch is still seen
+const switchTo = set => ({
+    op: 0,
+    d: {
+        type: 'user.update',
+        body: {
+            id: 'USER7TV',
+            updated: [{key: 'connections', value: [{key: 'emote_set_id', value: set}]}]
+        }
+    }
+});
+ws.sent = [];
+ws.server(switchTo('SET3'));
+check(requests.length === 1, 'failed refresh: the switch fetches the set');
+requests.length = 0; //the request fails, its error callback does nothing
+s.ChatLive_SevenTvSync(); //a later sync: a reconnect, the other chat starting
+check(!ws.closed && sentOps(ws).join('|') === '36 emote_set.update SET2', 'failed refresh: the socket stays open and the owner stays followed');
+ws.server(switchTo('SET2'));
+check(requests.length === 1, 'failed refresh: the next switch fetches the set again');
+respond('7tv.io', JSON.parse(usersResponse('SET2', [seven('p1', 'Pog'), Object.assign({}, pushed.body.pushed[0].value, {name: 'COPE'})])));
+check(
+    s.ChatLive_EmoteMeta['111'].set === 'SET2' && sentOps(ws).join('|') === '36 emote_set.update SET2|35 emote_set.update SET2',
+    'failed refresh: the next switch restores the set'
+);
+
 //BTTV and FFZ: checked every 15 minutes, only differences applied, 7TV still wins on a shared name
 s.ChatLive_loadEmotesChannelBTTVSuccess(
     JSON.stringify({
