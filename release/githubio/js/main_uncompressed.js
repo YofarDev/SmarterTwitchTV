@@ -8553,9 +8553,17 @@
         VersionBase: '3.0',
         publishVersionCode: 401, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/401/SmarterPurpleTV_3_0_401.apk',
-        WebVersion: 'November 8 2026',
-        WebTag: 789, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebVersion: 'November 10 2026',
+        WebTag: 790, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 10 2026 (Web 790)',
+                changes: [
+                    "Fix: animated VOD thumbnails work again on Android — cards that fetch their preview URL after the list loads never animated, because the Android bridge turned the request's answer tag into 0 and the answer never matched the focused card (by @Dryness, #37)",
+                    'Chat: a failed refresh after a streamer switches their 7TV emote set no longer stops live emote updates until the chat is reopened; a channel whose owner has a 7TV account but no active set now also keeps listening and picks the set up when one is turned on (by @Dryness, #37)',
+                    "Fix: a VOD opened from a list no longer shows the last watched channel's logo while the VOD info loads — the placeholder shows instead, and the answer now stores the right logo (by @Dryness, #37)"
+                ]
+            },
             {
                 title: 'November 8 2026 (Web 789)',
                 changes: [
@@ -14845,12 +14853,19 @@
         for (chat_number = 0; chat_number < 2; chat_number++) {
             if (!ChatLive_EmoteIsLive(chat_number)) continue;
             meta = ChatLive_EmoteMeta[String(ChatLive_selectedChannel_id[chat_number])];
-            if (!meta || !meta.set) continue;
+            if (!meta) continue;
 
-            wanted['emote_set.update:' + meta.set] = {type: 'emote_set.update', id: meta.set};
-            //The owner's account update tells when the channel switches to another set
-            if (meta.user) wanted['user.update:' + meta.user] = {type: 'user.update', id: meta.user};
-            any = true;
+            if (meta.set) {
+                wanted['emote_set.update:' + meta.set] = {type: 'emote_set.update', id: meta.set};
+                any = true;
+            }
+            //The owner's account update tells when the channel switches to another set.
+            //Followed even with no set: a switch clears the set until its refresh answers,
+            //and a failed refresh must not stop the next switch from being seen
+            if (meta.user) {
+                wanted['user.update:' + meta.user] = {type: 'user.update', id: meta.user};
+                any = true;
+            }
         }
 
         return any ? wanted : null;
@@ -20413,9 +20428,13 @@
         ChannelVod_title = Main_values_Play_data[10];
         Play_DurationSeconds = parseInt(Main_values_Play_data[11]);
 
-        Main_values.Main_selectedChannel_id = Main_values_Play_data[14];
         //The VOD cell array has no logo field (15 is the duration), keep the current
-        //one, it is the channel's logo when opening from its VOD screen
+        //one, it is the channel's logo when opening from its VOD screen. From any other
+        //list it may belong to another channel, drop it, the VOD info fills it in
+        if (String(Main_values.Main_selectedChannel_id) !== String(Main_values_Play_data[14])) {
+            Main_values.Main_selectedChannelLogo = '';
+        }
+        Main_values.Main_selectedChannel_id = Main_values_Play_data[14];
 
         Main_openVod();
 
@@ -37531,6 +37550,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                     if (obj.data.video.creator) {
                         Main_values.Main_selectedChannelPartner = obj.data.video.creator.roles.isPartner;
                         Play_LoadLogo(Main_getElementById('stream_info_icon'), obj.data.video.creator.profileImageURL);
+                        Main_values.Main_selectedChannelLogo = obj.data.video.creator.profileImageURL;
 
                         Main_values.Main_selectedChannelDisplayname = obj.data.video.creator.displayName;
 
@@ -46916,25 +46936,29 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var ScreensObj_getVodAnimatedUrlPost = '{"query":"{video(id:\\"%x\\"){animatedPreviewURL}}"}';
 
     function ScreensObj_getVodAnimatedUrl(screen) {
+        var vodId = screen.DataObj[screen.posY + '_' + screen.posX][7];
+
         FullxmlHttpGet(
             PlayClip_BaseUrl,
             Play_base_backup_headers_Array,
             ScreensObj_getVodAnimatedUrlResult,
             noop_fun,
             screen.screen,
-            screen.posY + '_' + screen.posX, //the cell this answer belongs to, focus may move before it arrives
+            //The VOD this answer belongs to, focus may move before it arrives. It must be a number:
+            //the Android bridge takes it as a long and turns a string into 0
+            parseInt(vodId, 10),
             'POST', //Method, null for get
-            ScreensObj_getVodAnimatedUrlPost.replace('%x', screen.DataObj[screen.posY + '_' + screen.posX][7])
+            ScreensObj_getVodAnimatedUrlPost.replace('%x', vodId)
         );
     }
 
-    function ScreensObj_getVodAnimatedUrlResult(resultObj, key, cellId) {
+    function ScreensObj_getVodAnimatedUrlResult(resultObj, key, vodId) {
         if (resultObj.status === 200) {
             var obj = JSON.parse(resultObj.responseText);
 
             if (
                 Screens_ObjNotNull(key) &&
-                ScreenObj[key].posY + '_' + ScreenObj[key].posX === cellId &&
+                parseInt(ScreenObj[key].DataObj[ScreenObj[key].posY + '_' + ScreenObj[key].posX][7], 10) === vodId &&
                 obj.data &&
                 obj.data.video &&
                 obj.data.video.animatedPreviewURL

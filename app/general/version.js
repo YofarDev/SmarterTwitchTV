@@ -23,9 +23,17 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 401, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/401/SmarterPurpleTV_3_0_401.apk',
-    WebVersion: 'November 8 2026',
-    WebTag: 789, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'November 10 2026',
+    WebTag: 790, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 10 2026 (Web 790)',
+            changes: [
+                'Fix: animated VOD thumbnails work again on Android — cards that fetch their preview URL after the list loads never animated, because the Android bridge turned the request\'s answer tag into 0 and the answer never matched the focused card (by @Dryness, #37)',
+                'Chat: a failed refresh after a streamer switches their 7TV emote set no longer stops live emote updates until the chat is reopened; a channel whose owner has a 7TV account but no active set now also keeps listening and picks the set up when one is turned on (by @Dryness, #37)',
+                'Fix: a VOD opened from a list no longer shows the last watched channel\'s logo while the VOD info loads — the placeholder shows instead, and the answer now stores the right logo (by @Dryness, #37)'
+            ]
+        },
         {
             title: 'November 8 2026 (Web 789)',
             changes: [
