@@ -167,6 +167,33 @@ public final class AdPlaylistFilterTest {
         r = filter(url, live);
         check(r != null && Arrays.equals(r, live.getBytes(StandardCharsets.UTF_8)), "live content served again once the break is over");
 
+        //The live edge hold: a window ending in ads (stripped or frozen) holds the player's live
+        //edge, per playlist path, until that playlist serves live content at its end again
+        String holdUrl = "https://euw14.playlist.ttvnw.net/v1/playlist/holdvariant.m3u8";
+        String holdPath = Uri.parse(holdUrl).getPath();
+        final int[] holdChanges = {0};
+        AdPlaylistFilter.setAdHoldListener(() -> holdChanges[0]++);
+
+        filter(holdUrl, live);
+        check(!AdPlaylistFilter.isAdHoldActive(holdPath) && holdChanges[0] == 0, "clean playlist: no hold");
+        filter(holdUrl, tailAds);
+        check(AdPlaylistFilter.isAdHoldActive(holdPath), "ads at the window end hold the live edge");
+        check(holdChanges[0] == 1, "the hold start is notified");
+        filter(holdUrl, allAds);
+        check(AdPlaylistFilter.isAdHoldActive(holdPath) && holdChanges[0] == 1, "the freeze frame keeps the same hold, no new notification");
+        filter("https://euw15.playlist.ttvnw.net/v1/playlist/otherhold.m3u8", live);
+        check(AdPlaylistFilter.isAdHoldActive(holdPath) && holdChanges[0] == 1, "another playlist's clean content does not end the hold");
+        long holdNow = System.currentTimeMillis();
+        check(!AdPlaylistFilter.isAdHoldActive(holdPath, holdNow + AdPlaylistFilter.FREEZE_ACTIVE_MS + 1000), "a hold not served for a while is over");
+        check(!AdPlaylistFilter.isAdHoldActive(null), "no playlist, no hold");
+        filter(holdUrl, headAds);
+        check(!AdPlaylistFilter.isAdHoldActive(holdPath), "live content at the window end releases the hold");
+        check(holdChanges[0] == 2, "the hold end is notified");
+        filter(holdUrl, tailAds);
+        filter(holdUrl, live);
+        check(!AdPlaylistFilter.isAdHoldActive(holdPath) && holdChanges[0] == 4, "a clean playlist also releases a hold, both notified");
+        AdPlaylistFilter.setAdHoldListener(null);
+
         System.out.println("AdPlaylistFilter checks passed: " + checks);
     }
 }

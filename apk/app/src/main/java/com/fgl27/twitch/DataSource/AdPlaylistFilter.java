@@ -78,7 +78,23 @@ public final class AdPlaylistFilter {
         void onAdReloadRequested();
     }
 
+    /**
+     * Fired (from a player loader thread) when a media playlist's live edge starts or stops
+     * being held by an ad break, so the player side can check isAdHoldActive again.
+     */
+    public interface AdHoldListener {
+
+        void onAdHoldChanged();
+    }
+
     private static volatile AdReloadListener adReloadListener;
+    private static volatile AdHoldListener adHoldListener;
+
+    //Media playlists whose live edge an ad break holds: the window ends in ad content (stripped)
+    //or is all ads (freeze frame), so no new live content reaches the player. Keyed by the
+    //playlist path, {hold start, last hold served}. A player that runs dry on a held playlist
+    //pauses on its last frame instead of replaying old content through stall resets
+    private static final Map<String, long[]> AD_HOLDS = new HashMap<>();
     private static volatile long strippingSince;
     private static volatile long lastReloadNotify;
 
@@ -145,6 +161,64 @@ public final class AdPlaylistFilter {
         adReloadListener = listener;
     }
 
+    public static void setAdHoldListener(AdHoldListener listener) {
+        adHoldListener = listener;
+    }
+
+    /**
+     * Whether an ad break holds the live edge of this media playlist (its path) right now. Same
+     * limits as the freeze excuse: a hold not served for FREEZE_ACTIVE_MS is over, and one older
+     * than FREEZE_EXCUSE_MAX_MS no longer counts, so a stream that never comes back still ends.
+     */
+    public static boolean isAdHoldActive(String playlistPath) {
+        return isAdHoldActive(playlistPath, System.currentTimeMillis());
+    }
+
+    static boolean isAdHoldActive(String playlistPath, long now) {
+        if (playlistPath == null) return false;
+
+        synchronized (AD_HOLDS) {
+            long[] hold = AD_HOLDS.get(playlistPath);
+            return hold != null && now - hold[1] <= FREEZE_ACTIVE_MS && now - hold[0] <= FREEZE_EXCUSE_MAX_MS;
+        }
+    }
+
+    static void onAdHoldServed(String playlistPath, long now) {
+        if (playlistPath == null) return;
+
+        boolean started;
+        synchronized (AD_HOLDS) {
+            long[] hold = AD_HOLDS.get(playlistPath);
+            started = hold == null || now - hold[1] > FREEZE_ACTIVE_MS;
+
+            if (started) {
+                //Sessions that ended mid break never get cleared, same size cap as LIVE_SEGMENTS
+                if (AD_HOLDS.size() >= LIVE_SEGMENTS_MAX) AD_HOLDS.clear();
+                AD_HOLDS.put(playlistPath, new long[] { now, now });
+            } else {
+                hold[1] = now;
+            }
+        }
+
+        if (started) notifyAdHoldChanged();
+    }
+
+    static void onAdHoldOver(String playlistPath) {
+        if (playlistPath == null) return;
+
+        boolean ended;
+        synchronized (AD_HOLDS) {
+            ended = AD_HOLDS.remove(playlistPath) != null;
+        }
+
+        if (ended) notifyAdHoldChanged();
+    }
+
+    private static void notifyAdHoldChanged() {
+        AdHoldListener listener = adHoldListener;
+        if (listener != null) listener.onAdHoldChanged();
+    }
+
     private static void requestAdReloadIfNeeded(boolean allAds) {
         long now = System.currentTimeMillis();
 
@@ -199,8 +273,12 @@ public final class AdPlaylistFilter {
             if (result == null) {
                 //No ad content, playback is clean
                 resetAdReloadTracking();
+                onAdHoldOver(uri.getPath());
                 return original;
             }
+
+            if (result.holdsLiveEdge) onAdHoldServed(uri.getPath(), System.currentTimeMillis());
+            else onAdHoldOver(uri.getPath());
 
             requestAdReloadIfNeeded(result.allAds);
 
@@ -221,10 +299,13 @@ public final class AdPlaylistFilter {
 
         final byte[] playlist;
         final boolean allAds;
+        //The window ends in ad content, no new live content reaches the player until the break ends
+        final boolean holdsLiveEdge;
 
-        FilterResult(byte[] playlist, boolean allAds) {
+        FilterResult(byte[] playlist, boolean allAds, boolean holdsLiveEdge) {
             this.playlist = playlist;
             this.allAds = allAds;
+            this.holdsLiveEdge = holdsLiveEdge;
         }
     }
 
@@ -243,6 +324,7 @@ public final class AdPlaylistFilter {
         int removedSegments = 0;
         int removedAtHead = 0;
         boolean seenKeptSegment = false;
+        boolean lastSegmentIsAd = false;
         String lastLiveExtInf = null;
         String lastLiveUri = null;
 
@@ -285,6 +367,7 @@ public final class AdPlaylistFilter {
 
                 if (segmentLine != -1 && isAdSegment(line, lines[segmentLine].trim(), inAdRegion)) {
                     removedSegments++;
+                    lastSegmentIsAd = true;
                     if (!seenKeptSegment) removedAtHead++;
 
                     // Drop the EXTINF, everything between it and the uri (PROGRAM-DATE-TIME and
@@ -294,6 +377,7 @@ public final class AdPlaylistFilter {
                 }
 
                 seenKeptSegment = true;
+                lastSegmentIsAd = false;
 
                 //Remember the newest live segment, it becomes the freeze frame when the whole
                 //window turns into ad content
@@ -331,7 +415,7 @@ public final class AdPlaylistFilter {
                 Log.i(TAG, "playlist is all ad content, freezing on the last live segment");
                 onFreezeServed(System.currentTimeMillis());
 
-                return new FilterResult(freezePlaylist(lines, liveSegment, removedSegments), true);
+                return new FilterResult(freezePlaylist(lines, liveSegment, removedSegments), true, true);
             }
 
             //Nothing live was ever seen for this playlist (a preroll on a brand new session),
@@ -339,7 +423,7 @@ public final class AdPlaylistFilter {
             //PlaylistStuckException; better to let this ad run and continue normally after it
             Log.i(TAG, "playlist is all ad content with no live segment to freeze on, letting it play");
 
-            return new FilterResult(null, true);
+            return new FilterResult(null, true, false);
         }
 
         collapseDiscontinuities(out);
@@ -348,7 +432,7 @@ public final class AdPlaylistFilter {
 
         Log.i(TAG, "removed " + removedSegments + " ad segment(s)");
 
-        return new FilterResult(joinLines(out), false);
+        return new FilterResult(joinLines(out), false, lastSegmentIsAd);
     }
 
     private static String[] getLiveSegment(String playlistUrl) {

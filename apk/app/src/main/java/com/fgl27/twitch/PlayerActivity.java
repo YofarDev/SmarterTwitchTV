@@ -81,6 +81,7 @@ import androidx.media3.exoplayer.DefaultLivePlaybackSpeedControl;
 import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.analytics.AnalyticsListener;
+import androidx.media3.exoplayer.hls.HlsManifest;
 import androidx.media3.exoplayer.source.MediaSource;
 import androidx.media3.exoplayer.source.TrackGroupArray;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
@@ -289,6 +290,11 @@ public class PlayerActivity extends Activity {
 
         Handler CheckHandler;
 
+        //Paused on its last frame while an ad break holds the live edge, see AdHoldStart.
+        //Tied to the media source it was set for, a new stream never starts held
+        boolean adHold;
+        MediaSource adHoldSource;
+
         long ResumePosition;
         long LatencyOffSet;
 
@@ -380,6 +386,8 @@ public class PlayerActivity extends Activity {
             AdPlaylistFilter.setAdReloadListener(
                 () -> runOnUiThread(() -> LoadUrlWebView("javascript:smartTwitchTV.Play_AdBlockReload()"))
             );
+            //A held live edge started or ended, pause or resume the players it concerns
+            AdPlaylistFilter.setAdHoldListener(() -> runOnUiThread(this::AdHoldCheck));
 
             Intent intent = getIntent();
             boolean isChannelIntent = Objects.equals(intent.getAction(), Constants.CHANNEL_INTENT);
@@ -579,13 +587,17 @@ public class PlayerActivity extends Activity {
 
         PlayerObj[PlayerObjPosition].trackSelector = PlayerObj[4].trackSelector;
         PlayerObj[PlayerObjPosition].mediaSources = PlayerObj[4].mediaSources;
+        boolean previewHeld = PlayerObj[4].adHold;
+        PlayerObj[PlayerObjPosition].adHoldSource = PlayerObj[4].adHoldSource;
+        AdHoldSet(4, false);
+        AdHoldSet(PlayerObjPosition, previewHeld);
 
         ExoPlayer tempPlayer = PlayerObj[PlayerObjPosition].player;
         PlayerObj[PlayerObjPosition].player = PlayerObj[4].player;
         PlayerObj[4].player = tempPlayer;
 
         PlayerObj[PlayerObjPosition].playerView.setPlayer(PlayerObj[PlayerObjPosition].player);
-        PlayerObj[PlayerObjPosition].player.setPlayWhenReady(true);
+        PlayerObj[PlayerObjPosition].player.setPlayWhenReady(!PlayerObj[PlayerObjPosition].adHold);
 
         if (BLACKLISTED_QUALITIES != null && (IsInAutoMode || MultiStreamEnable || PicturePicture)) {
             setEnabledQualities(PlayerObjPosition);
@@ -665,7 +677,14 @@ public class PlayerActivity extends Activity {
             PlayerObj[PlayerObjPosition].playerView.setPlayer(PlayerObj[PlayerObjPosition].player);
         }
 
-        PlayerObj[PlayerObjPosition].player.setPlayWhenReady(true);
+        //A reset during an ad hold (excused player errors) stays paused on the first frame, the
+        //hold check resumes it once the break is over. Any other stream starts normally
+        if (PlayerObj[PlayerObjPosition].adHold && PlayerObj[PlayerObjPosition].adHoldSource != PlayerObj[PlayerObjPosition].mediaSources) {
+            AdHoldSet(PlayerObjPosition, false);
+        }
+        if (PlayerObj[PlayerObjPosition].adHold) AdHoldScheduleCheck();
+
+        PlayerObj[PlayerObjPosition].player.setPlayWhenReady(!PlayerObj[PlayerObjPosition].adHold);
         PlayerObj[PlayerObjPosition].player.setMediaSource(PlayerObj[PlayerObjPosition].mediaSources, PlayerObj[PlayerObjPosition].ResumePosition);
 
         PlayerObj[PlayerObjPosition].player.prepare();
@@ -809,6 +828,8 @@ public class PlayerActivity extends Activity {
 
         PlayerObj[position].CheckHandler.removeCallbacksAndMessages(null);
         PlayerObj[position].playerView.setVisibility(View.GONE);
+        //A stopped player is no longer held
+        AdHoldSet(position, false);
 
         if (PlayerObj[position].player != null) {
             //Remove the listener before release as release may crash the player and restart the playback on background
@@ -1667,6 +1688,7 @@ public class PlayerActivity extends Activity {
     public void onDestroy() {
         requests.close();
         AdPlaylistFilter.setAdReloadListener(null);
+        AdPlaylistFilter.setAdHoldListener(null);
         super.onDestroy();
         synchronized (this) {
             if (phoneChatServer != null) phoneChatServer.close();
@@ -2255,9 +2277,9 @@ public class PlayerActivity extends Activity {
         //That is an ad break, not a dead stream: reset the player without counting a failure.
         //A stream that ends during the break still ends: its playlist gets an end mark (kept in
         //the freeze) or fails to load (no freeze served, so failures count again)
-        if (AdPlaylistFilter.isAdFreezeActive()) {
+        if (PlayerObj[position].adHold || AdPlaylistFilter.isAdFreezeActive()) {
             if (BuildConfig.DEBUG) {
-                Log.i(TAG, "PlayerEventListenerCheckCounter ad freeze, not counted position " + position);
+                Log.i(TAG, "PlayerEventListenerCheckCounter ad freeze, not counted position " + position + " adHold " + PlayerObj[position].adHold);
             }
 
             PlayerEventListenerCheckCounterEnd(position);
@@ -2293,6 +2315,111 @@ public class PlayerActivity extends Activity {
                 LoadUrlWebView("javascript:smartTwitchTV.Play_CheckIfIsLiveClean(" + fail_type + "," + errorCode + ")");
             }
         }
+    }
+
+    //The media playlist path a live player is on, the key of the ad filter's live edge holds
+    private String AdHoldPlaylistPath(int position) {
+        if (PlayerObj[position].player == null || PlayerObj[position].Type != 1) return null;
+
+        Object manifest = PlayerObj[position].player.getCurrentManifest();
+        if (!(manifest instanceof HlsManifest)) return null;
+
+        return Uri.parse(((HlsManifest) manifest).mediaPlaylist.baseUri).getPath();
+    }
+
+    //A live player ran dry because an ad break holds its live edge (ads stripped from the window end,
+    //or the freeze frame). Pause it on the last frame: left playing, the stall checks and stuck playlist
+    //errors reset it and each reset replays the last seconds of live content, again and again until the
+    //break ends. Paused, it waits silently and the hold check resumes it at the live edge afterwards
+    private void AdHoldStart(int position) {
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "AdHoldStart position " + position);
+        }
+
+        PlayerObj[position].CheckHandler.removeCallbacksAndMessages(null);
+        PlayerObj[position].adHoldSource = PlayerObj[position].mediaSources;
+        PlayerObj[position].player.setPlayWhenReady(false);
+        AdHoldSet(position, true);
+
+        AdHoldScheduleCheck();
+    }
+
+    private void AdHoldSet(int position, boolean held) {
+        PlayerObj[position].adHold = held;
+    }
+
+    private final Runnable AdHoldCheckRunnable = this::AdHoldCheck;
+
+    //A stall must last this long before the hold pauses the player: a short rebuffer while the ads are
+    //only at the window end is not the break yet, a few seconds of live content may still arrive
+    private static final long AD_HOLD_STALL_MS = 1000;
+
+    //Pause once the player is still stuck in buffering after AD_HOLD_STALL_MS on a held playlist. Posted on
+    //the player's CheckHandler, so reaching READY or a release cancels it
+    private void AdHoldStartIfDry(int position) {
+        PlayerObj[position].CheckHandler.postDelayed(
+                () -> {
+                    if (
+                        PlayerObj[position].player != null &&
+                        !PlayerObj[position].adHold &&
+                        PlayerObj[position].player.getPlaybackState() == Player.STATE_BUFFERING &&
+                        PlayerObj[position].player.getPlayWhenReady() &&
+                        AdPlaylistFilter.isAdHoldActive(AdHoldPlaylistPath(position))
+                    ) {
+                        AdHoldStart(position);
+                    }
+                },
+                AD_HOLD_STALL_MS
+            );
+    }
+
+    //Also a fallback for a hold end that is never notified (playlist requests failing, a paused player
+    //that stopped refreshing): a hold not served for a few seconds is over
+    private void AdHoldScheduleCheck() {
+        MainThreadHandler.removeCallbacks(AdHoldCheckRunnable);
+        MainThreadHandler.postDelayed(AdHoldCheckRunnable, 5000);
+    }
+
+    private void AdHoldCheck() {
+        //Stopped players are released, the web side restarts them on resume
+        if (IsStopped) return;
+
+        boolean anyHeld = false;
+
+        for (int i = 0; i < PlayerAccountPlus; i++) {
+            if (PlayerObj[i] == null) continue;
+
+            if (PlayerObj[i].player == null) {
+                AdHoldSet(i, false);
+                continue;
+            }
+
+            boolean held = AdPlaylistFilter.isAdHoldActive(AdHoldPlaylistPath(i));
+
+            if (PlayerObj[i].adHold) {
+                if (held) anyHeld = true;
+                else AdHoldEnd(i);
+            } else if (held && PlayerObj[i].player.getPlaybackState() == Player.STATE_BUFFERING) {
+                //Already buffering when the hold started
+                AdHoldStartIfDry(i);
+            }
+        }
+
+        if (anyHeld) AdHoldScheduleCheck();
+        else MainThreadHandler.removeCallbacks(AdHoldCheckRunnable);
+    }
+
+    //The break is over, restart at the live edge: the paused position is long gone from the window
+    private void AdHoldEnd(int position) {
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "AdHoldEnd position " + position);
+        }
+
+        AdHoldSet(position, false);
+
+        updateResumePosition(position);
+        SimpleReleasePlayer(position);
+        SetupPlayer(position);
     }
 
     //First check only reset the player as it may be stuck
@@ -3787,6 +3914,9 @@ public class PlayerActivity extends Activity {
                 //Use the player buffer as a player check state to prevent be buffering for ever
                 //If buffer for too long check because the player may have froze
                 PlayerObj[position].CheckHandler.removeCallbacksAndMessages(null);
+
+                //Ran dry on a live edge an ad break holds: wait paused instead of stalling into resets
+                if (!PlayerObj[position].adHold) AdHoldStartIfDry(position);
                 PlayerObj[position].CheckHandler.postDelayed(
                         () -> {
                             //Check if Player was released or is on pause
@@ -3806,11 +3936,11 @@ public class PlayerActivity extends Activity {
                         //If other not playing just play it so they stay in sync
                         if (MultiStreamEnable) {
                             for (int i = 0; i < PlayerAccount; i++) {
-                                if (position != i && PlayerObj[i].player != null) PlayerObj[i].player.setPlayWhenReady(true);
+                                if (position != i && PlayerObj[i].player != null && !PlayerObj[i].adHold) PlayerObj[i].player.setPlayWhenReady(true);
                             }
                         } else {
                             int OtherPlayer = position ^ 1;
-                            if (PlayerObj[OtherPlayer].player != null) {
+                            if (PlayerObj[OtherPlayer].player != null && !PlayerObj[OtherPlayer].adHold) {
                                 if (!PlayerObj[OtherPlayer].player.isPlaying()) PlayerObj[OtherPlayer].player.setPlayWhenReady(true);
                             }
                         }
