@@ -694,6 +694,13 @@ function en_USLang() {
     STR_AD_FILTER_SUMMARY =
         "When enabled, ads stitched into the stream are removed from the playback playlists. During a blocked ad the stream pauses briefly and resumes where the ad ended. This works directly with Twitch's servers, no proxy is involved.";
     STR_AD_IN_PROGRESS = 'Ads In Progress';
+    STR_MENU_AUTO_HIDE = 'Menu auto-hide';
+    STR_MENU_AUTO_HIDE_SUMMARY =
+        'How long the player menu waits for a key before closing itself. Set to Never to keep the menu open until Back is pressed, if it closes on its own while you are still navigating on a slower TV.';
+    STR_MENU_AUTO_HIDE_5S = '5 seconds';
+    STR_MENU_AUTO_HIDE_15S = '15 seconds';
+    STR_MENU_AUTO_HIDE_NEVER = 'Never';
+    STR_MENU_AUTO_HIDE_TOAST = 'Menu auto-hide fired';
     STR_DEBUG_LOG = 'Debug logs';
     STR_DEBUG_LOG_SUMMARY =
         'When enabled, the app saves its own logs and serves them over the local network (http port 8977), so they can be read from a computer on the same network to help diagnose issues. Only this app logs are exposed, and only inside your network.';

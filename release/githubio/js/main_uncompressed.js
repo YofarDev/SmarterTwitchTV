@@ -621,6 +621,12 @@
         STR_AD_FILTER,
         STR_AD_FILTER_SUMMARY,
         STR_AD_IN_PROGRESS,
+        STR_MENU_AUTO_HIDE,
+        STR_MENU_AUTO_HIDE_SUMMARY,
+        STR_MENU_AUTO_HIDE_5S,
+        STR_MENU_AUTO_HIDE_15S,
+        STR_MENU_AUTO_HIDE_NEVER,
+        STR_MENU_AUTO_HIDE_TOAST,
         STR_DEBUG_LOG,
         STR_DEBUG_LOG_SUMMARY,
         STR_AUTO_REFRESH_BACKGROUND,
@@ -2130,6 +2136,13 @@
         STR_AD_FILTER_SUMMARY =
             "When enabled, ads stitched into the stream are removed from the playback playlists. During a blocked ad the stream pauses briefly and resumes where the ad ended. This works directly with Twitch's servers, no proxy is involved.";
         STR_AD_IN_PROGRESS = 'Ads In Progress';
+        STR_MENU_AUTO_HIDE = 'Menu auto-hide';
+        STR_MENU_AUTO_HIDE_SUMMARY =
+            'How long the player menu waits for a key before closing itself. Set to Never to keep the menu open until Back is pressed, if it closes on its own while you are still navigating on a slower TV.';
+        STR_MENU_AUTO_HIDE_5S = '5 seconds';
+        STR_MENU_AUTO_HIDE_15S = '15 seconds';
+        STR_MENU_AUTO_HIDE_NEVER = 'Never';
+        STR_MENU_AUTO_HIDE_TOAST = 'Menu auto-hide fired';
         STR_DEBUG_LOG = 'Debug logs';
         STR_DEBUG_LOG_SUMMARY =
             'When enabled, the app saves its own logs and serves them over the local network (http port 8977), so they can be read from a computer on the same network to help diagnose issues. Only this app logs are exposed, and only inside your network.';
@@ -8556,8 +8569,15 @@
         publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
         WebVersion: 'November 11 2026',
-        WebTag: 791, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 792, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 11 2026 (Web 792)',
+                changes: [
+                    'Settings: new Menu auto-hide option (Settings › Player related) sets how long the player menu waits for a key before closing itself — 5 seconds as before, 15 seconds, or Never, which keeps the menu open until Back; useful where the menu closes on its own mid navigation on slower TVs (#3)',
+                    'Diagnostics: with Debug logs enabled, the player menu shows a brief notice each time it closes from its idle auto-hide, telling that apart from other closes when diagnosing a menu that reverts while navigating (#3)'
+                ]
+            },
             {
                 title: 'November 11 2026 (Web 791 / APK 402)',
                 changes: [
@@ -27022,7 +27042,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     function Play_setHidePanel() {
-        Play_PanelHideID = Main_setTimeout(Play_hidePanel, 5000, Play_PanelHideID);
+        var delay = PlayerUI_MenuHideDelay();
+
+        if (delay > 0) Play_PanelHideID = Main_setTimeout(Play_hidePanel, delay, Play_PanelHideID);
     }
 
     function Play_showChat() {
@@ -38576,13 +38598,32 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         // Input is dispatched by UIFocus_Listener before this existing-listener adapter is reached.
     }
 
+    //The player menu's auto-hide delay, from the Menu auto-hide setting. 0 keeps the menu open until Back
+    function PlayerUI_MenuHideDelay() {
+        var choice = Settings_Obj_default('menu_auto_hide');
+
+        if (choice === 2) return 15000;
+        if (choice === 3) return 0;
+
+        return 5000;
+    }
+
     function PlayerUI_ScheduleHide() {
         Main_clearTimeout(PlayerUI_State.hiddenTimer);
         Play_clearHidePanel();
         if (PlayerUI_State.frames.length === 1 && !PlayerUI_State.suspended) {
-            PlayerUI_State.hiddenTimer = Main_setTimeout(function () {
-                PlayerUI_Close(true);
-            }, 5000);
+            var delay = PlayerUI_MenuHideDelay();
+
+            if (delay > 0) {
+                PlayerUI_State.hiddenTimer = Main_setTimeout(function () {
+                    //With Debug logs on, make the idle close visible: a menu that reverts mid navigation
+                    //without this notice is being reset by something else (#3)
+                    if (Settings_Obj_default('debug_logs') === 2) {
+                        Main_showWarningDialog(STR_MENU_AUTO_HIDE_TOAST, 2500);
+                    }
+                    PlayerUI_Close(true);
+                }, delay);
+            }
         }
     }
 
@@ -47972,6 +48013,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             values: ['no', 'yes'],
             defaultValue: 1
         },
+        menu_auto_hide: {
+            values: [STR_MENU_AUTO_HIDE_5S, STR_MENU_AUTO_HIDE_15S, STR_MENU_AUTO_HIDE_NEVER],
+            defaultValue: 1
+        },
         enable_mature: {
             values: ['no', 'yes'],
             defaultValue: 2
@@ -48588,6 +48633,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         div += Settings_Content('debug_logs', array_no_yes, STR_DEBUG_LOG, STR_DEBUG_LOG_SUMMARY);
 
         div += Settings_Content('hide_live_seek_bar', array_no_yes, STR_HIDE_LIVE_SEEK_BAR, STR_HIDE_LIVE_SEEK_BAR_SUMMARY);
+
+        div += Settings_Content('menu_auto_hide', Settings_value.menu_auto_hide.values, STR_MENU_AUTO_HIDE, STR_MENU_AUTO_HIDE_SUMMARY);
 
         div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
 

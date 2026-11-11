@@ -152,13 +152,32 @@ function PlayerUI_Listener() {
     // Input is dispatched by UIFocus_Listener before this existing-listener adapter is reached.
 }
 
+//The player menu's auto-hide delay, from the Menu auto-hide setting. 0 keeps the menu open until Back
+function PlayerUI_MenuHideDelay() {
+    var choice = Settings_Obj_default('menu_auto_hide');
+
+    if (choice === 2) return 15000;
+    if (choice === 3) return 0;
+
+    return 5000;
+}
+
 function PlayerUI_ScheduleHide() {
     Main_clearTimeout(PlayerUI_State.hiddenTimer);
     Play_clearHidePanel();
     if (PlayerUI_State.frames.length === 1 && !PlayerUI_State.suspended) {
-        PlayerUI_State.hiddenTimer = Main_setTimeout(function () {
-            PlayerUI_Close(true);
-        }, 5000);
+        var delay = PlayerUI_MenuHideDelay();
+
+        if (delay > 0) {
+            PlayerUI_State.hiddenTimer = Main_setTimeout(function () {
+                //With Debug logs on, make the idle close visible: a menu that reverts mid navigation
+                //without this notice is being reset by something else (#3)
+                if (Settings_Obj_default('debug_logs') === 2) {
+                    Main_showWarningDialog(STR_MENU_AUTO_HIDE_TOAST, 2500);
+                }
+                PlayerUI_Close(true);
+            }, delay);
+        }
     }
 }
 

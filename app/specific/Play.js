@@ -1895,7 +1895,9 @@ function Play_clearHidePanel() {
 }
 
 function Play_setHidePanel() {
-    Play_PanelHideID = Main_setTimeout(Play_hidePanel, 5000, Play_PanelHideID);
+    var delay = PlayerUI_MenuHideDelay();
+
+    if (delay > 0) Play_PanelHideID = Main_setTimeout(Play_hidePanel, delay, Play_PanelHideID);
 }
 
 function Play_showChat() {

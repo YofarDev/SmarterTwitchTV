@@ -442,6 +442,10 @@ var Settings_value = {
         values: ['no', 'yes'],
         defaultValue: 1
     },
+    menu_auto_hide: {
+        values: [STR_MENU_AUTO_HIDE_5S, STR_MENU_AUTO_HIDE_15S, STR_MENU_AUTO_HIDE_NEVER],
+        defaultValue: 1
+    },
     enable_mature: {
         values: ['no', 'yes'],
         defaultValue: 2
@@ -1053,6 +1057,8 @@ function Settings_SetSettings() {
     div += Settings_Content('debug_logs', array_no_yes, STR_DEBUG_LOG, STR_DEBUG_LOG_SUMMARY);
 
     div += Settings_Content('hide_live_seek_bar', array_no_yes, STR_HIDE_LIVE_SEEK_BAR, STR_HIDE_LIVE_SEEK_BAR_SUMMARY);
+
+    div += Settings_Content('menu_auto_hide', Settings_value.menu_auto_hide.values, STR_MENU_AUTO_HIDE, STR_MENU_AUTO_HIDE_SUMMARY);
 
     div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
 

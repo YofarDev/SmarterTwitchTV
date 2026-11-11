@@ -24,8 +24,15 @@ var version = {
     publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
     WebVersion: 'November 11 2026',
-    WebTag: 791, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 792, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 11 2026 (Web 792)',
+            changes: [
+                'Settings: new Menu auto-hide option (Settings › Player related) sets how long the player menu waits for a key before closing itself — 5 seconds as before, 15 seconds, or Never, which keeps the menu open until Back; useful where the menu closes on its own mid navigation on slower TVs (#3)',
+                'Diagnostics: with Debug logs enabled, the player menu shows a brief notice each time it closes from its idle auto-hide, telling that apart from other closes when diagnosing a menu that reverts while navigating (#3)'
+            ]
+        },
         {
             title: 'November 11 2026 (Web 791 / APK 402)',
             changes: [

@@ -463,4 +463,41 @@ s.PlayerUI_State.frames = [];
 element('player-ui-name').textContent = '';
 s.PlayerUI_SetAutoQuality(1, '720p60 | Auto | 3.00Mbps | AVC');
 check(element('player-ui-name').textContent === '' && s.PlayerUI_State.autoQuality === '720p60', 'closed bar only stores the report');
+/* Menu auto-hide: the delay comes from the setting, Never arms nothing, and the idle close is visible with Debug logs. */
+const priorPlayIsOn = s.Play_isOn;
+s.Play_isOn = true;
+s.Main_showWarningDialog = text => effects.push(['toast', text]);
+s.STR_MENU_AUTO_HIDE_TOAST = 'toast:menu-auto-hide';
+s.PlayerUI_State.mode = 1;
+s.PlayerUI_State.suspended = false;
+s.PlayerUI_State.frames = [{group: 'bar', index: 0}];
+timers.clear();
+s.Settings_Obj_default = key => ({menu_auto_hide: 1, debug_logs: 1})[key] || 0;
+s.PlayerUI_ScheduleHide();
+check(timers.size === 1 && [...timers.values()][0].due === clock + 5000, 'default keeps the historical 5 second auto-hide');
+s.Settings_Obj_default = key => ({menu_auto_hide: 2, debug_logs: 1})[key] || 0;
+timers.clear();
+s.PlayerUI_ScheduleHide();
+check(timers.size === 1 && [...timers.values()][0].due === clock + 15000, 'second choice waits 15 seconds');
+s.Settings_Obj_default = key => ({menu_auto_hide: 3, debug_logs: 1})[key] || 0;
+timers.clear();
+s.PlayerUI_ScheduleHide();
+check(timers.size === 0, 'Never arms no auto-hide');
+s.Settings_Obj_default = key => ({menu_auto_hide: 1, debug_logs: 2})[key] || 0;
+timers.clear();
+s.PlayerUI_ScheduleHide();
+[...timers.values()][0].fn();
+check(
+    effects.some(x => Array.isArray(x) && x[0] === 'toast' && x[1] === 'toast:menu-auto-hide'),
+    'idle close announces itself with Debug logs on'
+);
+check(effects.some(x => Array.isArray(x) && x[0] === 'hidePanel' && x[1] === 1), 'idle close hides the live panel');
+s.PlayerUI_State.frames = [{group: 'bar', index: 0}];
+const toastsBefore = effects.filter(x => Array.isArray(x) && x[0] === 'toast').length;
+s.Settings_Obj_default = key => ({menu_auto_hide: 1, debug_logs: 1})[key] || 0;
+timers.clear();
+s.PlayerUI_ScheduleHide();
+[...timers.values()][0].fn();
+check(effects.filter(x => Array.isArray(x) && x[0] === 'toast').length === toastsBefore, 'no notice without Debug logs');
+s.Play_isOn = priorPlayIsOn;
 console.log(checks + ' production player action checks passed');
