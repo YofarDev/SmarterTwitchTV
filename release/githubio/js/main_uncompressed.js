@@ -620,6 +620,7 @@
         STR_SOURCE_CHECK_SUMMARY,
         STR_AD_FILTER,
         STR_AD_FILTER_SUMMARY,
+        STR_AD_IN_PROGRESS,
         STR_DEBUG_LOG,
         STR_DEBUG_LOG_SUMMARY,
         STR_AUTO_REFRESH_BACKGROUND,
@@ -2128,6 +2129,7 @@
         STR_AD_FILTER = 'Block ads';
         STR_AD_FILTER_SUMMARY =
             "When enabled, ads stitched into the stream are removed from the playback playlists. During a blocked ad the stream pauses briefly and resumes where the ad ended. This works directly with Twitch's servers, no proxy is involved.";
+        STR_AD_IN_PROGRESS = 'Ads In Progress';
         STR_DEBUG_LOG = 'Debug logs';
         STR_DEBUG_LOG_SUMMARY =
             'When enabled, the app saves its own logs and serves them over the local network (http port 8977), so they can be read from a computer on the same network to help diagnose issues. Only this app logs are exposed, and only inside your network.';
@@ -8551,11 +8553,18 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 401, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/401/SmarterPurpleTV_3_0_401.apk',
-        WebVersion: 'November 10 2026',
-        WebTag: 790, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
+        WebVersion: 'November 11 2026',
+        WebTag: 791, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 11 2026 (Web 791 / APK 402)',
+                changes: [
+                    'APK: during an ad break the player and the grid previews hold a still frame until the break ends, instead of replaying the last seconds of the stream over and over; playback resumes at the live edge the moment the break is over (by @Dryness, #38)',
+                    'APK: an "Ads In Progress" label sits over the held picture, on grid previews and in the player, so a frame held by a break no longer looks like a stalled stream (by @Dryness, #39)'
+                ]
+            },
             {
                 title: 'November 10 2026 (Web 790)',
                 changes: [
@@ -18814,6 +18823,7 @@
                         PlayHLS_PlayListUrlResult: PlayHLS_PlayListUrlResult,
                         PlayHLS_AdProbeResult: PlayHLS_AdProbeResult,
                         Play_AdBlockReload: Play_AdBlockReload,
+                        Play_AdHoldChanged: Play_AdHoldChanged,
                         AddCode_AppTokenResult: AddCode_AppTokenResult,
                         Play_UpdateDurationDiv: Play_UpdateDurationDiv,
                         Screens_PlaybackTimeSetVodDuration: Screens_PlaybackTimeSetVodDuration
@@ -24144,6 +24154,15 @@
         Android.SetFeedPosition(position);
     }
 
+    //public void SetAdHoldLabel(int position, String text)
+    //position = the player Play_AdHoldChanged was called for
+    //text = the label, empty to hide it
+    //Android specific: true
+    //Shows a label over a player paused on a still frame by an ad break (shown only while it is still held)
+    function OSInterface_SetAdHoldLabel(position, text) {
+        Android.SetAdHoldLabel(position, text);
+    }
+
     //public void mshowLoadingBottom(boolean show)
     //show =  show or hide
     //Android specific: true
@@ -25947,6 +25966,13 @@
 
         Play_showBufferDialog();
         Play_loadData();
+    }
+
+    //Called by JAVA when a player pauses on a still frame because an ad break holds its live edge (held
+    //true), and when it resumes or is released (held false). The label over that picture is drawn by
+    //JAVA (a grid preview plays above the WebView), only its translated text comes from here
+    function Play_AdHoldChanged(position, held) {
+        OSInterface_SetAdHoldLabel(position, held ? STR_AD_IN_PROGRESS : '');
     }
 
     function Play_loadDataResult(response) {
@@ -61028,6 +61054,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         PlayHLS_PlayListUrlResult: PlayHLS_PlayListUrlResult,
         PlayHLS_AdProbeResult: PlayHLS_AdProbeResult,
         Play_AdBlockReload: Play_AdBlockReload,
+        Play_AdHoldChanged: Play_AdHoldChanged,
         AddCode_AppTokenResult: AddCode_AppTokenResult,
         Play_UpdateDurationDiv: Play_UpdateDurationDiv,
         Screens_PlaybackTimeSetVodDuration: Screens_PlaybackTimeSetVodDuration

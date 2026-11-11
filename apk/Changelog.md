@@ -9,6 +9,12 @@ The App is divided in two part, **Apk** and **Web** you can check it version in 
 
 The app has a building update check function, so whenever there is a update a red text will show up bellow the main pages clock, also a short warning will pop on the screen let you know if is a **Apk** or **Web** update.
 
+November 11 2026 (3.0.402)
+==============
+
+* APK: during an ad break the player and the grid previews hold a still frame until the break ends, instead of replaying the last seconds of the stream over and over; playback resumes at the live edge the moment the break is over (by @Dryness, #38).
+* APK: an "Ads In Progress" label sits over the held picture, on grid previews and in the player, so a frame held by a break no longer looks like a stalled stream (by @Dryness, #39).
+
 November 7 2026 (3.0.401)
 ==============
 

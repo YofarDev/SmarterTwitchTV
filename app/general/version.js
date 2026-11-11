@@ -21,11 +21,18 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 401, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/401/SmarterPurpleTV_3_0_401.apk',
-    WebVersion: 'November 10 2026',
-    WebTag: 790, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
+    WebVersion: 'November 11 2026',
+    WebTag: 791, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 11 2026 (Web 791 / APK 402)',
+            changes: [
+                'APK: during an ad break the player and the grid previews hold a still frame until the break ends, instead of replaying the last seconds of the stream over and over; playback resumes at the live edge the moment the break is over (by @Dryness, #38)',
+                'APK: an "Ads In Progress" label sits over the held picture, on grid previews and in the player, so a frame held by a break no longer looks like a stalled stream (by @Dryness, #39)'
+            ]
+        },
         {
             title: 'November 10 2026 (Web 790)',
             changes: [
