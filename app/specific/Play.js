@@ -842,6 +842,13 @@ function Play_AdBlockReload() {
     Play_loadData();
 }
 
+//Called by JAVA when a player pauses on a still frame because an ad break holds its live edge (held
+//true), and when it resumes or is released (held false). The label over that picture is drawn by
+//JAVA (a grid preview plays above the WebView), only its translated text comes from here
+function Play_AdHoldChanged(position, held) {
+    OSInterface_SetAdHoldLabel(position, held ? STR_AD_IN_PROGRESS : '');
+}
+
 function Play_loadDataResult(response) {
     //An ad escape or quality restore reload may complete after the stream was declared ended,
     //letting it through restarts the native player behind the end dialog with no session left

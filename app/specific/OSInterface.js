@@ -885,6 +885,15 @@ function OSInterface_SetFeedPosition(position) {
     Android.SetFeedPosition(position);
 }
 
+//public void SetAdHoldLabel(int position, String text)
+//position = the player Play_AdHoldChanged was called for
+//text = the label, empty to hide it
+//Android specific: true
+//Shows a label over a player paused on a still frame by an ad break (shown only while it is still held)
+function OSInterface_SetAdHoldLabel(position, text) {
+    Android.SetAdHoldLabel(position, text);
+}
+
 //public void mshowLoadingBottom(boolean show)
 //show =  show or hide
 //Android specific: true

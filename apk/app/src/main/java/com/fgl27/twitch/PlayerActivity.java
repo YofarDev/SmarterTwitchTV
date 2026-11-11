@@ -32,6 +32,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -828,7 +829,7 @@ public class PlayerActivity extends Activity {
 
         PlayerObj[position].CheckHandler.removeCallbacksAndMessages(null);
         PlayerObj[position].playerView.setVisibility(View.GONE);
-        //A stopped player is no longer held
+        //A stopped player is no longer held, drops its ads in progress label
         AdHoldSet(position, false);
 
         if (PlayerObj[position].player != null) {
@@ -2344,8 +2345,65 @@ public class PlayerActivity extends Activity {
         AdHoldScheduleCheck();
     }
 
+    //Every hold change goes through here: the web side answers with the label text for a held picture
     private void AdHoldSet(int position, boolean held) {
+        if (PlayerObj[position].adHold == held) return;
+
         PlayerObj[position].adHold = held;
+        if (!held) AdHoldLabelSet(position, null);
+        LoadUrlWebView("javascript:smartTwitchTV.Play_AdHoldChanged(" + position + "," + held + ")");
+    }
+
+    private final TextView[] AdHoldLabels = new TextView[PlayerAccountPlus];
+
+    //The ads in progress label, drawn in the player view's overlay: a grid preview plays above the
+    //WebView, so the web side cannot draw over it. The text comes from the web side (translated)
+    private void AdHoldLabelSet(int position, String text) {
+        if (position < 0 || position >= PlayerAccountPlus || PlayerObj[position] == null) return;
+
+        boolean show = text != null && !text.isEmpty() && PlayerObj[position].adHold;
+        TextView label = AdHoldLabels[position];
+
+        if (!show) {
+            if (label != null) label.setVisibility(View.GONE);
+            return;
+        }
+
+        FrameLayout overlay = PlayerObj[position].playerView.getOverlayFrameLayout();
+        if (overlay == null) return;
+
+        if (label == null || label.getParent() != overlay) {
+            if (label != null && label.getParent() != null) ((ViewGroup) label.getParent()).removeView(label);
+
+            label = new TextView(this);
+            label.setTextColor(Color.parseColor("#f5f1fa"));
+            label.setSingleLine(true);
+
+            GradientDrawable background = new GradientDrawable();
+            background.setColor(Color.parseColor("#e61e1b25"));
+            label.setBackground(background);
+
+            overlay.addView(label, new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.START));
+            AdHoldLabels[position] = label;
+        }
+
+        //Sized from the picture: a grid card or the full screen player
+        int height = PlayerObj[position].playerView.getHeight();
+        float textSize = Math.max(16, Math.min(32, height * 0.075f));
+        int padV = Math.round(textSize * 0.3f);
+        int padH = Math.round(textSize * 0.7f);
+        int margin = Math.round(textSize * 0.6f);
+
+        label.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+        label.setPadding(padH, padV, padH, padV);
+        ((GradientDrawable) label.getBackground()).setCornerRadius(textSize * 0.3f);
+
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) label.getLayoutParams();
+        params.setMargins(margin, margin, margin, margin);
+        label.setLayoutParams(params);
+
+        label.setText(text);
+        label.setVisibility(View.VISIBLE);
     }
 
     private final Runnable AdHoldCheckRunnable = this::AdHoldCheck;
@@ -2550,6 +2608,11 @@ public class PlayerActivity extends Activity {
                 if (show) showLoading();
                 else hideLoading(5);
             });
+        }
+
+        @JavascriptInterface
+        public void SetAdHoldLabel(int position, String text) {
+            runOnUiThread(() -> AdHoldLabelSet(position, text));
         }
 
         @JavascriptInterface
