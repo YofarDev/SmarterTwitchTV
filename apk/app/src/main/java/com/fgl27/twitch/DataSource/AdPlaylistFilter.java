@@ -331,7 +331,7 @@ public final class AdPlaylistFilter {
                 Log.i(TAG, "playlist is all ad content, freezing on the last live segment");
                 onFreezeServed(System.currentTimeMillis());
 
-                return new FilterResult(freezePlaylist(lines, liveSegment), true);
+                return new FilterResult(freezePlaylist(lines, liveSegment, removedSegments), true);
             }
 
             //Nothing live was ever seen for this playlist (a preroll on a brand new session),
@@ -362,8 +362,12 @@ public final class AdPlaylistFilter {
      * last live segment, repeated on every refresh. The advancing media sequence keeps the player
      * polling while the repeated segment leaves the decoder with already played content, so the
      * picture freezes until the original playlist serves live content again.
+     * The single segment takes the number of the window's last segment: during a break Twitch
+     * can keep the media sequence and grow the window instead, and a freeze numbered from the
+     * window start would then never change, so the player reports it stuck and gets reset,
+     * replaying the frozen segment every few seconds.
      */
-    private static byte[] freezePlaylist(String[] lines, String[] liveSegment) {
+    private static byte[] freezePlaylist(String[] lines, String[] liveSegment, int windowSegments) {
         List<String> out = new ArrayList<>(FREEZE_HEADER_TAGS.length + 4);
         boolean endList = false;
 
@@ -381,6 +385,8 @@ public final class AdPlaylistFilter {
                 }
             }
         }
+
+        if (windowSegments > 1) bumpMediaSequence(out, windowSegments - 1);
 
         out.add(liveSegment[0]);
         out.add(liveSegment[1]);

@@ -101,7 +101,7 @@ public final class AdPlaylistFilterTest {
         check(frozen.startsWith("#EXTM3U"), "freeze frame starts with EXTM3U");
         check(frozen.contains("#EXT-X-TARGETDURATION:"), "freeze frame carries TARGETDURATION");
         check(frozen.contains("#EXT-X-MEDIA-SEQUENCE:"), "freeze frame carries MEDIA-SEQUENCE");
-        check(mediaSequence(frozen) == 3404, "freeze frame keeps the original media sequence");
+        check(mediaSequence(frozen) == 3406, "freeze frame takes the number of the window's last segment");
         check(!hasAdSegment(frozen) && !frozen.contains("stitched") && !frozen.contains("ad_"), "freeze frame has no ad content");
         check(frozen.contains("https://cdn.hls.ttvnw.net/v1/segment/live_3.ts"), "freeze frame loops the last live segment");
         check(frozen.indexOf("live_3.ts") == frozen.lastIndexOf("live_3.ts"), "freeze frame holds a single segment");
@@ -110,6 +110,13 @@ public final class AdPlaylistFilterTest {
         r = filter(url, allAds);
         check(s(r).contains("live_3.ts") && !hasAdSegment(s(r)), "freeze frame stable across refreshes");
         check(!frozen.contains("#EXT-X-ENDLIST"), "freeze frame of a live window has no end mark");
+
+        //Twitch can keep the media sequence during a break and grow the window instead; the freeze
+        //must still change, or the player reports its playlist stuck and replays the frozen segment
+        String grownAds = allAds.replace("#EXT-X-TWITCH-PREFETCH:", segments("ad_3") + "#EXT-X-TWITCH-PREFETCH:");
+        String grown = s(filter(url, grownAds));
+        check(mediaSequence(grown) == 3407, "freeze frame advances when the window grows under the same media sequence");
+        check(grown.contains("live_3.ts") && !hasAdSegment(grown), "grown window still freezes on the last live segment");
 
         //While a freeze is served, player failures are the ad break and not a dead stream
         long now = System.currentTimeMillis();
