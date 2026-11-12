@@ -443,7 +443,8 @@ var Settings_value = {
         defaultValue: 1
     },
     menu_auto_hide: {
-        values: [STR_MENU_AUTO_HIDE_5S, STR_MENU_AUTO_HIDE_15S, STR_MENU_AUTO_HIDE_NEVER],
+        //The STR_ labels do not exist yet when this object is built, Settings_SetSettings passes them
+        values: ['5s', '15s', 'never'],
         defaultValue: 1
     },
     enable_mature: {
@@ -1058,7 +1059,12 @@ function Settings_SetSettings() {
 
     div += Settings_Content('hide_live_seek_bar', array_no_yes, STR_HIDE_LIVE_SEEK_BAR, STR_HIDE_LIVE_SEEK_BAR_SUMMARY);
 
-    div += Settings_Content('menu_auto_hide', Settings_value.menu_auto_hide.values, STR_MENU_AUTO_HIDE, STR_MENU_AUTO_HIDE_SUMMARY);
+    div += Settings_Content(
+        'menu_auto_hide',
+        [STR_MENU_AUTO_HIDE_5S, STR_MENU_AUTO_HIDE_15S, STR_MENU_AUTO_HIDE_NEVER],
+        STR_MENU_AUTO_HIDE,
+        STR_MENU_AUTO_HIDE_SUMMARY
+    );
 
     div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
 

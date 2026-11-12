@@ -701,6 +701,7 @@ function en_USLang() {
     STR_MENU_AUTO_HIDE_15S = '15 seconds';
     STR_MENU_AUTO_HIDE_NEVER = 'Never';
     STR_MENU_AUTO_HIDE_TOAST = 'Menu auto-hide fired';
+    STR_MENU_KEY_CLOSE_TOAST = 'Menu closed by key code %x';
     STR_DEBUG_LOG = 'Debug logs';
     STR_DEBUG_LOG_SUMMARY =
         'When enabled, the app saves its own logs and serves them over the local network (http port 8977), so they can be read from a computer on the same network to help diagnose issues. Only this app logs are exposed, and only inside your network.';

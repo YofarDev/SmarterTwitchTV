@@ -123,6 +123,9 @@ function PlayerUI_Show(mode) {
         id: 'player',
         handle: PlayerUI_Handle,
         cleanup: function () {
+            //With Debug logs on, every way the menu goes away writes a line to the served log (the WebView
+            //console goes to logcat). A close with no key or auto-hide line before it has another cause (#3)
+            if (Settings_Obj_default('debug_logs') === 1) console.log('PlayerUI: menu closed');
             Main_clearTimeout(PlayerUI_State.hiddenTimer);
             Main_clearTimeout(PlayerUI_State.timelineTimer);
             PlayerUI_State.frames = [];
@@ -153,11 +156,12 @@ function PlayerUI_Listener() {
 }
 
 //The player menu's auto-hide delay, from the Menu auto-hide setting. 0 keeps the menu open until Back
+//Settings_Obj_default is 0-based at runtime (Settings_SetDefaults subtracts 1 from the stored value)
 function PlayerUI_MenuHideDelay() {
     var choice = Settings_Obj_default('menu_auto_hide');
 
-    if (choice === 2) return 15000;
-    if (choice === 3) return 0;
+    if (choice === 1) return 15000;
+    if (choice === 2) return 0;
 
     return 5000;
 }
@@ -172,8 +176,10 @@ function PlayerUI_ScheduleHide() {
             PlayerUI_State.hiddenTimer = Main_setTimeout(function () {
                 //With Debug logs on, make the idle close visible: a menu that reverts mid navigation
                 //without this notice is being reset by something else (#3)
-                if (Settings_Obj_default('debug_logs') === 2) {
-                    Main_showWarningDialog(STR_MENU_AUTO_HIDE_TOAST, 2500);
+                //Main_showWarningDialog sits in scene1, hidden under the player, so use the player's own dialog
+                if (Settings_Obj_default('debug_logs') === 1) {
+                    Play_showWarningDialog(STR_MENU_AUTO_HIDE_TOAST, 2500);
+                    console.log('PlayerUI: menu auto-hide fired');
                 }
                 PlayerUI_Close(true);
             }, delay);
@@ -606,6 +612,12 @@ function PlayerUI_Handle(event, up) {
         PlayerUI_ScheduleHide();
     } else {
         // Media, number and specialized shortcuts keep their existing mode meaning.
+        //With Debug logs on, name the key: a key the app does not know (keyCode 0 for an unmapped
+        //Android key) also lands here and leaves the stream panel up without the menu (#3)
+        if (Settings_Obj_default('debug_logs') === 1) {
+            Play_showWarningDialog(STR_MENU_KEY_CLOSE_TOAST.replace('%x', code), 2500);
+            console.log('PlayerUI: menu closed by keyCode ' + code);
+        }
         PlayerUI_Close(false);
         return false;
     }

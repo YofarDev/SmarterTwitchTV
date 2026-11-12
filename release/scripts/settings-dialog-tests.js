@@ -1,4 +1,5 @@
-/* Settings dialog scrolling (Chat options): the real Settings_ScrollConatiner against mock rows of mixed height. */
+/* Settings dialog scrolling (Chat options): the real Settings_ScrollConatiner against mock rows of mixed height.
+ * Also the Settings_value labels as built at load time, and the Menu auto-hide delay for each option. */
 const assert = require('assert');
 const fs = require('fs');
 const vm = require('vm');
@@ -87,4 +88,30 @@ check(/Settings_DialogScrollY = 0;\s*Settings_DialogPos = 0;/.test(source), 'ope
 const html = fs.readFileSync('app/index.html', 'utf8');
 check(/\.settings_scroll_container > div \{\s*padding: 0\.3em 0;/.test(html), 'scroll list keeps room for the first and last outlines');
 
-console.log(checks + ' settings dialog scroll checks passed');
+/* Settings_value is built when the script loads, before a language file fills the STR_ strings.
+ * A value label taken from STR_ there is undefined and shows blank; labels go in through Settings_Content. */
+const loadTime = {};
+for (const name of new Set(source.match(/\bSTR_[A-Z_0-9]+\b/g))) loadTime[name] = undefined;
+//The only helper from another file that Settings.js calls while it loads; it never produces the labels checked here
+loadTime.Play_timeS = () => '';
+vm.createContext(loadTime);
+vm.runInContext(source, loadTime);
+const blank = Object.keys(loadTime.Settings_value).filter(key => (loadTime.Settings_value[key].values || []).some(value => value === undefined));
+check(Object.keys(loadTime.Settings_value).length > 100, 'Settings_value loaded');
+check(blank.length === 0, 'no setting has a blank value label at load time: ' + blank.join(', '));
+check(
+    /Settings_Content\(\s*'menu_auto_hide',\s*\[STR_MENU_AUTO_HIDE_5S, STR_MENU_AUTO_HIDE_15S, STR_MENU_AUTO_HIDE_NEVER\]/.test(source),
+    'Menu auto-hide passes its translated labels when the Settings screen is built'
+);
+
+/* Settings_SetDefaults turns the stored 1-based choice into a 0-based index, so readers of Settings_Obj_default
+ * see 0 for the first option. The menu delay must follow the option order, read through the real accessor. */
+check(/Settings_value\[key\]\.defaultValue -= 1;/.test(source), 'stored choices become 0-based indexes at startup');
+vm.runInContext(/function PlayerUI_MenuHideDelay\(\) \{[\s\S]*?\n\}\n/.exec(fs.readFileSync('app/specific/PlayerUI.js', 'utf8'))[0], loadTime);
+const delays = {'5s': 5000, '15s': 15000, never: 0};
+loadTime.Settings_value.menu_auto_hide.values.forEach((option, index) => {
+    loadTime.Settings_value.menu_auto_hide.defaultValue = index;
+    check(loadTime.PlayerUI_MenuHideDelay() === delays[option], 'Menu auto-hide option ' + option + ' gives its own delay');
+});
+
+console.log(checks + ' settings dialog checks passed');

@@ -464,26 +464,33 @@ element('player-ui-name').textContent = '';
 s.PlayerUI_SetAutoQuality(1, '720p60 | Auto | 3.00Mbps | AVC');
 check(element('player-ui-name').textContent === '' && s.PlayerUI_State.autoQuality === '720p60', 'closed bar only stores the report');
 /* Menu auto-hide: the delay comes from the setting, Never arms nothing, and the idle close is visible with Debug logs. */
+// Settings_Obj_default is 0-based at runtime: menu_auto_hide 0/1/2 = 5 seconds/15 seconds/Never, debug_logs 0/1 = no/yes.
 const priorPlayIsOn = s.Play_isOn;
 s.Play_isOn = true;
-s.Main_showWarningDialog = text => effects.push(['toast', text]);
+// The notice goes through the player's dialog: Main_showWarningDialog sits in scene1, hidden under the player.
+s.Main_showWarningDialog = text => effects.push(['hidden-toast', text]);
+s.Play_showWarningDialog = text => effects.push(['toast', text]);
+// Debug log lines go to the console, which the WebView passes to logcat for the Debug logs server.
+const priorConsole = s.console,
+    logs = [];
+s.console = {log: text => logs.push(text)};
 s.STR_MENU_AUTO_HIDE_TOAST = 'toast:menu-auto-hide';
 s.PlayerUI_State.mode = 1;
 s.PlayerUI_State.suspended = false;
 s.PlayerUI_State.frames = [{group: 'bar', index: 0}];
 timers.clear();
-s.Settings_Obj_default = key => ({menu_auto_hide: 1, debug_logs: 1})[key] || 0;
+s.Settings_Obj_default = key => ({menu_auto_hide: 0, debug_logs: 0})[key] || 0;
 s.PlayerUI_ScheduleHide();
 check(timers.size === 1 && [...timers.values()][0].due === clock + 5000, 'default keeps the historical 5 second auto-hide');
-s.Settings_Obj_default = key => ({menu_auto_hide: 2, debug_logs: 1})[key] || 0;
+s.Settings_Obj_default = key => ({menu_auto_hide: 1, debug_logs: 0})[key] || 0;
 timers.clear();
 s.PlayerUI_ScheduleHide();
 check(timers.size === 1 && [...timers.values()][0].due === clock + 15000, 'second choice waits 15 seconds');
-s.Settings_Obj_default = key => ({menu_auto_hide: 3, debug_logs: 1})[key] || 0;
+s.Settings_Obj_default = key => ({menu_auto_hide: 2, debug_logs: 0})[key] || 0;
 timers.clear();
 s.PlayerUI_ScheduleHide();
 check(timers.size === 0, 'Never arms no auto-hide');
-s.Settings_Obj_default = key => ({menu_auto_hide: 1, debug_logs: 2})[key] || 0;
+s.Settings_Obj_default = key => ({menu_auto_hide: 0, debug_logs: 1})[key] || 0;
 timers.clear();
 s.PlayerUI_ScheduleHide();
 [...timers.values()][0].fn();
@@ -492,12 +499,48 @@ check(
     'idle close announces itself with Debug logs on'
 );
 check(effects.some(x => Array.isArray(x) && x[0] === 'hidePanel' && x[1] === 1), 'idle close hides the live panel');
+check(logs.includes('PlayerUI: menu auto-hide fired'), 'idle close is logged with Debug logs on');
 s.PlayerUI_State.frames = [{group: 'bar', index: 0}];
-const toastsBefore = effects.filter(x => Array.isArray(x) && x[0] === 'toast').length;
-s.Settings_Obj_default = key => ({menu_auto_hide: 1, debug_logs: 1})[key] || 0;
+const toastsBefore = effects.filter(x => Array.isArray(x) && x[0] === 'toast').length,
+    idleLogsBefore = logs.length;
+s.Settings_Obj_default = key => ({menu_auto_hide: 0, debug_logs: 0})[key] || 0;
 timers.clear();
 s.PlayerUI_ScheduleHide();
 [...timers.values()][0].fn();
 check(effects.filter(x => Array.isArray(x) && x[0] === 'toast').length === toastsBefore, 'no notice without Debug logs');
+check(logs.length === idleLogsBefore, 'no idle close log without Debug logs');
+check(!effects.some(x => Array.isArray(x) && x[0] === 'hidden-toast'), 'no notice goes to the dialog hidden under the player');
+/* A key the menu does not handle closes it and leaves the stream panel up; with Debug logs on, the notice names its key code. */
+s.STR_MENU_KEY_CLOSE_TOAST = 'toast:key %x';
+s.Settings_Obj_default = key => ({menu_auto_hide: 2, debug_logs: 1})[key] || 0;
+s.PlayerUI_State.frames = [];
+s.PlayerUI_Show(1);
+const panelHides = effects.filter(x => Array.isArray(x) && x[0] === 'hidePanel').length;
+check(s.PlayerUI_Handle({keyCode: 0}, false) === false, 'an unknown key passes on to the playback handler');
+check(s.PlayerUI_State.frames.length === 0, 'an unknown key closes the menu');
+check(effects.filter(x => Array.isArray(x) && x[0] === 'hidePanel').length === panelHides, 'an unknown key leaves the stream panel up');
+check(
+    effects.some(x => Array.isArray(x) && x[0] === 'toast' && x[1] === 'toast:key 0'),
+    'the key code close announces itself with Debug logs on'
+);
+const keyLog = logs.indexOf('PlayerUI: menu closed by keyCode 0');
+check(keyLog !== -1 && logs.indexOf('PlayerUI: menu closed') > keyLog, 'the key code close is logged, then the close itself');
+s.Settings_Obj_default = key => ({menu_auto_hide: 2, debug_logs: 0})[key] || 0;
+s.PlayerUI_Show(1);
+const keyToastsBefore = effects.filter(x => Array.isArray(x) && x[0] === 'toast').length,
+    keyLogsBefore = logs.length;
+s.PlayerUI_Handle({keyCode: 0}, false);
+check(effects.filter(x => Array.isArray(x) && x[0] === 'toast').length === keyToastsBefore, 'no key code notice without Debug logs');
+check(logs.length === keyLogsBefore, 'no close logs without Debug logs');
+/* A close that skips PlayerUI_Close (the focus stack cleared on a screen change) is logged too. */
+s.Settings_Obj_default = key => ({menu_auto_hide: 2, debug_logs: 1})[key] || 0;
+s.PlayerUI_Show(1);
+const popLogsBefore = logs.length;
+s.UIFocus_Pop(false);
+check(
+    s.PlayerUI_State.frames.length === 0 && logs.length === popLogsBefore + 1 && logs[popLogsBefore] === 'PlayerUI: menu closed',
+    'a close outside PlayerUI_Close is logged'
+);
+s.console = priorConsole;
 s.Play_isOn = priorPlayIsOn;
 console.log(checks + ' production player action checks passed');
