@@ -8571,8 +8571,14 @@
         publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
         WebVersion: 'November 12 2026',
-        WebTag: 793, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 794, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 12 2026 (Web 794)',
+                changes: [
+                    'Fix: the player menu no longer closes on an Android key the WebView cannot map — it arrives as key code 0, some TVs send one every few remote presses, and each one closed the menu mid navigation, leaving the info banner and pause icon up (by @Dryness, #41)'
+                ]
+            },
             {
                 title: 'November 12 2026 (Web 793)',
                 changes: [
@@ -39032,6 +39038,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         var frame = PlayerUI_Frame(),
             code = event.keyCode;
         if (code === 9) return false;
+        //An Android key the WebView cannot map arrives as keyCode 0. Some TVs send one every few presses
+        //alongside the real keys, and closing on it reverted the menu at random (#3). Ignore it
+        if (code === 0) return true;
         if (!frame) return false;
         //Only the quality drawer needs a refresh on plain input, its list loads
         //asynchronously; other drawers re-render on the action itself, rebuilding
@@ -39068,8 +39077,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             PlayerUI_ScheduleHide();
         } else {
             // Media, number and specialized shortcuts keep their existing mode meaning.
-            //With Debug logs on, name the key: a key the app does not know (keyCode 0 for an unmapped
-            //Android key) also lands here and leaves the stream panel up without the menu (#3)
+            //With Debug logs on, name the key, so a close nobody asked for can be traced (#3)
             if (Settings_Obj_default('debug_logs') === 1) {
                 Play_showWarningDialog(STR_MENU_KEY_CLOSE_TOAST.replace('%x', code), 2500);
                 console.log('PlayerUI: menu closed by keyCode ' + code);

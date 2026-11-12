@@ -24,8 +24,14 @@ var version = {
     publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
     WebVersion: 'November 12 2026',
-    WebTag: 793, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 794, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 12 2026 (Web 794)',
+            changes: [
+                'Fix: the player menu no longer closes on an Android key the WebView cannot map — it arrives as key code 0, some TVs send one every few remote presses, and each one closed the menu mid navigation, leaving the info banner and pause icon up (by @Dryness, #41)'
+            ]
+        },
         {
             title: 'November 12 2026 (Web 793)',
             changes: [
