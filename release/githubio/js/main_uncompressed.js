@@ -627,6 +627,7 @@
         STR_MENU_AUTO_HIDE_15S,
         STR_MENU_AUTO_HIDE_NEVER,
         STR_MENU_AUTO_HIDE_TOAST,
+        STR_MENU_KEY_CLOSE_TOAST,
         STR_DEBUG_LOG,
         STR_DEBUG_LOG_SUMMARY,
         STR_AUTO_REFRESH_BACKGROUND,
@@ -2143,6 +2144,7 @@
         STR_MENU_AUTO_HIDE_15S = '15 seconds';
         STR_MENU_AUTO_HIDE_NEVER = 'Never';
         STR_MENU_AUTO_HIDE_TOAST = 'Menu auto-hide fired';
+        STR_MENU_KEY_CLOSE_TOAST = 'Menu closed by key code %x';
         STR_DEBUG_LOG = 'Debug logs';
         STR_DEBUG_LOG_SUMMARY =
             'When enabled, the app saves its own logs and serves them over the local network (http port 8977), so they can be read from a computer on the same network to help diagnose issues. Only this app logs are exposed, and only inside your network.';
@@ -8568,9 +8570,16 @@
         VersionBase: '3.0',
         publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
-        WebVersion: 'November 11 2026',
-        WebTag: 792, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebVersion: 'November 12 2026',
+        WebTag: 793, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 12 2026 (Web 793)',
+                changes: [
+                    'Fix: the Menu auto-hide setting now shows its choice names and each choice does what it says — Web 792 drew the three options blank, waited 15 seconds on Never and 5 seconds on 15 seconds, and its auto-hide notice could never appear (by @Dryness, #40)',
+                    'Diagnostics: with Debug logs on, the player menu names the key code on screen when a key the menu does not handle closes it, and writes a timestamped line to the served log for every way the menu closes — to identify the key behind the menu reverting mid navigation (#3, by @Dryness, #40)'
+                ]
+            },
             {
                 title: 'November 11 2026 (Web 792)',
                 changes: [
@@ -38569,6 +38578,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             id: 'player',
             handle: PlayerUI_Handle,
             cleanup: function () {
+                //With Debug logs on, every way the menu goes away writes a line to the served log (the WebView
+                //console goes to logcat). A close with no key or auto-hide line before it has another cause (#3)
+                if (Settings_Obj_default('debug_logs') === 1) console.log('PlayerUI: menu closed');
                 Main_clearTimeout(PlayerUI_State.hiddenTimer);
                 Main_clearTimeout(PlayerUI_State.timelineTimer);
                 PlayerUI_State.frames = [];
@@ -38599,11 +38611,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     //The player menu's auto-hide delay, from the Menu auto-hide setting. 0 keeps the menu open until Back
+    //Settings_Obj_default is 0-based at runtime (Settings_SetDefaults subtracts 1 from the stored value)
     function PlayerUI_MenuHideDelay() {
         var choice = Settings_Obj_default('menu_auto_hide');
 
-        if (choice === 2) return 15000;
-        if (choice === 3) return 0;
+        if (choice === 1) return 15000;
+        if (choice === 2) return 0;
 
         return 5000;
     }
@@ -38618,8 +38631,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 PlayerUI_State.hiddenTimer = Main_setTimeout(function () {
                     //With Debug logs on, make the idle close visible: a menu that reverts mid navigation
                     //without this notice is being reset by something else (#3)
-                    if (Settings_Obj_default('debug_logs') === 2) {
-                        Main_showWarningDialog(STR_MENU_AUTO_HIDE_TOAST, 2500);
+                    //Main_showWarningDialog sits in scene1, hidden under the player, so use the player's own dialog
+                    if (Settings_Obj_default('debug_logs') === 1) {
+                        Play_showWarningDialog(STR_MENU_AUTO_HIDE_TOAST, 2500);
+                        console.log('PlayerUI: menu auto-hide fired');
                     }
                     PlayerUI_Close(true);
                 }, delay);
@@ -39053,6 +39068,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             PlayerUI_ScheduleHide();
         } else {
             // Media, number and specialized shortcuts keep their existing mode meaning.
+            //With Debug logs on, name the key: a key the app does not know (keyCode 0 for an unmapped
+            //Android key) also lands here and leaves the stream panel up without the menu (#3)
+            if (Settings_Obj_default('debug_logs') === 1) {
+                Play_showWarningDialog(STR_MENU_KEY_CLOSE_TOAST.replace('%x', code), 2500);
+                console.log('PlayerUI: menu closed by keyCode ' + code);
+            }
             PlayerUI_Close(false);
             return false;
         }
@@ -48014,7 +48035,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             defaultValue: 1
         },
         menu_auto_hide: {
-            values: [STR_MENU_AUTO_HIDE_5S, STR_MENU_AUTO_HIDE_15S, STR_MENU_AUTO_HIDE_NEVER],
+            //The STR_ labels do not exist yet when this object is built, Settings_SetSettings passes them
+            values: ['5s', '15s', 'never'],
             defaultValue: 1
         },
         enable_mature: {
@@ -48634,7 +48656,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         div += Settings_Content('hide_live_seek_bar', array_no_yes, STR_HIDE_LIVE_SEEK_BAR, STR_HIDE_LIVE_SEEK_BAR_SUMMARY);
 
-        div += Settings_Content('menu_auto_hide', Settings_value.menu_auto_hide.values, STR_MENU_AUTO_HIDE, STR_MENU_AUTO_HIDE_SUMMARY);
+        div += Settings_Content(
+            'menu_auto_hide',
+            [STR_MENU_AUTO_HIDE_5S, STR_MENU_AUTO_HIDE_15S, STR_MENU_AUTO_HIDE_NEVER],
+            STR_MENU_AUTO_HIDE,
+            STR_MENU_AUTO_HIDE_SUMMARY
+        );
 
         div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
 
