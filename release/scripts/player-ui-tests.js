@@ -516,22 +516,48 @@ s.Settings_Obj_default = key => ({menu_auto_hide: 2, debug_logs: 1})[key] || 0;
 s.PlayerUI_State.frames = [];
 s.PlayerUI_Show(1);
 const panelHides = effects.filter(x => Array.isArray(x) && x[0] === 'hidePanel').length;
-check(s.PlayerUI_Handle({keyCode: 0}, false) === false, 'an unknown key passes on to the playback handler');
+// 179 is play/pause, a media key the menu leaves to the playback handler.
+check(s.PlayerUI_Handle({keyCode: 179}, false) === false, 'an unknown key passes on to the playback handler');
 check(s.PlayerUI_State.frames.length === 0, 'an unknown key closes the menu');
 check(effects.filter(x => Array.isArray(x) && x[0] === 'hidePanel').length === panelHides, 'an unknown key leaves the stream panel up');
 check(
-    effects.some(x => Array.isArray(x) && x[0] === 'toast' && x[1] === 'toast:key 0'),
+    effects.some(x => Array.isArray(x) && x[0] === 'toast' && x[1] === 'toast:key 179'),
     'the key code close announces itself with Debug logs on'
 );
-const keyLog = logs.indexOf('PlayerUI: menu closed by keyCode 0');
+const keyLog = logs.indexOf('PlayerUI: menu closed by keyCode 179');
 check(keyLog !== -1 && logs.indexOf('PlayerUI: menu closed') > keyLog, 'the key code close is logged, then the close itself');
 s.Settings_Obj_default = key => ({menu_auto_hide: 2, debug_logs: 0})[key] || 0;
 s.PlayerUI_Show(1);
 const keyToastsBefore = effects.filter(x => Array.isArray(x) && x[0] === 'toast').length,
     keyLogsBefore = logs.length;
-s.PlayerUI_Handle({keyCode: 0}, false);
+s.PlayerUI_Handle({keyCode: 179}, false);
 check(effects.filter(x => Array.isArray(x) && x[0] === 'toast').length === keyToastsBefore, 'no key code notice without Debug logs');
 check(logs.length === keyLogsBefore, 'no close logs without Debug logs');
+/* keyCode 0 is an Android key the WebView cannot map; some TVs send one alongside real presses (#3). The menu ignores it. */
+s.Settings_Obj_default = key => ({menu_auto_hide: 0, debug_logs: 1})[key] || 0;
+timers.clear();
+s.PlayerUI_State.frames = [];
+s.PlayerUI_Show(1);
+// PlayerUI_Render is a stub here, so give the bar its six buttons.
+s.PlayerUI_Frame().entries = [0, 1, 2, 3, 4, 5];
+s.PlayerUI_Handle({keyCode: s.KEY_RIGHT}, false);
+const zeroIndex = s.PlayerUI_Frame().index,
+    zeroTimer = s.PlayerUI_State.hiddenTimer,
+    zeroToasts = effects.filter(x => Array.isArray(x) && x[0] === 'toast').length,
+    zeroLogs = logs.length;
+check(s.PlayerUI_Handle({keyCode: 0}, false) === true, 'keyCode 0 is consumed, the playback handler never sees it');
+check(s.PlayerUI_State.frames.length === 1 && s.PlayerUI_Frame().index === zeroIndex, 'keyCode 0 keeps the menu open on the same button');
+check(s.PlayerUI_State.hiddenTimer === zeroTimer && timers.has(zeroTimer), 'keyCode 0 leaves the auto-hide timer as it was');
+check(
+    effects.filter(x => Array.isArray(x) && x[0] === 'toast').length === zeroToasts && logs.length === zeroLogs,
+    'keyCode 0 shows no notice and writes no log line'
+);
+s.PlayerUI_Open('chat');
+s.PlayerUI_Frame().entries = [s.Play_controlsChat];
+check(s.PlayerUI_Handle({keyCode: 0}, false) === true && s.PlayerUI_State.frames.length === 2, 'keyCode 0 keeps an open drawer open');
+for (const reset of ['Play_qualityReset', 'Play_ResetSpeed', 'Play_ResetLowlatency']) if (!s[reset]) s[reset] = () => {};
+s.PlayerUI_Handle({keyCode: s.KEY_RETURN}, false);
+check(s.PlayerUI_State.frames.length === 1, 'back after keyCode 0 still closes just the drawer');
 /* A close that skips PlayerUI_Close (the focus stack cleared on a screen change) is logged too. */
 s.Settings_Obj_default = key => ({menu_auto_hide: 2, debug_logs: 1})[key] || 0;
 s.PlayerUI_Show(1);

@@ -576,6 +576,9 @@ function PlayerUI_Handle(event, up) {
     var frame = PlayerUI_Frame(),
         code = event.keyCode;
     if (code === 9) return false;
+    //An Android key the WebView cannot map arrives as keyCode 0. Some TVs send one every few presses
+    //alongside the real keys, and closing on it reverted the menu at random (#3). Ignore it
+    if (code === 0) return true;
     if (!frame) return false;
     //Only the quality drawer needs a refresh on plain input, its list loads
     //asynchronously; other drawers re-render on the action itself, rebuilding
@@ -612,8 +615,7 @@ function PlayerUI_Handle(event, up) {
         PlayerUI_ScheduleHide();
     } else {
         // Media, number and specialized shortcuts keep their existing mode meaning.
-        //With Debug logs on, name the key: a key the app does not know (keyCode 0 for an unmapped
-        //Android key) also lands here and leaves the stream panel up without the menu (#3)
+        //With Debug logs on, name the key, so a close nobody asked for can be traced (#3)
         if (Settings_Obj_default('debug_logs') === 1) {
             Play_showWarningDialog(STR_MENU_KEY_CLOSE_TOAST.replace('%x', code), 2500);
             console.log('PlayerUI: menu closed by keyCode ' + code);
