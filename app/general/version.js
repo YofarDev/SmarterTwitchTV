@@ -23,9 +23,16 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
-    WebVersion: 'November 12 2026',
-    WebTag: 794, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'November 15 2026',
+    WebTag: 795, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 15 2026 (Web 795)',
+            changes: [
+                'Fix: after a grid refresh with focus deep in the list, the restored row sat half hidden behind the detail band with the screen preview drawing over it — the row window was clamped to the rows the refresh\'s first batch loaded, and the batches after it never rebuilt the window (by @Dryness, #42)',
+                'Fix: after that refresh, pressing Down from the restored row could focus a row that was never attached to the screen — a later batch now fills the slot under the focused row (by @Dryness, #42)'
+            ]
+        },
         {
             title: 'November 12 2026 (Web 794)',
             changes: [

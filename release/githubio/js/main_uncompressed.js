@@ -8570,9 +8570,16 @@
         VersionBase: '3.0',
         publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
-        WebVersion: 'November 12 2026',
-        WebTag: 794, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebVersion: 'November 15 2026',
+        WebTag: 795, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 15 2026 (Web 795)',
+                changes: [
+                    "Fix: after a grid refresh with focus deep in the list, the restored row sat half hidden behind the detail band with the screen preview drawing over it — the row window was clamped to the rows the refresh's first batch loaded, and the batches after it never rebuilt the window (by @Dryness, #42)",
+                    'Fix: after that refresh, pressing Down from the restored row could focus a row that was never attached to the screen — a later batch now fills the slot under the focused row (by @Dryness, #42)'
+                ]
+            },
             {
                 title: 'November 12 2026 (Web 794)',
                 changes: [
@@ -23067,6 +23074,9 @@
                 break;
             }
         }
+        /* Intentional fallback: a reload renders only its first batch, so a card saved deep in the list is
+         * not in DataObj yet. Restore to the closest position loaded — the saved index capped at the last
+         * item — instead of the top, keeping the user near where they were while later batches load. */
         if (!chosen && mark && keys.length) chosen = keys[Math.min(keys.length - 1, mark.index)];
         if (chosen) {
             obj.posY = Number(chosen.split('_')[0]);
@@ -23081,8 +23091,12 @@
         var obj = ScreenObj[screen];
         if (!obj.navigationRemount) return;
         obj.navigationRemount = false;
+        /* With three rows the window is shifted up one row (Screens_SetWindowOffset), so only the
+         * middle slot is fully visible. Keep the focused row there, like Screens_addrowWindow. Do not
+         * pull the window back at the end of the loaded rows: a reload renders only its first batch,
+         * and the focused row would then sit behind the detail band. */
         var count = obj.visiblerows,
-            start = Math.max(0, Math.min(obj.posY - Math.floor(count / 2), obj.Cells.length - count)),
+            start = count === 3 ? Math.max(obj.posY - 1, 0) : Math.max(0, Math.min(obj.posY - Math.floor(count / 2), obj.Cells.length - count)),
             i;
         for (i = 0; i < obj.Cells.length; i++) Main_RemoveElement(obj.Cells[i]);
         for (i = start; i < Math.min(start + count, obj.Cells.length); i++) {
@@ -40349,8 +40363,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             }
 
             Main_SaveValuesWithTimeout();
-        } else if (Main_isElementShowingWithEle(ScreenObj[key].ScrollDoc)) {
-            Main_CounterDialog(ScreenObj[key].posX, ScreenObj[key].posY, ScreenObj[key].ColumnsCount, ScreenObj[key].itemsCount);
+        } else {
+            Screens_FillWindowNext(key);
+
+            if (Main_isElementShowingWithEle(ScreenObj[key].ScrollDoc)) {
+                Main_CounterDialog(ScreenObj[key].posX, ScreenObj[key].posY, ScreenObj[key].ColumnsCount, ScreenObj[key].itemsCount);
+            }
         }
     }
 
@@ -41103,6 +41121,22 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             }
         }
         Screens_LoadPreview(key);
+    }
+
+    /* A window can end at the last loaded row (Screens_addrowWindow at the end of the list, or a
+     * restore onto the last row of a reload's first batch). When a later batch adds the row below,
+     * attach it in the slot under the focused row: the down shift only brings in the row after it,
+     * so without this the next Down focuses a row that is not attached. */
+    function Screens_FillWindowNext(key) {
+        var obj = ScreenObj[key],
+            y = obj.posY,
+            next = obj.Cells[y + 1];
+        if (obj.visiblerows !== 3 || y < 0 || !next || next.parentNode === obj.tableDoc) return;
+        if (!obj.Cells[y] || obj.Cells[y].parentNode !== obj.tableDoc) return;
+        next.style.position = '';
+        next.style.transition = 'none';
+        next.style.transform = 'translateY(' + (y ? 2 : 1) * obj.offsettop + 'em)';
+        obj.tableDoc.appendChild(next);
     }
 
     function Screens_addrowDown(y, key) {

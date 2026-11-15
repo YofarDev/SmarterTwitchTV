@@ -693,6 +693,9 @@ function Navigation_Restore(screen) {
             break;
         }
     }
+    /* Intentional fallback: a reload renders only its first batch, so a card saved deep in the list is
+     * not in DataObj yet. Restore to the closest position loaded — the saved index capped at the last
+     * item — instead of the top, keeping the user near where they were while later batches load. */
     if (!chosen && mark && keys.length) chosen = keys[Math.min(keys.length - 1, mark.index)];
     if (chosen) {
         obj.posY = Number(chosen.split('_')[0]);
