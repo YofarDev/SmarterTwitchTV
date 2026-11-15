@@ -108,7 +108,25 @@ check(obj.currY === 8 && obj.ScrollDoc.style.transform === 'translateY(-12em)', 
 obj.posY = 11;
 obj.navigationRemount = true;
 s.Navigation_MountRestored(s.Main_UserLive);
-check(obj.Cells[11].attached && obj.Cells[9].attached, 'last restored row mounts surviving tail');
+check(
+    obj.Cells[10].attached && obj.Cells[11].attached && !obj.Cells[9].attached,
+    'last restored row keeps the row above and stays in the visible slot'
+);
+check(obj.Cells[11].style.transform === 'translateY(12em)', 'last restored row sits in the second window slot');
+// A reload renders only its first batch: restoring onto that batch's last row must not pull the
+// window back, or the focused row ends up behind the detail band.
+obj.Cells = Array.from({length: 10}, () => ({style: {}, attached: false}));
+obj.posY = 9;
+obj.navigationRemount = true;
+s.Navigation_MountRestored(s.Main_UserLive);
+check(
+    obj.Cells[8].attached && obj.Cells[9].attached && !obj.Cells[7].attached,
+    'restore onto the last row of the first batch mounts the row above and the focused row'
+);
+check(
+    obj.Cells[9].style.transform === 'translateY(12em)' && obj.ScrollDoc.style.transform === 'translateY(-12em)',
+    'restored row rests in the fully visible slot'
+);
 // Native feed callbacks must reject account and refresh generations as well.
 s.BaseXmlHttpGet = (...args) => requests.push(args);
 s.Navigation_FeedGenerations[1] = 1;

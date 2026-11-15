@@ -1191,8 +1191,12 @@ function Screens_loadDataSuccessFinish(key) {
         }
 
         Main_SaveValuesWithTimeout();
-    } else if (Main_isElementShowingWithEle(ScreenObj[key].ScrollDoc)) {
-        Main_CounterDialog(ScreenObj[key].posX, ScreenObj[key].posY, ScreenObj[key].ColumnsCount, ScreenObj[key].itemsCount);
+    } else {
+        Screens_FillWindowNext(key);
+
+        if (Main_isElementShowingWithEle(ScreenObj[key].ScrollDoc)) {
+            Main_CounterDialog(ScreenObj[key].posX, ScreenObj[key].posY, ScreenObj[key].ColumnsCount, ScreenObj[key].itemsCount);
+        }
     }
 }
 
@@ -1944,6 +1948,22 @@ function Screens_addrowWindow(y, key) {
         }
     }
     Screens_LoadPreview(key);
+}
+
+/* A window can end at the last loaded row (Screens_addrowWindow at the end of the list, or a
+ * restore onto the last row of a reload's first batch). When a later batch adds the row below,
+ * attach it in the slot under the focused row: the down shift only brings in the row after it,
+ * so without this the next Down focuses a row that is not attached. */
+function Screens_FillWindowNext(key) {
+    var obj = ScreenObj[key],
+        y = obj.posY,
+        next = obj.Cells[y + 1];
+    if (obj.visiblerows !== 3 || y < 0 || !next || next.parentNode === obj.tableDoc) return;
+    if (!obj.Cells[y] || obj.Cells[y].parentNode !== obj.tableDoc) return;
+    next.style.position = '';
+    next.style.transition = 'none';
+    next.style.transform = 'translateY(' + (y ? 2 : 1) * obj.offsettop + 'em)';
+    obj.tableDoc.appendChild(next);
 }
 
 function Screens_addrowDown(y, key) {

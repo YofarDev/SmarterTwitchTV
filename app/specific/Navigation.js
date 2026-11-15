@@ -707,8 +707,12 @@ function Navigation_MountRestored(screen) {
     var obj = ScreenObj[screen];
     if (!obj.navigationRemount) return;
     obj.navigationRemount = false;
+    /* With three rows the window is shifted up one row (Screens_SetWindowOffset), so only the
+     * middle slot is fully visible. Keep the focused row there, like Screens_addrowWindow. Do not
+     * pull the window back at the end of the loaded rows: a reload renders only its first batch,
+     * and the focused row would then sit behind the detail band. */
     var count = obj.visiblerows,
-        start = Math.max(0, Math.min(obj.posY - Math.floor(count / 2), obj.Cells.length - count)),
+        start = count === 3 ? Math.max(obj.posY - 1, 0) : Math.max(0, Math.min(obj.posY - Math.floor(count / 2), obj.Cells.length - count)),
         i;
     for (i = 0; i < obj.Cells.length; i++) Main_RemoveElement(obj.Cells[i]);
     for (i = start; i < Math.min(start + count, obj.Cells.length); i++) {
