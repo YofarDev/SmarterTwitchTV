@@ -23,9 +23,15 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
-    WebVersion: 'November 15 2026',
-    WebTag: 795, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'November 19 2026',
+    WebTag: 796, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 19 2026 (Web 796)',
+            changes: [
+                'Performance: BTTV, FFZ and 7TV emotes no longer take seconds to show in chat the first time they are used in a session — the app keeps no image cache between sessions, so each emote was downloaded the moment a chat line first showed it. Chat now counts which emotes are used in each channel and, when a chat opens, fetches that channel\'s most used emotes and the global emote sets in the background, so they show at once'
+            ]
+        },
         {
             title: 'November 15 2026 (Web 795)',
             changes: [

@@ -8570,9 +8570,15 @@
         VersionBase: '3.0',
         publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
-        WebVersion: 'November 15 2026',
-        WebTag: 795, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebVersion: 'November 19 2026',
+        WebTag: 796, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 19 2026 (Web 796)',
+                changes: [
+                    "Performance: BTTV, FFZ and 7TV emotes no longer take seconds to show in chat the first time they are used in a session — the app keeps no image cache between sessions, so each emote was downloaded the moment a chat line first showed it. Chat now counts which emotes are used in each channel and, when a chat opens, fetches that channel's most used emotes and the global emote sets in the background, so they show at once"
+                ]
+            },
             {
                 title: 'November 15 2026 (Web 795)',
                 changes: [
@@ -14339,6 +14345,7 @@
             );
         } else {
             ChatLive_updateExtraEmotes(extraEmotesDone.bttv[ChatLive_selectedChannel_id[chat_number]], chat_number);
+            ChatLive_EmoteWarmChannel(chat_number);
             if (ChatLive_EmoteStale(ChatLive_selectedChannel_id[chat_number], 'bttv')) ChatLive_EmoteRefresh(chat_number, id, 'bttv');
         }
     }
@@ -14350,6 +14357,7 @@
         data = JSON.parse(data);
         if (!data || !Array.isArray(data.channelEmotes) || !Array.isArray(data.sharedEmotes)) return;
         ChatLive_loadEmotesbttv(data, chat_number, false);
+        ChatLive_EmoteWarmChannel(chat_number);
     }
 
     function ChatLive_loadEmotesbttv(data, chat_number) {
@@ -14479,6 +14487,195 @@
         };
     }
 
+    //Third-party emote images (BTTV, FFZ, 7TV) were only requested when a chat line first showed them, and the APK
+    //runs the WebView without an HTTP cache (LOAD_NO_CACHE, cache cleared at start), so each emote was a cold download
+    //once per session, seconds on a TV. Emotes this user saw most in the channel's chat (counted across sessions) and the
+    //small global sets are fetched in the background when the chat loads; the Image is kept so the page's memory cache
+    //serves the chat line at once. A whole channel set is too big to prefetch (a large 7TV set is about 1000 emotes, 50 MB+).
+    var ChatLive_EmoteWarmKept = {}; //src -> Image (or true while queued)
+    var ChatLive_EmoteWarmOrder = [];
+    var ChatLive_EmoteWarmHigh = [];
+    var ChatLive_EmoteWarmLow = [];
+    var ChatLive_EmoteWarmRunning = 0;
+    var ChatLive_EmoteWarmParallel = 3;
+    var ChatLive_EmoteWarmMax = 400;
+    var ChatLive_EmoteWarmTop = 40;
+
+    function ChatLive_EmoteWarm(emote, high) {
+        if (!emote || !emote.chat_div) return;
+
+        var div = emoteDiv(emote),
+            src = emoteSrc(div);
+
+        if (!src || ChatLive_EmoteHas(ChatLive_EmoteWarmKept, src)) return;
+
+        ChatLive_EmoteWarmKept[src] = true;
+        (high ? ChatLive_EmoteWarmHigh : ChatLive_EmoteWarmLow).push({src: src, srcset: emoteSrcset(div)});
+        ChatLive_EmoteWarmNext();
+    }
+
+    function ChatLive_EmoteWarmNext() {
+        while (ChatLive_EmoteWarmRunning < ChatLive_EmoteWarmParallel && (ChatLive_EmoteWarmHigh.length || ChatLive_EmoteWarmLow.length)) {
+            ChatLive_EmoteWarmLoad(ChatLive_EmoteWarmHigh.length ? ChatLive_EmoteWarmHigh.shift() : ChatLive_EmoteWarmLow.shift());
+        }
+    }
+
+    function ChatLive_EmoteWarmLoad(item) {
+        var img = new Image(),
+            done = false;
+
+        ChatLive_EmoteWarmRunning++;
+        img.onload = img.onerror = function () {
+            if (done) return;
+            done = true;
+            img.onload = img.onerror = null;
+            ChatLive_EmoteWarmRunning--;
+            ChatLive_EmoteWarmNext();
+        };
+
+        //Same srcset and src as the chat line (no crossOrigin), so the line picks the same image and reuses it
+        if (item.srcset) img.srcset = item.srcset;
+        img.src = item.src;
+
+        ChatLive_EmoteWarmKept[item.src] = img;
+        ChatLive_EmoteWarmOrder.push(item.src);
+        if (ChatLive_EmoteWarmOrder.length > ChatLive_EmoteWarmMax) delete ChatLive_EmoteWarmKept[ChatLive_EmoteWarmOrder.shift()];
+    }
+
+    function ChatLive_EmoteWarmSet(obj) {
+        for (var code in obj) {
+            if (ChatLive_EmoteHas(obj, code)) ChatLive_EmoteWarm(obj[code], false);
+        }
+    }
+
+    //The channel's most used emotes that are loaded by now; called again as each provider's set arrives
+    function ChatLive_EmoteWarmChannel(chat_number) {
+        var entry = ChatLive_EmoteUseGet()[ChatLive_selectedChannel_id[chat_number]],
+            emotes = extraEmotes[chat_number],
+            codes,
+            i;
+
+        if (!entry || !emotes) return;
+
+        codes = ChatLive_EmoteUseTop(entry.c, ChatLive_EmoteWarmTop);
+
+        for (i = 0; i < codes.length; i++) {
+            if (ChatLive_EmoteHas(emotes, codes[i])) ChatLive_EmoteWarm(emotes[codes[i]], true);
+        }
+    }
+
+    //Emote use per channel {channel_id: {t: last use ms, c: {code: count}}}, saved at most once a minute
+    var ChatLive_EmoteUseKey = 'chat_emote_use';
+    var ChatLive_EmoteUse = null;
+    var ChatLive_EmoteUseSaveId;
+    var ChatLive_EmoteUseSaveMs = 60 * 1000;
+    var ChatLive_EmoteUseKeep = 60;
+    var ChatLive_EmoteUseChannels = 30;
+    var ChatLive_EmoteUseCap = 10000;
+
+    function ChatLive_EmoteUseGet() {
+        if (!ChatLive_EmoteUse) {
+            try {
+                ChatLive_EmoteUse = Main_getItemJson(ChatLive_EmoteUseKey, {});
+            } catch (e) {
+                ChatLive_EmoteUse = null;
+            }
+
+            if (!ChatLive_EmoteUse || typeof ChatLive_EmoteUse !== 'object' || Array.isArray(ChatLive_EmoteUse)) ChatLive_EmoteUse = {};
+        }
+
+        return ChatLive_EmoteUse;
+    }
+
+    //Called for every emote of every chat line: it must never stop the line from showing
+    function ChatLive_EmoteUsed(chat_number, code) {
+        try {
+            ChatLive_EmoteUsedCount(chat_number, code);
+        } catch (e) {
+            Main_Log('ChatLive_EmoteUsed ' + e);
+        }
+    }
+
+    function ChatLive_EmoteUsedCount(chat_number, code) {
+        var channel = ChatLive_selectedChannel_id[chat_number],
+            use,
+            entry,
+            count,
+            key;
+
+        if (!channel || !code || code === '__proto__') return;
+
+        use = ChatLive_EmoteUseGet();
+        entry = ChatLive_EmoteHas(use, channel) ? use[channel] : null;
+
+        if (!entry || !entry.c || typeof entry.c !== 'object') entry = use[channel] = {t: 0, c: {}};
+
+        count = (ChatLive_EmoteHas(entry.c, code) && typeof entry.c[code] === 'number' ? entry.c[code] : 0) + 1;
+        entry.c[code] = count;
+        entry.t = Date.now();
+
+        //Halve the channel's counts now and then so old favourites give way to what is used now
+        if (count >= ChatLive_EmoteUseCap) {
+            for (key in entry.c) {
+                if (ChatLive_EmoteHas(entry.c, key)) entry.c[key] = Math.floor(entry.c[key] / 2);
+            }
+        }
+
+        if (!ChatLive_EmoteUseSaveId) {
+            ChatLive_EmoteUseSaveId = Main_setTimeout(ChatLive_EmoteUseSave, ChatLive_EmoteUseSaveMs);
+        }
+    }
+
+    function ChatLive_EmoteUseTop(counts, max) {
+        var codes = [],
+            code;
+
+        for (code in counts) {
+            if (ChatLive_EmoteHas(counts, code) && counts[code] > 0) codes.push(code);
+        }
+
+        codes.sort(function (a, b) {
+            return counts[b] - counts[a];
+        });
+
+        return codes.slice(0, max);
+    }
+
+    //Keep the latest channels and each one's most used emotes only
+    function ChatLive_EmoteUseSave() {
+        var use = ChatLive_EmoteUseGet(),
+            channels = [],
+            pruned = {},
+            codes,
+            c,
+            channel,
+            i,
+            j;
+
+        ChatLive_EmoteUseSaveId = null;
+
+        for (channel in use) {
+            if (ChatLive_EmoteHas(use, channel) && use[channel] && use[channel].c) channels.push(channel);
+        }
+
+        channels.sort(function (a, b) {
+            return (use[b].t || 0) - (use[a].t || 0);
+        });
+
+        for (i = 0; i < Math.min(channels.length, ChatLive_EmoteUseChannels); i++) {
+            channel = channels[i];
+            codes = ChatLive_EmoteUseTop(use[channel].c, ChatLive_EmoteUseKeep);
+            c = {};
+
+            for (j = 0; j < codes.length; j++) c[codes[j]] = use[channel].c[codes[j]];
+
+            pruned[channel] = {t: use[channel].t || 0, c: c};
+        }
+
+        ChatLive_EmoteUse = pruned;
+        Main_setItem(ChatLive_EmoteUseKey, JSON.stringify(pruned));
+    }
+
     function ChatLive_loadEmotesChannelFFZ(chat_number, id) {
         if (id !== Chat_Id[chat_number]) return;
         ChatLive_CacheTouch(ChatLive_selectedChannel_id[chat_number]);
@@ -14493,6 +14690,7 @@
             );
         } else {
             ChatLive_updateExtraEmotes(extraEmotesDone.ffz[ChatLive_selectedChannel_id[chat_number]], chat_number);
+            ChatLive_EmoteWarmChannel(chat_number);
             if (ChatLive_EmoteStale(ChatLive_selectedChannel_id[chat_number], 'ffz')) ChatLive_EmoteRefresh(chat_number, id, 'ffz');
         }
     }
@@ -14504,6 +14702,7 @@
         data = JSON.parse(data);
         if (!data || !data.sets) return;
         ChatLive_loadEmotesffz(data, chat_number, false);
+        ChatLive_EmoteWarmChannel(chat_number);
     }
 
     function ChatLive_loadEmotesffz(data, chat_number, isGlobal) {
@@ -14538,6 +14737,8 @@
             if (!isGlobal) delete extraEmotesDone.ffz[ChatLive_selectedChannel_id[chat_number]];
             Main_Log('ChatLive_loadEmotesffz ' + e);
         }
+
+        if (isGlobal) ChatLive_EmoteWarmSet(extraEmotesDone.ffzGlobal);
     }
 
     function ChatLive_ffz_entry(emoticon) {
@@ -14589,6 +14790,7 @@
             );
         } else {
             ChatLive_updateExtraEmotes(extraEmotesDone.seven_tv[ChatLive_selectedChannel_id[chat_number]], chat_number);
+            ChatLive_EmoteWarmChannel(chat_number);
             if (ChatLive_EmoteStale(ChatLive_selectedChannel_id[chat_number], 'seven_tv')) ChatLive_EmoteRefresh(chat_number, id, 'seven_tv');
         }
     }
@@ -14600,6 +14802,7 @@
         data = JSON.parse(data);
         if (!data || !data.id) return;
         ChatLive_loadEmotesseven_tv(data, chat_number, false);
+        ChatLive_EmoteWarmChannel(chat_number);
         ChatLive_SevenTvSync();
     }
 
@@ -14647,6 +14850,8 @@
             if (!isGlobal) delete extraEmotesDone.seven_tv[ChatLive_selectedChannel_id[chat_number]];
             Main_Log('ChatLive_loadEmotesseven_tvChannel ' + e);
         }
+
+        if (isGlobal) ChatLive_EmoteWarmSet(extraEmotesDone.seven_tvGlobal);
     }
 
     //One 7TV set entry (an emote of a set, or a live update's value) to the chat emote object, null when unusable
@@ -17291,7 +17496,7 @@
         var i = 0,
             len = message.length;
         for (i; i < len; i++) {
-            message[i] = extraMessageTokenize(message[i], 0, null);
+            message[i] = extraMessageTokenize(message[i], 0, null, null, true);
         }
 
         return '<span class="message">' + twemoji.parse(message.join(' '), true, true) + '</span>';
@@ -18108,6 +18313,8 @@
         } catch (e) {
             Main_Log('Chat_loadEmotesbttvGlobal ' + e);
         }
+
+        ChatLive_EmoteWarmSet(extraEmotesDone.bttvGlobal);
     }
 
     function Chat_loadSeven_tvGlobalEmotes() {
@@ -57892,6 +58099,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         return match ? match[1] : '';
     }
 
+    function emoteSrcset(div) {
+        var match = / srcset="([^"]+)"/.exec(div);
+
+        return match ? match[1] : '';
+    }
+
     //Stills are the first frame of the animation, which is empty for emotes that animate in
     //(tamashPANIC, ASSEMBLE...). Each still is checked once; a blank one falls back to the animation
     var emoteStills = {};
@@ -57972,7 +58185,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         );
     }
 
-    function extraMessageTokenize(message, chat_number, bits, previewsEmote) {
+    //noUse: typed text preview, not counted as emote use
+    function extraMessageTokenize(message, chat_number, bits, previewsEmote, noUse) {
         var SplittedMessage = message.split(' '),
             retArray = [],
             emote,
@@ -57994,6 +58208,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 retArray.push(cheer);
             } else {
                 emote = extraEmotes[chat_number][SplittedMessage[i]];
+
+                if (emote && !noUse) ChatLive_EmoteUsed(chat_number, emote.code);
 
                 //some 7tv emotes goes direct on top of the center of the previews emote
                 if (retArray.length && emote && emote.chat_div_zero && Main_A_includes_B(retArray[retArray.length - 1], 'emoticon')) {
