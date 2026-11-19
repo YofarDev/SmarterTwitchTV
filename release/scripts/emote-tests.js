@@ -13,7 +13,9 @@ function sandbox() {
     //Offscreen still checks: images are recorded, the test decides each one's pixels (alpha) on load
     const images = [],
         elements = {},
-        rules = [];
+        rules = [],
+        timers = [],
+        storage = {};
     const s = {
         Main_Log: () => {},
         Main_A_includes_B: (a, b) => a.indexOf(b) !== -1,
@@ -25,6 +27,18 @@ function sandbox() {
             images.push(this);
         },
         Main_getElementById: id => elements[id] || null,
+        Main_setTimeout: fn => {
+            timers.push(fn);
+            return timers.length;
+        },
+        Main_getItemJson: (key, def) => {
+            if (storage.__throw) throw new SyntaxError('bad json');
+            return storage.hasOwnProperty(key) ? JSON.parse(storage[key]) : def;
+        },
+        Main_setItem: (key, value) => {
+            storage[key] = value;
+            return true;
+        },
         document: {
             head: {appendChild: el => (elements[el.id] = el)},
             createElement: tag =>
@@ -45,6 +59,8 @@ function sandbox() {
     };
     s.__images = images;
     s.__rules = rules;
+    s.__timers = timers;
+    s.__storage = storage;
     vm.createContext(s);
     for (const file of ['app/thirdparty/kapchat.js', 'app/specific/ChatLive.js', 'app/specific/ChatVod.js'])
         vm.runInContext(fs.readFileSync(file, 'utf8'), s);
@@ -53,6 +69,8 @@ function sandbox() {
     s.extraEmotes = [{}, {}];
     s.extraEmotesDone.bttv.channel = {};
     s.extraEmotesDone.seven_tv.channel = {};
+    //Background emote prefetch off unless a test turns it on: its images would mix with the still checks
+    s.ChatLive_EmoteWarmParallel = 0;
     return s;
 }
 
@@ -239,5 +257,129 @@ check(
         g.extraEmotes[1].GlobalWave.chat_div === g.extraEmotesDone.seven_tvGlobal.GlobalWave.chat_div,
     '7tv global: the cached set reaches both chats'
 );
+
+
+//Background emote prefetch: the WebView has no HTTP cache, so emote images are fetched ahead (global sets and the
+//channel's most used emotes) and kept, a few at a time
+const bttvIds = n => Array.from({length: n}, (_, i) => ({id: String(i).padStart(24, 'g'), code: 'G' + i, animated: false}));
+const warmed = w => w.__images.filter(i => !i.crossOrigin);
+{
+    const w = sandbox();
+    w.ChatLive_EmoteWarmParallel = 2;
+    w.Chat_loadEmotesbttvGlobal(bttvIds(4));
+    check(warmed(w).length === 2, 'warm: global emotes load at most the parallel limit at once');
+    const first = w.__images[0],
+        div = w.extraEmotes[0].G0.chat_div;
+    check(
+        first.src === w.emoteSrc(div) && first.srcset === w.emoteSrcset(div) && first.srcset.indexOf(' 2x,') !== -1 && !first.crossOrigin,
+        'warm: same src and srcset as the chat line, no cors mode'
+    );
+    first.onload();
+    check(warmed(w).length === 3, 'warm: a loaded image starts the next one');
+    w.__images[1].onerror();
+    check(warmed(w).length === 4, 'warm: a failed image starts the next one too');
+    w.Chat_loadEmotesbttvGlobal(bttvIds(4));
+    check(warmed(w).length === 4, 'warm: an emote already fetched is not fetched again');
+    check(w.ChatLive_EmoteWarmKept[first.src] === first, 'warm: the image stays referenced for the memory cache');
+}
+{
+    const w = sandbox();
+    w.ChatLive_EmoteWarmParallel = 10;
+    w.ChatLive_EmoteWarmMax = 2;
+    w.Chat_loadEmotesbttvGlobal(bttvIds(4));
+    check(Object.keys(w.ChatLive_EmoteWarmKept).length === 2, 'warm: at most ChatLive_EmoteWarmMax images are kept');
+    check(w.ChatLive_EmoteWarmKept[w.__images[3].src] === w.__images[3], 'warm: the oldest kept images are dropped first');
+}
+
+//Use counts: chat lines count each emote per channel, the typing preview does not
+{
+    const u = sandbox();
+    u.ChatLive_loadEmotesbttvChannel(
+        [
+            {id: 'a'.repeat(24), code: 'Hype'},
+            {id: 'b'.repeat(24), code: 'Calm'},
+            {id: 'c'.repeat(24), code: 'hasOwnProperty'}
+        ],
+        0
+    );
+    let html = u.extraMessageTokenize('Calm Hype Hype hasOwnProperty x', 0, 0);
+    u.extraMessageTokenize('Hype', 0, 0);
+    u.extraMessageTokenize('Calm Calm Calm Calm', 0, 0, null, true);
+    let counts = u.ChatLive_EmoteUseGet().channel.c;
+    check(counts.Hype === 3 && counts.Calm === 1, 'use: chat lines count emotes, the typing preview does not');
+    check(counts['hasOwnProperty'] === 1 && html.split('emoticon').length === 5, 'use: an emote named like an object method is counted and shown');
+    u.extraMessageTokenize('hasOwnProperty hasOwnProperty', 0, 0);
+    check(u.ChatLive_EmoteUseGet().channel.c['hasOwnProperty'] === 3, 'use: such a name keeps counting');
+    check(u.__timers.length === 1, 'use: one save is scheduled for many counts');
+
+    u.ChatLive_EmoteUseGet().other = {t: 1, c: {Old: 5}};
+    u.ChatLive_EmoteUseKeep = 2;
+    u.ChatLive_EmoteUseChannels = 1;
+    u.__timers[0]();
+    const stored = JSON.parse(u.__storage.chat_emote_use);
+    check(
+        Object.keys(stored).join() === 'channel' && Object.keys(stored.channel.c).join() === 'Hype,hasOwnProperty',
+        'use: the save keeps the latest channels and their most used emotes'
+    );
+    u.extraMessageTokenize('Calm', 0, 0);
+    check(u.__timers.length === 2, 'use: a count after a save schedules the next save');
+
+    u.ChatLive_EmoteUseCap = 4;
+    u.extraMessageTokenize('Hype', 0, 0);
+    counts = u.ChatLive_EmoteUseGet().channel.c;
+    check(counts.Hype === 2 && counts['hasOwnProperty'] === 1, 'use: counts are halved when one reaches the cap');
+
+    u.ChatLive_selectedChannel_id[0] = null;
+    u.extraMessageTokenize('Hype', 0, 0);
+    check(u.ChatLive_EmoteUseGet().channel.c.Hype === 2, 'use: nothing is counted without a channel');
+}
+{
+    const x = sandbox();
+    x.__storage.__throw = true;
+    x.ChatLive_loadEmotesbttvChannel([{id: 'a'.repeat(24), code: 'Hype'}], 0);
+    check(x.extraMessageTokenize('Hype', 0, 0).indexOf('emoticon') !== -1, 'use: unreadable saved counts do not stop the line');
+    check(x.ChatLive_EmoteUseGet().channel.c.Hype === 1, 'use: unreadable saved counts start over');
+}
+
+//A later session: the channel's most used emotes are fetched before the global sets still queued
+{
+    const v = sandbox();
+    v.__storage.chat_emote_use = JSON.stringify({channel: {t: 5, c: {Hype: 2, Gone: 50, Calm: 9}}});
+    v.ChatLive_EmoteWarmParallel = 1;
+    v.Chat_Id = [1, 2];
+    v.Chat_loadEmotesbttvGlobal(bttvIds(2));
+    v.ChatLive_loadEmotesChannelBTTVSuccess(
+        JSON.stringify({
+            channelEmotes: [
+                {id: 'a'.repeat(24), code: 'Hype'},
+                {id: 'b'.repeat(24), code: 'Calm'},
+                {id: 'd'.repeat(24), code: 'Rare'}
+            ],
+            sharedEmotes: [],
+            bots: []
+        }),
+        0,
+        1
+    );
+    for (let i = 0; i < 4; i++) warmed(v)[i].onload();
+    const order = warmed(v).map(i => i.src.split('/')[4]);
+    check(
+        order.join() === ['0'.padStart(24, 'g'), 'b'.repeat(24), 'a'.repeat(24), '1'.padStart(24, 'g')].join(),
+        'warm: most used channel emotes first, by count, then the rest of the global set; unused ones are not fetched'
+    );
+    const before = warmed(v).length;
+    v.ChatLive_updateExtraEmotes(v.extraEmotesDone.bttv.channel, 0);
+    v.ChatLive_EmoteWarmChannel(0);
+    check(warmed(v).length === before, 'warm: a later chat of the channel does not fetch them again');
+}
+
+//Animated emotes off: the still image the chat line will show is fetched
+{
+    const o = sandbox();
+    o.ChatLive_EmoteWarmParallel = 3;
+    o.ChatLive_AnimatedEmotes = false;
+    o.Chat_loadEmotesbttvGlobal([{id: 'e'.repeat(24), code: 'Spin', animated: true}]);
+    check(warmed(o).length === 1 && warmed(o)[0].src.indexOf('/static/3x.webp') !== -1, 'warm: animated emotes off fetches the still image');
+}
 
 console.log(checks + ' emote checks passed');

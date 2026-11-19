@@ -43,6 +43,12 @@ function emoteSrc(div) {
     return match ? match[1] : '';
 }
 
+function emoteSrcset(div) {
+    var match = / srcset="([^"]+)"/.exec(div);
+
+    return match ? match[1] : '';
+}
+
 //Stills are the first frame of the animation, which is empty for emotes that animate in
 //(tamashPANIC, ASSEMBLE...). Each still is checked once; a blank one falls back to the animation
 var emoteStills = {};
@@ -123,7 +129,8 @@ function emoteTemplate(url, srcset) {
     );
 }
 
-function extraMessageTokenize(message, chat_number, bits, previewsEmote) {
+//noUse: typed text preview, not counted as emote use
+function extraMessageTokenize(message, chat_number, bits, previewsEmote, noUse) {
     var SplittedMessage = message.split(' '),
         retArray = [],
         emote,
@@ -145,6 +152,8 @@ function extraMessageTokenize(message, chat_number, bits, previewsEmote) {
             retArray.push(cheer);
         } else {
             emote = extraEmotes[chat_number][SplittedMessage[i]];
+
+            if (emote && !noUse) ChatLive_EmoteUsed(chat_number, emote.code);
 
             //some 7tv emotes goes direct on top of the center of the previews emote
             if (retArray.length && emote && emote.chat_div_zero && Main_A_includes_B(retArray[retArray.length - 1], 'emoticon')) {

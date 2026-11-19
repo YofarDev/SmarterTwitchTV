@@ -457,6 +457,8 @@ function Chat_loadEmotesbttvGlobal(data) {
     } catch (e) {
         Main_Log('Chat_loadEmotesbttvGlobal ' + e);
     }
+
+    ChatLive_EmoteWarmSet(extraEmotesDone.bttvGlobal);
 }
 
 function Chat_loadSeven_tvGlobalEmotes() {

@@ -676,7 +676,7 @@ function ChatLiveControls_extraMessageTokenize(message) {
     var i = 0,
         len = message.length;
     for (i; i < len; i++) {
-        message[i] = extraMessageTokenize(message[i], 0, null);
+        message[i] = extraMessageTokenize(message[i], 0, null, null, true);
     }
 
     return '<span class="message">' + twemoji.parse(message.join(' '), true, true) + '</span>';
