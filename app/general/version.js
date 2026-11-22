@@ -21,11 +21,21 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
-    WebVersion: 'November 19 2026',
-    WebTag: 796, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    publishVersionCode: 403, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/403/SmarterPurpleTV_3_0_403.apk',
+    WebVersion: 'November 22 2026',
+    WebTag: 797, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 22 2026 (Web 797 / APK 403)',
+            changes: [
+                'APK: new launcher banner on Android TV home screens',
+                'Fix: opening an ended stream from History > Live as a VOD could throw before the player started and leave the remote unresponsive — the live badge is now looked up by class instead of by position in the row',
+                'Improvement: secondary text on TV (card metadata, viewer count, detail band, footer key hints, Refresh and rail utilities) is now at least 24px at 1080p and uses a lighter tint instead of reduced opacity, so it reads from the couch',
+                'Improvement: the key hint footer and the navigation rail icons moved inward to sit inside the TV title-safe margin, so older TVs that crop the screen edge no longer cut them off',
+                'Improvement: LIVE, VOD and CLIP badges use deeper colours that keep white text readable, a focused live card shows a LIVE text badge instead of only a colour dot, the card button reads Options and the Following status panel no longer lingers after you change screen'
+            ]
+        },
         {
             title: 'November 19 2026 (Web 796)',
             changes: [

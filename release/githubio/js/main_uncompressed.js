@@ -8568,11 +8568,21 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 402, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/402/SmarterPurpleTV_3_0_402.apk',
-        WebVersion: 'November 19 2026',
-        WebTag: 796, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        publishVersionCode: 403, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/403/SmarterPurpleTV_3_0_403.apk',
+        WebVersion: 'November 22 2026',
+        WebTag: 797, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 22 2026 (Web 797 / APK 403)',
+                changes: [
+                    'APK: new launcher banner on Android TV home screens',
+                    'Fix: opening an ended stream from History > Live as a VOD could throw before the player started and leave the remote unresponsive — the live badge is now looked up by class instead of by position in the row',
+                    'Improvement: secondary text on TV (card metadata, viewer count, detail band, footer key hints, Refresh and rail utilities) is now at least 24px at 1080p and uses a lighter tint instead of reduced opacity, so it reads from the couch',
+                    'Improvement: the key hint footer and the navigation rail icons moved inward to sit inside the TV title-safe margin, so older TVs that crop the screen edge no longer cut them off',
+                    'Improvement: LIVE, VOD and CLIP badges use deeper colours that keep white text readable, a focused live card shows a LIVE text badge instead of only a colour dot, the card button reads Options and the Following status panel no longer lingers after you change screen'
+                ]
+            },
             {
                 title: 'November 19 2026 (Web 796)',
                 changes: [
@@ -18863,6 +18873,17 @@
     var Main_isTV;
     var Main_isDebug = false;
 
+    //Category badge backgrounds (DESIGN.md: Live Badge Red / VOD Green / Clip Orange).
+    //Same hues as the indicator colors, deepened so white badge text keeps >= 4.5:1 contrast.
+    var Main_ColorBadgeLive = 'd92626',
+        Main_ColorBadgeVod = '00843a',
+        Main_ColorBadgeClip = 'c2410c';
+
+    //State indicator dots (DESIGN.md: VOD Dot Green, Hosting Yellow) — the brighter
+    //indicator hues of their badge colors; dots are marks, not text surfaces.
+    var Main_ColorIndicatorVod = '00a94b',
+        Main_ColorIndicatorHosting = 'FED000';
+
     var Main_cursorYAddFocus = -1;
 
     var Main_Search = 0;
@@ -20078,7 +20099,7 @@
             'label_update',
             '<div style="vertical-align: middle; display: inline-block;"><i class="icon-' +
                 (web ? 'globe' : 'play-1') +
-                '" style="color: #FF2828;"></i></div><div style="vertical-align: middle; display: inline-block; color: #FF2828">' +
+                '" style="color: #ff2121;"></i></div><div style="vertical-align: middle; display: inline-block; color: #ff2121">' +
                 STR_SPACE_HTML +
                 (web ? STR_WEB_UPDATE_AVAILABLE : STR_UPDATE_AVAILABLE) +
                 STR_UPDATE_CHECK_SIDE +
@@ -20246,7 +20267,7 @@
     function Main_UpdateDialogTitle() {
         var innerHtml =
                 '<div class="about_text_title" ' +
-                (Main_HasUpdate ? ' style="color: #FF0000;"' : '') +
+                (Main_HasUpdate ? ' style="color: #ff2121;"' : '') +
                 '>' +
                 (Main_HasUpdate ? (Main_IsWebupdate ? STR_WEB_UPDATE_AVAILABLE : STR_UPDATE_AVAILABLE) : STR_UPDATE_CHANGELOG) +
                 STR_BR +
@@ -20477,6 +20498,10 @@
         var doc = Main_getElementById(Main_CheckBroadcastIDoc);
         doc.childNodes[0].classList.add('hideimp');
         doc.childNodes[2].classList.remove('hideimp');
+        //The focused-card LIVE badge hides with the live dot when the stream ends mid-preview
+        //Look the badge up by class: with Extra_vodimg set, childNodes[3] is a text node (no classList) and threw before Main_OPenAsVod
+        var liveBadge = doc.querySelector('.stream_live_badge');
+        if (liveBadge) liveBadge.classList.add('hideimp');
 
         Main_OPenAsVod(historyPos);
     }
@@ -23185,6 +23210,9 @@
         Navigation_Close(false);
         Navigation_Onboarding = false;
         Main_HideElement('navigation-onboarding');
+        // The status panel describes the previous destination; a new destination starts clean, so a
+        // feed finishing its load behind the scenes cannot leave stale copy on screen.
+        Main_HideElement('navigation-status');
         var previous = Main_values.Main_Go;
         Navigation_ExitCurrent();
         Main_values.Main_Before = previous;
@@ -23337,13 +23365,14 @@
         if (data) {
             Main_textContent('navigation-detail-category', data[3]);
             Main_textContent('navigation-detail-title', data[2]);
-            Main_textContent('navigation-detail-name', data[1] + ' · ' + data[4] + ' ' + STR_VIEWERS);
+            Main_textContent('navigation-detail-badge', STR_LIVE);
+            Main_textContent('navigation-detail-name-text', data[1] + ' · ' + data[4] + ' ' + STR_VIEWERS);
             Main_ShowElement('navigation-details');
             Main_AddClass('scene1', 'navigation-detail');
         } else {
             Main_textContent('navigation-detail-category', '');
             Main_textContent('navigation-detail-title', '');
-            Main_textContent('navigation-detail-name', '');
+            Main_textContent('navigation-detail-name-text', '');
             Main_HideElement('navigation-details');
             Main_RemoveClass('scene1', 'navigation-detail');
         }
@@ -23412,6 +23441,10 @@
     }
 
     function Navigation_LoadState(screen, state) {
+        /* The status panel belongs to the followed-live feed only, and only while it is the active
+         * destination: the guard passes just when screen is both Main_UserLive and Main_Go. Any other
+         * screen's state call must neither show nor hide it. Navigation_Go clears the panel when the
+         * destination changes, so a feed finishing in the background cannot leave stale copy up. */
         if (screen !== Main_UserLive || screen !== Main_values.Main_Go || Navigation_Onboarding) return;
         var panel = Main_getElementById('navigation-status');
         if (!state) {
@@ -29695,7 +29728,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 STR_SPACE_HTML +
                 STR_SPACE_HTML +
                 '<div class="partnericon_text" style="background: #' +
-                (rerun || isStay ? 'FFFFFF; color: #000000;' : 'E21212;') +
+                (rerun || isStay ? 'FFFFFF; color: #000000;' : Main_ColorBadgeLive + ';') +
                 '">' +
                 STR_SPACE_HTML +
                 STR_SPACE_HTML +
@@ -29704,9 +29737,19 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 STR_SPACE_HTML +
                 '</div>';
         } else if (live_vod_clip === 1) {
-            div += STR_SPACE_HTML + STR_SPACE_HTML + '<div class="partnericon_text" style="background: #00a94b">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>';
+            div +=
+                STR_SPACE_HTML +
+                STR_SPACE_HTML +
+                '<div class="partnericon_text" style="background: #' +
+                Main_ColorBadgeVod +
+                '">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>';
         } else {
-            div += STR_SPACE_HTML + STR_SPACE_HTML + '<div class="partnericon_text" style="background: #F05700">&nbsp;&nbsp;CLIP&nbsp;&nbsp;</div>';
+            div +=
+                STR_SPACE_HTML +
+                STR_SPACE_HTML +
+                '<div class="partnericon_text" style="background: #' +
+                Main_ColorBadgeClip +
+                '">&nbsp;&nbsp;CLIP&nbsp;&nbsp;</div>';
         }
 
         return div + '<div class="lang_text">' + STR_SPACE_HTML + STR_SPACE_HTML + lang + '</div>';
@@ -40085,11 +40128,16 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             idArray[0] +
             id +
             '_actions" type="button" class="stream_actions_btn" tabindex="-1" aria-label="' +
-            STR_ACTIONS +
+            STR_OPTIONS +
             ' ' +
             Screens_AriaEscape(label) +
             '">' +
+            // Dots at rest; the focused card says the word, matching the footer's "Hold OK Options"
+            '<span class="stream_actions_dots">' +
             STR_ACTIONS_SHORT +
+            '</span><span class="stream_actions_word">' +
+            STR_OPTIONS +
+            '</span>' +
             '</button>'
         );
     }
@@ -40149,7 +40197,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             idArray[0] +
             id +
             '" class="stream_thumbnail_channel" tabindex="-1" aria-label="' +
-            Screens_AriaEscape(valuesArray[3]) +
+            Screens_AriaEscape((valuesArray[5] ? STR_LIVE + STR_UI.separator : '') + valuesArray[3]) +
             '">' +
             Screens_ActionsButtonHtml(idArray, id, valuesArray[3]) +
             '<div class="stream_thumbnail_channel_img"><img id="' +
@@ -40165,7 +40213,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             idArray[2] +
             id +
             '" class="stream_info_channel_name">' +
-            (valuesArray[5] ? '<i class="icon-circle channel_live_icon strokedeline" style="color: red;"></i>' : '') +
+            (valuesArray[5]
+                ? '<i class="icon-circle channel_live_icon strokedeline" style="color: red;"></i><span class="stream_live_badge">' +
+                  STR_LIVE +
+                  '</span>'
+                : '') +
             valuesArray[3] +
             (valuesArray[4]
                 ? STR_SPACE_HTML +
@@ -40386,7 +40438,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             idArray[0] +
             id +
             '" class="stream_thumbnail_live" tabindex="-1" aria-label="' +
-            Screens_AriaEscape(valuesArray[1]) +
+            Screens_AriaEscape((force_VOD ? 'VOD' + STR_UI.separator : STR_LIVE + STR_UI.separator) + valuesArray[1]) +
             '">' +
             Screens_ActionsButtonHtml(idArray, id, valuesArray[1]) +
             '<div class="stream_thumbnail_live_img"><img id="' +
@@ -40407,13 +40459,21 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             ' live_icon strokedeline' +
             (force_VOD ? ' hideimp' : '') +
             '" style="color: ' +
-            (valuesArray[8] ? '#FFFFFF' : ishosting ? '#FED000' : 'red') +
+            (valuesArray[8] ? '#FFFFFF' : ishosting ? '#' + Main_ColorIndicatorHosting : 'red') +
             ';"></i> ' +
             (Extra_vodimg || force_VOD
                 ? '<div class="vodicon_text ' +
                   (force_VOD ? '' : 'hideimp') +
-                  '" style="background: #00a94b;">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>&nbsp;'
+                  '" style="background: #' +
+                  Main_ColorBadgeVod +
+                  ';">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>&nbsp;'
                 : '<div style="display: none;"></div>') + //empty div to prevent error when childNodes[2].classList.remove
+            //Focused cards swap the color dot for the LIVE text badge (Badge-Not-Color); VOD cells hide it
+            '<span class="stream_live_badge' +
+            (force_VOD ? ' hideimp' : '') +
+            '">' +
+            STR_LIVE +
+            '</span>' +
             valuesArray[1] +
             '</div><div class="stream_info_live" style="width:' +
             (ishosting ? 0 : 33) +
@@ -52275,9 +52335,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             div,
             '<i class="icon-circle live_icon strokedeline" style="color: red;"></i>' +
                 STR_SPACE_HTML +
-                '<i class="icon-circle live_icon strokedeline" style="color: #FED000;">' +
+                '<i class="icon-circle live_icon strokedeline" style="color: #' +
+                Main_ColorIndicatorHosting +
+                ';">' +
                 STR_SPACE_HTML +
-                '</i><i class="icon-circle live_icon strokedeline" style="color: #00a94b;"></i>' +
+                '</i><i class="icon-circle live_icon strokedeline" style="color: #' +
+                Main_ColorIndicatorVod +
+                ';"></i>' +
                 STR_SPACE_HTML +
                 '</i><i class="icon-refresh live_icon strokedeline" style="color: #FFFFFF;"></i>' +
                 STR_SPACE_HTML +
@@ -56416,7 +56480,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             (Extra_vodimg || force_VOD
                 ? '<div class="vodicon_text ' +
                   (force_VOD ? '' : 'hideimp') +
-                  '" style="background: #00a94b;">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>&nbsp;'
+                  '" style="background: #' +
+                  Main_ColorBadgeVod +
+                  ';">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>&nbsp;'
                 : '<div style="display: none;"></div>') + //empty div to prevent error when childNodes[2].classList.remove
             data[1] +
             '</div><div class="stream_info_live" style="width: 36%; float: right; text-align: right; display: inline-block; font-size: 70%;">' +
@@ -56530,7 +56596,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             UserLiveFeed_ids[2] +
             id +
             '" class="stream_info_live_name" style="width:63.5%; white-space: nowrap; text-overflow: ellipsis; display: inline-block; overflow: hidden;">' +
-            '<i class="icon-circle live_icon strokedeline" style="color: #00a94b;"></i> ' +
+            '<i class="icon-circle live_icon strokedeline" style="color: #' +
+            Main_ColorIndicatorVod +
+            ';"></i> ' +
             data[1] +
             '</div><div class="stream_info_live" style="width:36%; float: right; text-align: right; display: inline-block; font-size: 70%;">' +
             data[5] +
@@ -56547,7 +56615,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             data[2] +
             '</div><div class="stream_info_live" style="width: 26%; display: inline-block; float: right; text-align: right;">' +
             Play_timeS(data[11]) +
-            '</div></div><div class="stream_info_live_title" style="font-family: \'Roboto\';">' +
+            '</div></div><div class="stream_info_live_title">' +
             data[4] +
             Main_GetViewsStrings(data[13]) +
             (Extra_when ? ', ' + STR_WATCHED + Main_videoCreatedAtWithHM(Extra_when) + STR_SPACE_HTML + STR_UNTIL + Play_timeS(Extra_until) : '') +
