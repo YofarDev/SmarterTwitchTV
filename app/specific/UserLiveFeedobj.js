@@ -1067,7 +1067,7 @@ function UserLiveFeedobj_CreatFeed(pos, y, id, data, Extra_when, Extra_vodimg, f
         (data[8] ? '#FFFFFF' : 'red') +
         ';"></i> ' +
         (Extra_vodimg || force_VOD
-            ? '<div class="vodicon_text ' + (force_VOD ? '' : 'hideimp') + '" style="background: #00a94b;">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>&nbsp;'
+            ? '<div class="vodicon_text ' + (force_VOD ? '' : 'hideimp') + '" style="background: #' + Main_ColorBadgeVod + ';">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>&nbsp;'
             : '<div style="display: none;"></div>') + //empty div to prevent error when childNodes[2].classList.remove
         data[1] +
         '</div><div class="stream_info_live" style="width: 36%; float: right; text-align: right; display: inline-block; font-size: 70%;">' +
@@ -1181,7 +1181,7 @@ function UserLiveFeedobj_CreateVodFeed(pos, x, id, data, Extra_when, Extra_until
         UserLiveFeed_ids[2] +
         id +
         '" class="stream_info_live_name" style="width:63.5%; white-space: nowrap; text-overflow: ellipsis; display: inline-block; overflow: hidden;">' +
-        '<i class="icon-circle live_icon strokedeline" style="color: #00a94b;"></i> ' +
+        '<i class="icon-circle live_icon strokedeline" style="color: #' + Main_ColorIndicatorVod + ';"></i> ' +
         data[1] +
         '</div><div class="stream_info_live" style="width:36%; float: right; text-align: right; display: inline-block; font-size: 70%;">' +
         data[5] +
@@ -1198,7 +1198,7 @@ function UserLiveFeedobj_CreateVodFeed(pos, x, id, data, Extra_when, Extra_until
         data[2] +
         '</div><div class="stream_info_live" style="width: 26%; display: inline-block; float: right; text-align: right;">' +
         Play_timeS(data[11]) +
-        '</div></div><div class="stream_info_live_title" style="font-family: \'Roboto\';">' +
+        '</div></div><div class="stream_info_live_title">' +
         data[4] +
         Main_GetViewsStrings(data[13]) +
         (Extra_when ? ', ' + STR_WATCHED + Main_videoCreatedAtWithHM(Extra_when) + STR_SPACE_HTML + STR_UNTIL + Play_timeS(Extra_until) : '') +

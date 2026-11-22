@@ -461,7 +461,7 @@ function Play_partnerIcon(name, partner, live_vod_clip, lang, rerun) {
             STR_SPACE_HTML +
             STR_SPACE_HTML +
             '<div class="partnericon_text" style="background: #' +
-            (rerun || isStay ? 'FFFFFF; color: #000000;' : 'E21212;') +
+            (rerun || isStay ? 'FFFFFF; color: #000000;' : Main_ColorBadgeLive + ';') +
             '">' +
             STR_SPACE_HTML +
             STR_SPACE_HTML +
@@ -470,9 +470,9 @@ function Play_partnerIcon(name, partner, live_vod_clip, lang, rerun) {
             STR_SPACE_HTML +
             '</div>';
     } else if (live_vod_clip === 1) {
-        div += STR_SPACE_HTML + STR_SPACE_HTML + '<div class="partnericon_text" style="background: #00a94b">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>';
+        div += STR_SPACE_HTML + STR_SPACE_HTML + '<div class="partnericon_text" style="background: #' + Main_ColorBadgeVod + '">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>';
     } else {
-        div += STR_SPACE_HTML + STR_SPACE_HTML + '<div class="partnericon_text" style="background: #F05700">&nbsp;&nbsp;CLIP&nbsp;&nbsp;</div>';
+        div += STR_SPACE_HTML + STR_SPACE_HTML + '<div class="partnericon_text" style="background: #' + Main_ColorBadgeClip + '">&nbsp;&nbsp;CLIP&nbsp;&nbsp;</div>';
     }
 
     return div + '<div class="lang_text">' + STR_SPACE_HTML + STR_SPACE_HTML + lang + '</div>';

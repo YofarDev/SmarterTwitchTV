@@ -23,6 +23,17 @@ var smartTwitchTV;
 var Main_isTV;
 var Main_isDebug = false;
 
+//Category badge backgrounds (DESIGN.md: Live Badge Red / VOD Green / Clip Orange).
+//Same hues as the indicator colors, deepened so white badge text keeps >= 4.5:1 contrast.
+var Main_ColorBadgeLive = 'd92626',
+    Main_ColorBadgeVod = '00843a',
+    Main_ColorBadgeClip = 'c2410c';
+
+//State indicator dots (DESIGN.md: VOD Dot Green, Hosting Yellow) — the brighter
+//indicator hues of their badge colors; dots are marks, not text surfaces.
+var Main_ColorIndicatorVod = '00a94b',
+    Main_ColorIndicatorHosting = 'FED000';
+
 var Main_cursorYAddFocus = -1;
 
 var Main_Search = 0;
@@ -1238,7 +1249,7 @@ function Main_WarnUpdate(web) {
         'label_update',
         '<div style="vertical-align: middle; display: inline-block;"><i class="icon-' +
             (web ? 'globe' : 'play-1') +
-            '" style="color: #FF2828;"></i></div><div style="vertical-align: middle; display: inline-block; color: #FF2828">' +
+            '" style="color: #ff2121;"></i></div><div style="vertical-align: middle; display: inline-block; color: #ff2121">' +
             STR_SPACE_HTML +
             (web ? STR_WEB_UPDATE_AVAILABLE : STR_UPDATE_AVAILABLE) +
             STR_UPDATE_CHECK_SIDE +
@@ -1406,7 +1417,7 @@ var Main_UpdateDialogLastCheck;
 function Main_UpdateDialogTitle() {
     var innerHtml =
             '<div class="about_text_title" ' +
-            (Main_HasUpdate ? ' style="color: #FF0000;"' : '') +
+            (Main_HasUpdate ? ' style="color: #ff2121;"' : '') +
             '>' +
             (Main_HasUpdate ? (Main_IsWebupdate ? STR_WEB_UPDATE_AVAILABLE : STR_UPDATE_AVAILABLE) : STR_UPDATE_CHANGELOG) +
             STR_BR +
@@ -1639,6 +1650,10 @@ function Main_CheckBroadcastIDStartSucess(response) {
     var doc = Main_getElementById(Main_CheckBroadcastIDoc);
     doc.childNodes[0].classList.add('hideimp');
     doc.childNodes[2].classList.remove('hideimp');
+    //The focused-card LIVE badge hides with the live dot when the stream ends mid-preview
+    //Look the badge up by class: with Extra_vodimg set, childNodes[3] is a text node (no classList) and threw before Main_OPenAsVod
+    var liveBadge = doc.querySelector('.stream_live_badge');
+    if (liveBadge) liveBadge.classList.add('hideimp');
 
     Main_OPenAsVod(historyPos);
 }

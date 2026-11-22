@@ -185,6 +185,7 @@
                 z-index: 200;
             }
 
+            /* Intentional pure black outside the palette: OLED/plasma burn-in recovery screen. */
             .burn_in_protection {
                 z-index: 400;
                 background-color: rgba(0, 0, 0, 1);
@@ -434,10 +435,10 @@
                 box-sizing: border-box;
                 min-width: 2.4em;
                 padding: 0.25em 0.55em;
-                border: 0.08em solid #4a3d63;
-                border-radius: 0.3em;
+                border: 0.09em solid #2b2438;
+                border-radius: 0.25em;
                 background: rgba(20, 16, 28, 0.85);
-                color: #b9aede;
+                color: #b4a9cf;
                 font: inherit;
                 font-size: 85%;
                 font-family: 'Roboto-Bold';
@@ -453,14 +454,30 @@
             /* The selected card makes its Actions affordance unmistakable at TV distance. */
             .stream_thumbnail_focused .stream_actions_btn {
                 border-color: #bca0ff;
-                color: #e6dcff;
+                color: #f5f1fa;
                 background: rgba(48, 37, 63, 0.95);
             }
 
             .stream_actions_btn.stream_actions_focused {
                 border-color: #bca0ff;
                 color: #ffffff;
-                background: #6c4ce0;
+                background: #6f43bd;
+            }
+
+            /* Resting cards show the dots; the focused card says the word, matching the footer's
+             * "Hold OK Options" hint so the affordance is never icon-only. */
+            .stream_actions_word {
+                display: none;
+            }
+
+            .stream_thumbnail_focused .stream_actions_btn .stream_actions_dots,
+            .stream_thumbnail_focused_no_ani .stream_actions_btn .stream_actions_dots {
+                display: none;
+            }
+
+            .stream_thumbnail_focused .stream_actions_btn .stream_actions_word,
+            .stream_thumbnail_focused_no_ani .stream_actions_btn .stream_actions_word {
+                display: inline;
             }
 
             .stream_thumbnail_feed_game,
@@ -629,6 +646,46 @@
             .channel_live_icon {
                 vertical-align: middle;
                 margin-right: 0.2ch;
+            }
+
+            /* Live state keeps its color dot at rest and swaps to the token text badge where the
+             * state must read as words: the focused card (Badge-Not-Color, DESIGN.md) and the
+             * reserved detail band. hideimp wins so VOD cells never wear the LIVE badge. */
+            .stream_live_badge {
+                display: none;
+                vertical-align: middle;
+                margin-right: 0.2ch;
+                padding: 0.08em 0.45em;
+                border-radius: 0.2em;
+                /* Live Badge Red (DESIGN.md): same hue as Live Red, deepened so the white
+                 * badge text keeps >= 4.5:1 contrast at badge size (70% Roboto-Bold). */
+                background-color: #d92626;
+                color: #ffffff;
+                font-size: 70%;
+                font-family: 'Roboto-Bold';
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                text-shadow: none;
+                line-height: normal;
+            }
+
+            .stream_thumbnail_focused .stream_live_badge,
+            .stream_thumbnail_focused_no_ani .stream_live_badge,
+            .navigation-details .stream_live_badge {
+                display: inline-block;
+                font-size: 90%; /* the band is 24px secondary text, so the badge word stays near it */
+            }
+
+            .stream_thumbnail_focused .stream_live_badge.hideimp,
+            .stream_thumbnail_focused_no_ani .stream_live_badge.hideimp {
+                display: none;
+            }
+
+            .stream_thumbnail_focused .icon-circle.live_icon,
+            .stream_thumbnail_focused .channel_live_icon,
+            .stream_thumbnail_focused_no_ani .icon-circle.live_icon,
+            .stream_thumbnail_focused_no_ani .channel_live_icon {
+                display: none;
             }
 
             .stream_info_channel_partner_icon {
@@ -953,6 +1010,7 @@
                 left: 0;
                 bottom: 0;
                 position: absolute;
+                /* Intentional off-scale radius: tracks the viewport-scaled video overlay geometry. */
                 border-radius: 0.5vh;
                 box-shadow:
                     0 0 0 0.3vh rgba(11, 10, 14, 0.9),
@@ -1254,7 +1312,7 @@
                 width: 19%;
                 height: 2.2em;
                 line-height: 2.2em;
-                border-radius: 0.75em;
+                border-radius: 0.55em;
                 margin-top: 1%;
                 /* margin-left: 4.5%; */
                 color: #ffffff;
@@ -1395,7 +1453,7 @@
             }
 
             .playsideinfofocus {
-                border-radius: 0.75em;
+                border-radius: 0.55em;
                 background-color: rgba(0, 0, 0, 0.25);
             }
 
@@ -1471,7 +1529,7 @@
 
             .vodicon_text,
             .partnericon_text {
-                border-radius: 0.1em;
+                border-radius: 0.2em;
                 text-shadow: none;
                 font-size: 60%;
                 font-family: 'Roboto-Bold';
@@ -1822,10 +1880,6 @@
 
             .shadow_text {
                 filter: drop-shadow(0 0.05em 0.15em rgba(0, 0, 0, 0.8)) drop-shadow(0 0.05em 0.15em rgba(0, 0, 0, 0.5));
-            }
-
-            .red_text {
-                color: #ff2121;
             }
 
             .streams_div {
@@ -2205,6 +2259,8 @@
                 position: absolute;
                 width: 0.4em;
                 height: 100%;
+                /* Intentional off-scale radius: capsule ends on a 0.4em-wide indicator need a
+                 * radius wider than the element itself; clamps to a full round. */
                 border-radius: 1em;
                 box-shadow:
                     0 0 0 0.25vh #ffffff,
@@ -2406,7 +2462,7 @@
             .progress_bar_holder {
                 vertical-align: middle;
                 width: 80%;
-                border-radius: 0.6em;
+                border-radius: 0.55em;
                 display: inline-block;
                 text-align: left;
             }
@@ -2418,8 +2474,8 @@
             .progress_bar {
                 width: 100%;
                 box-sizing: border-box;
-                border: 0.1em solid #0b0a0e;
-                border-radius: 0.1em;
+                border: 0.09em solid #0b0a0e;
+                border-radius: 0.55em;
                 background-color: rgba(255, 255, 255, 0.22);
             }
 
@@ -2844,7 +2900,7 @@
                 height: 3em;
                 color: #7635fc;
                 background-color: rgba(0, 0, 0, 0.15);
-                border-radius: 2em;
+                border-radius: 50%;
             }
 
             .loading div {
@@ -2915,18 +2971,6 @@
                 margin-top: 0.5%;
             }
 
-            /* Simple way to see center of screen
-                                .center {
-                                    border: 2px solid blue;
-                                    margin: auto;
-                                    background: #F00;
-                                    position: relative;
-                                    text-align: center;
-                                    top: 50%;
-                                    width: 20%;
-                                    color: #FFF;
-                                }*/
-
             /* Approved TV navigation: fixed geometry, scoped to migrated browsing surfaces. */
             .navigation-shell {
                 position: absolute;
@@ -2944,14 +2988,15 @@
                 color: inherit;
                 background: transparent;
                 border: 0;
-                border-radius: 0.3em;
+                border-radius: 0.25em;
                 padding: 0.55em 0.65em;
                 cursor: pointer;
                 pointer-events: auto;
                 text-align: left;
                 position: relative; /* anchors the update badge */
             }
-            /* Passive update signal on the rail's Updates entry. */
+            /* Passive update signal on the rail's Updates entry. The #ff5252 dot and #ff8f8f label
+             * tint are the semantic light-red pair, outside the violet palette by design. */
             .navigation-update-available::after {
                 content: '';
                 position: absolute;
@@ -2979,10 +3024,10 @@
                 left: 0;
                 top: 0;
                 bottom: 0;
-                width: 5.8%;
+                width: 4.6%; /* with the 2.4vw left padding the collapsed rail stays ~147px, glyphs start inside the 4.5% title-safe margin */
                 background: #1e1b25;
                 z-index: 5; /* above the later positioned title and tabs so the expanded rail stays readable */
-                padding: 2.5vh 0.7vw;
+                padding: 2.5vh 0.7vw 2.5vh 2.4vw;
                 overflow: hidden;
                 pointer-events: auto;
             }
@@ -3034,6 +3079,11 @@
                 color: #c6afff;
                 text-decoration: underline;
                 text-underline-offset: 0.35em;
+                /* Collapse-surviving position marker: the underline rides the label span, which is
+                 * display:none while the rail is collapsed, so position read as color alone. The
+                 * inset edge bar uses currentColor (the themed focus color, see SettingsColor) and
+                 * is shadow-only — no geometry change. */
+                box-shadow: inset 0.15em 0 0 currentColor;
             }
             .navigation-utilities {
                 display: none;
@@ -3045,7 +3095,7 @@
             }
             .navigation-utilities .navigation-button {
                 height: 4.6vh;
-                font-size: 70%;
+                font-size: 84%; /* 24px at 1080p: the 10-foot reading floor */
             }
             .navigation-header {
                 position: absolute;
@@ -3054,7 +3104,7 @@
                 top: 4.8%;
             }
             .navigation-header h1 {
-                font-size: 180%;
+                font-size: 200%;
                 margin: 0;
                 font-family: 'Roboto-Bold';
             }
@@ -3077,6 +3127,7 @@
             #navigation-tabs .navigation-button {
                 margin-right: 0.35em;
                 border-radius: 0.55em;
+                color: #c1b8cd;
             }
             #navigation-tabs [aria-selected='true'] {
                 background: #6f43bd;
@@ -3085,19 +3136,21 @@
                 font-family: 'Roboto-Bold';
             }
             /* Refresh stays in the toolbar flow right after the tabs, one visual group with
-             * the same baseline, instead of a second floating cluster at the far edge. */
+             * the same baseline, instead of a second floating cluster at the far edge.
+             * The #494151 divider hairline is a documented token (DESIGN.md), one step above
+             * Edge so separators stay visible on Rail Charcoal surfaces. */
             #navigation-refresh {
                 margin-left: 0.75em;
                 padding-left: 0.75em;
                 border-left: 1px solid #494151;
-                font-size: 85%;
+                font-size: 93%; /* ~24px at 1080p */
             }
             .navigation-details {
                 position: absolute;
                 left: 9.2%;
                 right: 5%;
-                top: 82%;
-                bottom: 8%;
+                top: 80%;
+                bottom: 8.6%; /* box ends just above the footer (footer top ~92%), which sits on the 5% safe margin; band content needs ~120px */
                 border-top: 1px solid #494151;
                 padding-top: 0.9vh;
             }
@@ -3112,13 +3165,13 @@
                 overflow: hidden;
             }
             .navigation-details p {
-                font-size: 72%;
+                font-size: 84%; /* 24px at 1080p; secondary by tint, not opacity */
                 margin: 0;
-                opacity: 0.85;
+                color: #b4a9cf;
             }
             .navigation-footer {
                 position: absolute;
-                bottom: 3.3%;
+                bottom: 5%;
                 left: 9.2%;
                 right: 5%;
                 /* The hint strings separate key groups with runs of spaces: preserve them
@@ -3126,8 +3179,8 @@
                 white-space: pre-wrap;
                 /* Secondary-text size from the token spec (2vh ~= 22px at 1080p): the hint is the
                  * app's only always-on teacher, so it reads at the same size as other secondary text. */
-                font-size: 2vh;
-                opacity: 0.85;
+                font-size: 2.3vh; /* 24.8px at 1080p */
+                color: #b4a9cf;
             }
             /* Remote key glyphs inside the key hints (footer, player drawers, controls dialog) */
             .navigation-key,
@@ -3141,8 +3194,8 @@
             .navigation-key-ok {
                 display: inline-block;
                 padding: 0.05em 0.4em;
-                border: 0.08em solid;
-                border-radius: 0.3em;
+                border: 0.09em solid;
+                border-radius: 0.25em;
                 font-family: 'Roboto-Bold';
                 font-size: 80%;
                 line-height: 1.2;
@@ -3189,8 +3242,16 @@
                 line-height: 1.5;
                 font-size: 100%;
             }
+            /* Resting buttons stay Panel Charcoal with an Edge hairline; Focus Fill (#30253f) is the
+             * focused element's voice only (DESIGN.md). Focus adds the violet outline + fill. The
+             * explicit focused rule keeps the fill winning over the resting background at static
+             * specificity; the generated #navigation-shell rule re-themes it for saved palettes. */
             .navigation-onboarding .navigation-button {
                 margin-right: 1em;
+                background: #15121c;
+                border: 0.09em solid #2b2438;
+            }
+            .navigation-onboarding .navigation-button.navigation-focused {
                 background: #30253f;
             }
             .navigation-enabled #side_panel_new_holder {
@@ -3240,7 +3301,7 @@
              * so the theme rule in SettingsColor.js (.navigation-settings #settings_holder) outranks it. */
             .navigation-settings .settings_holder {
                 background: #1e1b25;
-                border-radius: 0.4em;
+                border-radius: 0.25em;
             }
             /* Live browsing keeps the full grid height; the compact detail band is reserved
              * only while .navigation-detail says a real stream card owns the focus. */
@@ -3296,13 +3357,13 @@
             }
             .navigation-live .stream_text_holder .stream_info_live {
                 font-family: 'Roboto';
+                font-size: 88%; /* 24px at 1080p, up from 74% */
             }
             /* The compact metadata line: viewers read as secondary to the streamer name, the
              * separator dot is decorative. Scoped to the card spans, never .stream_info_live
              * itself, so titles, games and the player's info line keep their own styling. */
             .navigation-live .stream_info_live_viewers {
-                font-size: 90%;
-                opacity: 0.85;
+                font-size: 100%;
             }
             .navigation-live .stream_info_live_meta {
                 opacity: 0.6;
@@ -3328,7 +3389,7 @@
                 right: 5%;
                 bottom: 5%;
                 padding: 1em 1.3em;
-                border-radius: 0.4em;
+                border-radius: 0.25em;
                 background: #1e1b25;
                 pointer-events: auto;
             }
@@ -3375,7 +3436,7 @@
                 width: 34%;
                 padding: 1.3em;
                 background: #1e1b25;
-                border-radius: 0.4em;
+                border-radius: 0.25em;
                 pointer-events: auto;
                 box-shadow: -0.5em 0 1.5em rgba(0, 0, 0, 0.3);
             }
@@ -3569,7 +3630,7 @@
                 bottom: 5%;
                 z-index: 15;
                 padding: 0.4em 0.8em;
-                border-radius: 0.3em;
+                border-radius: 0.25em;
                 background: #1e1b25;
                 color: #f5f1fa;
                 font-size: 90%;
@@ -3653,11 +3714,11 @@
                         <div id="navigation-tabs" role="tablist"></div>
                         <button id="navigation-refresh" type="button" class="navigation-button"></button>
                     </div>
-                    <section id="navigation-details" class="navigation-details">
+                    <section id="navigation-details" class="navigation-details" aria-live="polite">
                         <div>
                             <p id="navigation-detail-category"></p>
                             <h2 id="navigation-detail-title"></h2>
-                            <p id="navigation-detail-name"></p>
+                            <p id="navigation-detail-name"><span id="navigation-detail-badge" class="stream_live_badge"></span><span id="navigation-detail-name-text"></span></p>
                         </div>
                     </section>
                     <section id="navigation-status" class="navigation-status hide" aria-live="polite">
@@ -4123,7 +4184,7 @@
                     <div id="password_scroll" class="screen_holder hide">
                         <div id="password_" class="input_text_box" style="margin-top: 8%">
                             <div id="password_help" class="stream_user_icon"></div>
-                            <input id="password_input" type="password" class="input_class" type="text" placeholder="" />
+                            <input id="password_input" type="password" class="input_class" placeholder="" />
                             <div id="pass_button_holder" class="button_search_container">
                                 <div id="password_view" class="button_search"></div>
                                 <div id="password_save" class="button_search"></div>

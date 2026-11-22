@@ -597,6 +597,9 @@ function Navigation_Go(screen) {
     Navigation_Close(false);
     Navigation_Onboarding = false;
     Main_HideElement('navigation-onboarding');
+    // The status panel describes the previous destination; a new destination starts clean, so a
+    // feed finishing its load behind the scenes cannot leave stale copy on screen.
+    Main_HideElement('navigation-status');
     var previous = Main_values.Main_Go;
     Navigation_ExitCurrent();
     Main_values.Main_Before = previous;
@@ -749,13 +752,14 @@ function Navigation_UpdateDetails(screen) {
     if (data) {
         Main_textContent('navigation-detail-category', data[3]);
         Main_textContent('navigation-detail-title', data[2]);
-        Main_textContent('navigation-detail-name', data[1] + ' · ' + data[4] + ' ' + STR_VIEWERS);
+        Main_textContent('navigation-detail-badge', STR_LIVE);
+        Main_textContent('navigation-detail-name-text', data[1] + ' · ' + data[4] + ' ' + STR_VIEWERS);
         Main_ShowElement('navigation-details');
         Main_AddClass('scene1', 'navigation-detail');
     } else {
         Main_textContent('navigation-detail-category', '');
         Main_textContent('navigation-detail-title', '');
-        Main_textContent('navigation-detail-name', '');
+        Main_textContent('navigation-detail-name-text', '');
         Main_HideElement('navigation-details');
         Main_RemoveClass('scene1', 'navigation-detail');
     }
@@ -823,6 +827,10 @@ function Navigation_StaticKey(id, event) {
 }
 
 function Navigation_LoadState(screen, state) {
+    /* The status panel belongs to the followed-live feed only, and only while it is the active
+     * destination: the guard passes just when screen is both Main_UserLive and Main_Go. Any other
+     * screen's state call must neither show nor hide it. Navigation_Go clears the panel when the
+     * destination changes, so a feed finishing in the background cannot leave stale copy up. */
     if (screen !== Main_UserLive || screen !== Main_values.Main_Go || Navigation_Onboarding) return;
     var panel = Main_getElementById('navigation-status');
     if (!state) {

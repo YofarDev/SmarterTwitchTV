@@ -710,11 +710,16 @@ function Screens_ActionsButtonHtml(idArray, id, label) {
         idArray[0] +
         id +
         '_actions" type="button" class="stream_actions_btn" tabindex="-1" aria-label="' +
-        STR_ACTIONS +
+        STR_OPTIONS +
         ' ' +
         Screens_AriaEscape(label) +
         '">' +
+        // Dots at rest; the focused card says the word, matching the footer's "Hold OK Options"
+        '<span class="stream_actions_dots">' +
         STR_ACTIONS_SHORT +
+        '</span><span class="stream_actions_word">' +
+        STR_OPTIONS +
+        '</span>' +
         '</button>'
     );
 }
@@ -774,7 +779,7 @@ function Screens_createCellChannel(id, idArray, valuesArray, key) {
         idArray[0] +
         id +
         '" class="stream_thumbnail_channel" tabindex="-1" aria-label="' +
-        Screens_AriaEscape(valuesArray[3]) +
+        Screens_AriaEscape((valuesArray[5] ? STR_LIVE + STR_UI.separator : '') + valuesArray[3]) +
         '">' +
         Screens_ActionsButtonHtml(idArray, id, valuesArray[3]) +
         '<div class="stream_thumbnail_channel_img"><img id="' +
@@ -790,7 +795,9 @@ function Screens_createCellChannel(id, idArray, valuesArray, key) {
         idArray[2] +
         id +
         '" class="stream_info_channel_name">' +
-        (valuesArray[5] ? '<i class="icon-circle channel_live_icon strokedeline" style="color: red;"></i>' : '') +
+        (valuesArray[5]
+            ? '<i class="icon-circle channel_live_icon strokedeline" style="color: red;"></i><span class="stream_live_badge">' + STR_LIVE + '</span>'
+            : '') +
         valuesArray[3] +
         (valuesArray[4]
             ? STR_SPACE_HTML +
@@ -1009,7 +1016,7 @@ function Screens_createCellLive(id, idArray, valuesArray, key, Extra_when, Extra
         idArray[0] +
         id +
         '" class="stream_thumbnail_live" tabindex="-1" aria-label="' +
-        Screens_AriaEscape(valuesArray[1]) +
+        Screens_AriaEscape((force_VOD ? 'VOD' + STR_UI.separator : STR_LIVE + STR_UI.separator) + valuesArray[1]) +
         '">' +
         Screens_ActionsButtonHtml(idArray, id, valuesArray[1]) +
         '<div class="stream_thumbnail_live_img"><img id="' +
@@ -1030,11 +1037,13 @@ function Screens_createCellLive(id, idArray, valuesArray, key, Extra_when, Extra
         ' live_icon strokedeline' +
         (force_VOD ? ' hideimp' : '') +
         '" style="color: ' +
-        (valuesArray[8] ? '#FFFFFF' : ishosting ? '#FED000' : 'red') +
+        (valuesArray[8] ? '#FFFFFF' : ishosting ? '#' + Main_ColorIndicatorHosting : 'red') +
         ';"></i> ' +
         (Extra_vodimg || force_VOD
-            ? '<div class="vodicon_text ' + (force_VOD ? '' : 'hideimp') + '" style="background: #00a94b;">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>&nbsp;'
+            ? '<div class="vodicon_text ' + (force_VOD ? '' : 'hideimp') + '" style="background: #' + Main_ColorBadgeVod + ';">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>&nbsp;'
             : '<div style="display: none;"></div>') + //empty div to prevent error when childNodes[2].classList.remove
+        //Focused cards swap the color dot for the LIVE text badge (Badge-Not-Color); VOD cells hide it
+        '<span class="stream_live_badge' + (force_VOD ? ' hideimp' : '') + '">' + STR_LIVE + '</span>' +
         valuesArray[1] +
         '</div><div class="stream_info_live" style="width:' +
         (ishosting ? 0 : 33) +

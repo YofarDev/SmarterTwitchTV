@@ -21,7 +21,7 @@ Viewers use a television from a distance, primarily with a directional remote, O
 - Retain old TV WebView compatibility, translations, native player integration, and the web/APK bridge.
 - App JavaScript shares a global scope. Source lives in `app/`; generated release assets are rebuilt, never edited by hand.
 - Layout changes must account for native preview/player positioning and remote focus calculations. Existing source warns against scaling focused elements because these systems measure their bounds.
-- The current task is a redesign proposal for navigation, home, and the player. Implementation is a subsequent step.
+- The navigation, home, and player redesign has been integrated into the app and ships in web releases. Future design work refines the integrated redesign rather than proposing a new one (inferred from repo history: commits `3bf2d4fd8`, `e12bb2037`, and web 794–796; the question round to confirm this went unanswered).
 
 ## Brand Commitments
 

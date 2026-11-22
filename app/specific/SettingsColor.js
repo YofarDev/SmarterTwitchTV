@@ -357,9 +357,9 @@ function SettingsColor_DivResultUpdate(div, text) {
         div,
         '<i class="icon-circle live_icon strokedeline" style="color: red;"></i>' +
             STR_SPACE_HTML +
-            '<i class="icon-circle live_icon strokedeline" style="color: #FED000;">' +
+            '<i class="icon-circle live_icon strokedeline" style="color: #' + Main_ColorIndicatorHosting + ';">' +
             STR_SPACE_HTML +
-            '</i><i class="icon-circle live_icon strokedeline" style="color: #00a94b;"></i>' +
+            '</i><i class="icon-circle live_icon strokedeline" style="color: #' + Main_ColorIndicatorVod + ';"></i>' +
             STR_SPACE_HTML +
             '</i><i class="icon-refresh live_icon strokedeline" style="color: #FFFFFF;"></i>' +
             STR_SPACE_HTML +
