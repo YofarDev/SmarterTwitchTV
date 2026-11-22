@@ -8571,8 +8571,15 @@
         publishVersionCode: 403, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/403/SmarterPurpleTV_3_0_403.apk',
         WebVersion: 'November 22 2026',
-        WebTag: 797, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 798, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 22 2026 (Web 798)',
+                changes: [
+                    'Fix: VOD chat on busy channels fell minutes behind the video — chat loaded at most one page of about 50 messages per second, so above roughly 25 messages per second it drifted up to 200 seconds behind before snapping back. Chat now shows every due line and swaps in every loaded page on each tick, keeps loading pages until it is 30 seconds ahead of the video, and if a slow connection still cannot keep up it reloads from the video position after 30 seconds instead of 200 (#43)',
+                    'Fix: the last message of each VOD chat page was never shown'
+                ]
+            },
             {
                 title: 'November 22 2026 (Web 797 / APK 403)',
                 changes: [
@@ -18590,17 +18597,23 @@
             }
         }
 
-        if (null_next && Chat_Id[0] === id) {
+        Chat_loadChatPageDone(id, null_next);
+    }
+
+    function Chat_loadChatPageDone(id, null_next) {
+        if (Chat_Id[0] !== id) return;
+
+        if (null_next) {
             Chat_JustStarted = false;
 
             if (!Chat_loadingMore) {
                 Chat_Play(id);
             }
             Chat_loadingMore = false;
-            if (Chat_cursor !== '') {
-                Chat_loadChatNext(id); //if (Chat_cursor === '') chat has ended
-            }
         }
+
+        //Chain page requests until the buffer is far enough ahead of the player
+        Chat_FetchAhead(id); //if (Chat_cursor === '') chat has ended
     }
 
     function Chat_CheckUserName(displayName, login) {
@@ -18653,6 +18666,7 @@
         Main_emptyWithEle(Chat_div[0]);
         Main_emptyWithEle(Chat_div[1]);
         Chat_cursor = null;
+        Chat_NextPendingAt = 0;
         Chat_Messages = [];
         Chat_MessagesNext = [];
         Chat_Position = 0;
@@ -18666,24 +18680,35 @@
         ChatLive_resetChatters(0);
     }
 
+    //Chat further behind the player than this is reloaded from the player position, in seconds
+    var Chat_ResyncSeconds = 30;
+
+    //Player position in seconds, the time base of the VOD chat
+    function Chat_PlayerTime() {
+        return OSInterface_gettime() / 1000 + ChannelVod_vodOffset;
+    }
+
     function Main_Addline(id) {
         var i,
-            currentTime = OSInterface_gettime() / 1000,
+            currentTime = Chat_PlayerTime(),
             len = Chat_Messages.length;
 
-        currentTime += ChannelVod_vodOffset;
-
-        //fall back in case player position changes
-        if (currentTime && currentTime > 0 && len && Chat_Messages[len - 1] && Chat_Messages[len - 1].time + 200 < currentTime) {
+        //fall back in case player position changes, or the page requests can't keep up with a very
+        //busy chat on a slow connection: reload from the player position instead of drifting behind.
+        //Buffered pages are swapped in as soon as a page is shown, so the shown page only lags this
+        //far when no page was fetched in time
+        if (currentTime && currentTime > 0 && len && Chat_Messages[len - 1] && Chat_Messages[len - 1].time + Chat_ResyncSeconds < currentTime) {
             Chat_offset = currentTime;
             Chat_Init();
             return;
         }
 
-        if (Chat_Position < len - 1) {
-            i = Chat_Position;
+        //A page of a busy chat covers only a second or two of video, so every due line is shown and
+        //every buffered page swapped in during the same tick, else chat falls behind the video
+        while (true) {
+            len = Chat_Messages.length;
 
-            for (i; i < len; i++, Chat_Position++) {
+            for (i = Chat_Position; i < len; i++, Chat_Position++) {
                 if (Chat_Messages[i].time >= Chat_lastMsgTime && Chat_Messages[i].time < currentTime) {
                     Chat_lastMsgTime = Chat_Messages[i].time;
 
@@ -18692,8 +18717,11 @@
                     break;
                 }
             }
-        } else {
-            if (Chat_cursor !== '' || Chat_MessagesNext.length) {
+
+            //Next line is not due yet
+            if (Chat_Position < len) break;
+
+            if (Chat_MessagesNext.length) {
                 //array.slice() may crash RangeError: Maximum call stack size exceeded
                 Chat_Messages = Main_Slice(Chat_MessagesNext);
 
@@ -18701,37 +18729,64 @@
 
                 Chat_MessagesNext = [];
 
-                if (Chat_Id[0] === id && Chat_cursor !== '') {
-                    Chat_loadChatNext(id);
-                }
-
                 Chat_Clean(0);
-            } else {
-                //Chat has ended try to load more as this may be a live that is being played as VOD
-                if (Chat_lastMsgTime && !Chat_loadingMore) {
-                    Chat_cursor = null;
-                    Chat_Position = 0;
-                    Chat_MessagesNext = [];
-                    Chat_Messages = [];
-                    Chat_lastMsgTime = currentTime - Chat_lastMsgTime > 100 ? currentTime - 80 : Chat_lastMsgTime - 1;
-                    Chat_offset = Chat_lastMsgTime;
-                    Chat_loadingMore = true;
 
-                    Chat_loadChatRequest(id);
-                } else if (!Chat_loadingMore) {
-                    if (!Chat_hasEnded) {
-                        ChatLive_ElementAdd({
-                            chat_number: 0,
-                            message: '&nbsp;<span class="message">' + STR_BR + STR_BR + STR_CHAT_END + STR_BR + STR_BR + '</span>'
-                        });
-                    }
-
-                    Chat_hasEnded = true;
-
-                    Main_clearInterval(Chat_addLinesId);
-                }
+                continue;
             }
+
+            if (Chat_cursor !== '') {
+                //The next page is on its way, or the first page is still loading (null cursor)
+                break;
+            }
+
+            //Chat has ended try to load more as this may be a live that is being played as VOD
+            if (Chat_lastMsgTime && !Chat_loadingMore) {
+                Chat_cursor = null;
+                Chat_Position = 0;
+                Chat_MessagesNext = [];
+                Chat_Messages = [];
+                Chat_lastMsgTime = currentTime - Chat_lastMsgTime > 100 ? currentTime - 80 : Chat_lastMsgTime - 1;
+                Chat_offset = Chat_lastMsgTime;
+                Chat_loadingMore = true;
+
+                Chat_loadChatRequest(id);
+            } else if (!Chat_loadingMore) {
+                if (!Chat_hasEnded) {
+                    ChatLive_ElementAdd({
+                        chat_number: 0,
+                        message: '&nbsp;<span class="message">' + STR_BR + STR_BR + STR_CHAT_END + STR_BR + STR_BR + '</span>'
+                    });
+                }
+
+                Chat_hasEnded = true;
+
+                Main_clearInterval(Chat_addLinesId);
+            }
+
+            return;
         }
+
+        Chat_FetchAhead(id);
+    }
+
+    //How far ahead of the player the page buffer is filled, in seconds
+    var Chat_FetchAheadSeconds = 30;
+    //A page request older than this is considered lost (a paused retry), a new one may be sent
+    var Chat_NextPendingTimeout = 10000;
+    var Chat_NextPendingAt = 0;
+
+    //Request the next page while the buffered chat ends less than Chat_FetchAheadSeconds after the
+    //player position; a single request is in flight at a time
+    function Chat_FetchAhead(id) {
+        if (!Chat_cursor || Chat_hasEnded || Chat_Id[0] !== id) return;
+
+        if (Chat_NextPendingAt && Date.now() - Chat_NextPendingAt < Chat_NextPendingTimeout) return;
+
+        var buffered = Chat_MessagesNext.length ? Chat_MessagesNext : Chat_Messages;
+
+        if (buffered.length && buffered[buffered.length - 1].time > Chat_PlayerTime() + Chat_FetchAheadSeconds) return;
+
+        Chat_loadChatNext(id);
     }
 
     function Chat_loadChatNext(id) {
@@ -18739,7 +18794,8 @@
     }
 
     function Chat_loadChatNextRequest(id) {
-        if (Chat_cursor === '') return;
+        if (!Chat_cursor) return;
+        Chat_NextPendingAt = Date.now();
         FullxmlHttpGet(
             PlayClip_BaseUrl,
             Play_base_chat_headers_Array,
@@ -18755,6 +18811,8 @@
     function Chat_loadChatNextResult(responseObj, id) {
         if (Chat_hasEnded || Chat_Id[0] !== id) return;
         if (responseObj.status === 200) {
+            //On error the pending mark stays, the retry timer owns the next request
+            Chat_NextPendingAt = 0;
             Chat_loadChatSuccess(responseObj.responseText, id);
         } else {
             Chat_loadChatNextError(id);
