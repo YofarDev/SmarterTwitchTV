@@ -1,0 +1,58 @@
+[
+ {
+  "id": "cold",
+  "bars": 1,
+  "from": 0,
+  "dur": 150,
+  "startBar": 1,
+  "role": "intro"
+ },
+ {
+  "id": "title",
+  "bars": 1,
+  "from": 150,
+  "dur": 150,
+  "startBar": 2,
+  "role": "hit"
+ },
+ {
+  "id": "rail",
+  "bars": 1,
+  "from": 300,
+  "dur": 150,
+  "startBar": 3,
+  "role": "verse"
+ },
+ {
+  "id": "tabs",
+  "bars": 1,
+  "from": 450,
+  "dur": 150,
+  "startBar": 4,
+  "role": "groove"
+ },
+ {
+  "id": "search",
+  "bars": 1,
+  "from": 600,
+  "dur": 150,
+  "startBar": 5,
+  "role": "build"
+ },
+ {
+  "id": "theme",
+  "bars": 1,
+  "from": 750,
+  "dur": 150,
+  "startBar": 6,
+  "role": "climax"
+ },
+ {
+  "id": "finale",
+  "bars": 1,
+  "from": 900,
+  "dur": 150,
+  "startBar": 7,
+  "role": "finale"
+ }
+]
