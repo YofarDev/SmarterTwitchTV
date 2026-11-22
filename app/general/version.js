@@ -21,11 +21,17 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 403, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/403/SmarterPurpleTV_3_0_403.apk',
+    publishVersionCode: 404, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/404/SmarterPurpleTV_3_0_404.apk',
     WebVersion: 'November 22 2026',
-    WebTag: 798, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 799, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 22 2026 (Web 799 / APK 404)',
+            changes: [
+                'Fix: on long VODs with stream drops, chat ran behind the video by the time the stream was down, about 2 minutes 43 hours into a long subathon VOD — Twitch counts chat time from when the VOD started recording, while the VOD video skips the minutes the stream was offline. The APK now reads the real time stamped on each video segment and VOD chat follows it, so chat lines up again after every drop; needs APK 404, older APKs keep the previous behaviour (#43)'
+            ]
+        },
         {
             title: 'November 22 2026 (Web 798)',
             changes: [

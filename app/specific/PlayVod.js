@@ -64,7 +64,14 @@ function PlayVod_OpenLastVod(Channel_id) {
 
     PlayVod_LastVodLoading = true;
 
-    BaseXmlHttpGet(Main_helix_api + 'videos?first=1&user_id=' + Channel_id + '&type=archive&sort=time', PlayVod_OpenLastVodSuccess, PlayVod_OpenLastVodError, null, null, true);
+    BaseXmlHttpGet(
+        Main_helix_api + 'videos?first=1&user_id=' + Channel_id + '&type=archive&sort=time',
+        PlayVod_OpenLastVodSuccess,
+        PlayVod_OpenLastVodError,
+        null,
+        null,
+        true
+    );
 }
 
 function PlayVod_OpenLastVodSuccess(response) {
@@ -908,7 +915,8 @@ function PlayVod_jump() {
     if (!Play_isEndDialogVisible()) {
         if (PlayVod_isOn) {
             Chat_Pause();
-            Chat_offset = PlayVod_TimeToJump;
+            //Chat time, the gap of the old position is the best guess until the new segment plays
+            Chat_offset = PlayVod_TimeToJump + Chat_VodGap();
             Main_setItem('Main_vodOffset', PlayVod_TimeToJump);
             PlayVod_SaveVodIds(PlayVod_TimeToJump);
             PlayVod_ChaptersSetGame(PlayVod_TimeToJump * 1000);

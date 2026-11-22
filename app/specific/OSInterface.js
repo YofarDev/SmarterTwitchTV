@@ -498,6 +498,18 @@ function OSInterface_gettime() {
     return Main_IsOn_OSInterface ? Android.gettime() : Chat_fakeClock * 1000;
 }
 
+//public long getWallClockOffset()
+//Android specific: true
+//returns the wall clock (epoch ms) of main player position 0, read from the ID3 tag of the last
+//Twitch segment played, 0 when unknown or on an APK without the method (Web 799+ / APK 404+)
+function OSInterface_getWallClockOffset() {
+    try {
+        return Main_IsOn_OSInterface && Android.getWallClockOffset ? Android.getWallClockOffset() : 0;
+    } catch (e) {
+        return 0;
+    }
+}
+
 //public long gettimepreview()
 //Android specific: false
 //returns PlayerCurrentPosition valued used to show vod/clip position and sync vod/clip chat and video

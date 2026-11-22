@@ -1,11 +1,45 @@
 /* VOD chat paging: production Main_Addline/fetch-ahead definitions driven by a fake clock and fake GQL pages. */
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const {spawnSync} = require('child_process');
 const vm = require('vm');
 const assert = require('assert');
 const UglifyJS = require('uglify-js');
 
+/* APK side: the segment ID3 wall clock parser, plain Java compiled like ad-filter-tests (JDK 8+) */
+function runJava() {
+    const output = fs.mkdtempSync(path.join(os.tmpdir(), 'sptv-wallclock-'));
+    const bin = process.env.JAVA_HOME ? path.join(process.env.JAVA_HOME, 'bin') + path.sep : '';
+    try {
+        for (const [command, args] of [
+            [
+                'javac',
+                [
+                    '--release',
+                    '8',
+                    '-d',
+                    output,
+                    'apk/app/src/main/java/com/fgl27/twitch/SegmentWallClock.java',
+                    'release/scripts/java/SegmentWallClockTest.java'
+                ]
+            ],
+            ['java', ['-cp', output, 'com.fgl27.twitch.SegmentWallClockTest']]
+        ]) {
+            const result = spawnSync(bin + command, args, {encoding: 'utf8'});
+            if (result.stderr) process.stderr.write(result.stderr);
+            if (result.error) throw result.error;
+            if (result.status !== 0) throw new Error(command + ' failed with exit ' + result.status + ': ' + result.stdout);
+            if (result.stdout) process.stdout.write(result.stdout);
+        }
+    } finally {
+        fs.rmSync(output, {recursive: true, force: true});
+    }
+}
+
 const names = [
     'Chat_PlayerTime',
+    'Chat_VodGap',
     'Main_Addline',
     'Chat_FetchAhead',
     'Chat_loadChatNext',
@@ -16,7 +50,7 @@ const names = [
     'Chat_MessageVector',
     'Chat_MessageVectorNext'
 ];
-const varNames = ['Chat_FetchAheadSeconds', 'Chat_NextPendingTimeout', 'Chat_ResyncSeconds'];
+const varNames = ['Chat_FetchAheadSeconds', 'Chat_NextPendingTimeout', 'Chat_ResyncSeconds', 'Chat_VodGapMax'];
 
 function definitions(built) {
     const found = new Map();
@@ -42,7 +76,12 @@ function harness(source, opts) {
     const all = [];
     for (let n = 0, t = 0; t < chatEnd; n++, t = n / rate) all.push({id: 'm' + n, time: Math.floor(t)});
 
-    const h = {clock: 0, inflight: [], requests: 0, maxInflight: 0, shown: [], inits: 0, failNext: opts.failNext || 0, ended: false};
+    //Real Date for parsing, fake clock for now()
+    const FakeDate = function (value) {
+        return new Date(value);
+    };
+    FakeDate.now = () => 1700000000000 + Math.round(h.clock * 1000);
+    const h = {wallClock: 0, clock: 0, inflight: [], requests: 0, maxInflight: 0, shown: [], inits: 0, failNext: opts.failNext || 0, ended: false};
     //Cursor is the index of the next page start, as an opaque string
     function page(from) {
         const items = all.slice(from, from + pageSize);
@@ -71,8 +110,12 @@ function harness(source, opts) {
         noop_fun: () => {},
         STR_BR: '',
         STR_CHAT_END: 'END',
-        Date: {now: () => 1700000000000 + Math.round(h.clock * 1000)},
+        Date: FakeDate,
         OSInterface_gettime: () => h.clock * 1000,
+        //VOD timeline gap fixture: off unless a check turns PlayVod_isOn on
+        PlayVod_isOn: false,
+        Main_values_Play_data: [],
+        OSInterface_getWallClockOffset: () => h.wallClock,
         Main_Slice: a => a.slice(),
         Chat_Clean: () => {},
         Chat_Play: () => {},
@@ -121,8 +164,10 @@ function harness(source, opts) {
         }
     };
     //Initial offset load, as Chat_loadChatRequest would deliver it
-    h.start = function () {
-        s.Chat_loadChatSuccess(JSON.stringify(page(0)), 1);
+    //Initial page from a chat time, like Chat_loadChatRequest with Chat_offset
+    h.start = function (fromTime) {
+        const from = fromTime ? all.findIndex(m => m.time >= fromTime) : 0;
+        s.Chat_loadChatSuccess(JSON.stringify(page(from)), 1);
     };
     //Run until `seconds`, delivering responses every 100 ms and ticking Main_Addline every second
     h.runUntil = function (seconds) {
@@ -225,13 +270,64 @@ function runChecks(source, check) {
     }
 }
 
+function gapChecks(source, check) {
+    const createdAt = '2026-11-20T01:53:15Z',
+        created = Date.parse(createdAt);
+    function gapHarness(gapSeconds) {
+        const h = harness(source, {rate: 10, latency: 0.3});
+        h.s.PlayVod_isOn = true;
+        h.s.Main_values_Play_data[12] = createdAt;
+        h.wallClock = created + gapSeconds * 1000;
+        return h;
+    }
+    {
+        //Values from VOD 2934472461 at 43 h: the timeline is 104 s short of the wall clock
+        const h = gapHarness(104);
+        h.clock = 154836;
+        check(Math.round(h.s.Chat_PlayerTime()) === 154940, 'VOD chat time adds the stream downtime gap (issue #43)');
+        h.s.PlayVod_isOn = false;
+        check(h.s.Chat_PlayerTime() === 154836, 'clip/live chat time ignores the wall clock');
+    }
+    {
+        const h = gapHarness(104);
+        h.wallClock = 0;
+        h.clock = 50;
+        check(h.s.Chat_PlayerTime() === 50, 'unknown wall clock (older APK, no segment yet) keeps the raw position');
+        h.wallClock = created + 7 * 3600 * 1000;
+        check(h.s.Chat_PlayerTime() === 50, 'implausible gap past 6 h is ignored');
+        h.wallClock = created - 120 * 1000;
+        check(h.s.Chat_PlayerTime() === 50, 'wall clock well before the VOD creation is ignored');
+        h.wallClock = created - 3600;
+        check(Math.abs(h.s.Chat_PlayerTime() - 46.4) < 1e-6, 'small negative gap (transcode before VOD creation) is kept');
+        h.s.Main_values_Play_data[12] = undefined;
+        h.wallClock = created + 104000;
+        check(h.s.Chat_PlayerTime() === 50, 'missing VOD creation date keeps the raw position');
+    }
+    {
+        //Chat shown in step with the mapped time across a long session
+        const h = gapHarness(104);
+        h.clock = 0;
+        h.start(104);
+        h.runUntil(300);
+        const lag = Math.max.apply(
+            null,
+            h.shown.map(m => m.at + 104 - m.time)
+        );
+        const early = h.shown.some(m => m.time > m.at + 104);
+        check(lag <= 3 && !early && h.inits === 0, 'with a 104 s gap chat lines show at video time + gap (lag ' + lag.toFixed(1) + ')');
+    }
+}
+
 function run(built = false) {
+    if (!built) runJava();
     const source = definitions(built);
     let checks = 0;
-    runChecks(source, (ok, label) => {
+    const check = (ok, label) => {
         assert.ok(ok, label);
         checks++;
-    });
+    };
+    runChecks(source, check);
+    gapChecks(source, check);
     console.log(checks + ' VOD chat sync checks passed' + (built ? ' (generated definitions)' : ''));
 }
 

@@ -70,6 +70,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.media3.common.C;
 import androidx.media3.common.Format;
+import androidx.media3.common.Metadata;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
@@ -87,6 +88,7 @@ import androidx.media3.exoplayer.source.MediaSource;
 import androidx.media3.exoplayer.source.TrackGroupArray;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 import androidx.media3.exoplayer.trackselection.MappingTrackSelector;
+import androidx.media3.extractor.metadata.id3.TextInformationFrame;
 import androidx.media3.ui.PlayerView;
 import com.fgl27.twitch.channels.ChannelsUtils;
 import com.fgl27.twitch.DataSource.AdPlaylistFilter;
@@ -180,6 +182,10 @@ public class PlayerActivity extends Activity {
     private long PlayerCurrentPosition = 0L;
     private long SmallPlayerCurrentPosition = 0L;
     private int CurrentPositionTimeout = 500;
+    //Wall clock (epoch ms) of main player position 0, from the ID3 tag of the last segment played
+    //(segment wall clock minus its position); 0 when unknown. The VOD timeline skips the time the
+    //stream was down while VOD chat offsets count wall clock, the web side maps chat with it
+    private volatile long PlayerWallClockOffset = 0L;
 
     private long droppedFrames = 0;
     private float conSpeed = 0f;
@@ -686,6 +692,7 @@ public class PlayerActivity extends Activity {
         if (PlayerObj[PlayerObjPosition].adHold) AdHoldScheduleCheck();
 
         PlayerObj[PlayerObjPosition].player.setPlayWhenReady(!PlayerObj[PlayerObjPosition].adHold);
+        if (PlayerObjPosition == 0) PlayerWallClockOffset = 0L;
         PlayerObj[PlayerObjPosition].player.setMediaSource(PlayerObj[PlayerObjPosition].mediaSources, PlayerObj[PlayerObjPosition].ResumePosition);
 
         PlayerObj[PlayerObjPosition].player.prepare();
@@ -3556,6 +3563,11 @@ public class PlayerActivity extends Activity {
         }
 
         @JavascriptInterface
+        public long getWallClockOffset() {
+            return PlayerWallClockOffset;
+        }
+
+        @JavascriptInterface
         public long gettimepreview() {
             return SmallPlayerCurrentPosition > 0 ? SmallPlayerCurrentPosition : 0;
         }
@@ -3953,6 +3965,30 @@ public class PlayerActivity extends Activity {
                     LoadUrlWebView("javascript:smartTwitchTV.Play_getQualities(" + PlayerObj[position].Type + ")");
                 }
             }
+        }
+
+        @Override
+        public void onMetadata(@NonNull Metadata metadata) {
+            //Twitch segments start with an ID3 tag, it is output when playback reaches the segment start
+            if (position != 0 || PlayerObj[position].player == null) return;
+
+            long wallClock = 0L;
+
+            for (int i = 0; i < metadata.length(); i++) {
+                Metadata.Entry entry = metadata.get(i);
+
+                if (!(entry instanceof TextInformationFrame)) continue;
+
+                TextInformationFrame frame = (TextInformationFrame) entry;
+
+                for (String value : frame.values) {
+                    long frameClock = SegmentWallClock.fromFrame(frame.id, value);
+
+                    if (frameClock > 0 && (wallClock == 0L || SegmentWallClock.isPrecise(frame.id))) wallClock = frameClock;
+                }
+            }
+
+            if (wallClock > 0L) PlayerWallClockOffset = wallClock - PlayerObj[position].player.getCurrentPosition();
         }
 
         @Override

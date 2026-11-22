@@ -518,7 +518,7 @@ function Chat_loadChatError(id) {
     if (Chat_Id[0] === id) {
         Chat_loadChatId = Main_setTimeout(
             function () {
-                var time = OSInterface_gettime() / 1000;
+                var time = Chat_PlayerTime();
 
                 if (time && time < Chat_offset) {
                     Chat_offset = time;
@@ -810,9 +810,29 @@ function Chat_Clear() {
 //Chat further behind the player than this is reloaded from the player position, in seconds
 var Chat_ResyncSeconds = 30;
 
-//Player position in seconds, the time base of the VOD chat
+//Player position mapped to VOD chat time, in seconds
 function Chat_PlayerTime() {
-    return OSInterface_gettime() / 1000 + ChannelVod_vodOffset;
+    return OSInterface_gettime() / 1000 + ChannelVod_vodOffset + Chat_VodGap();
+}
+
+//A gap past this is a wrong wall clock or creation date, not stream downtime, in seconds
+var Chat_VodGapMax = 6 * 3600;
+
+//Seconds the VOD chat is ahead of the VOD timeline at the player position. Chat offsets count wall
+//clock from the VOD creation, the VOD timeline skips the time the stream was down (reconnects), so
+//on a long VOD chat drifts minutes behind. The APK reads the wall clock of each segment from its ID3
+//tag; 0 when unknown (not a VOD, older APK, no segment played yet)
+function Chat_VodGap() {
+    if (!PlayVod_isOn) return 0;
+
+    var wallClock = OSInterface_getWallClockOffset(),
+        createdAt = Main_values_Play_data && Main_values_Play_data[12] ? new Date(Main_values_Play_data[12]).getTime() : 0;
+
+    if (!wallClock || !createdAt) return 0;
+
+    var gap = (wallClock - createdAt) / 1000;
+
+    return gap > -60 && gap < Chat_VodGapMax ? gap : 0;
 }
 
 function Main_Addline(id) {
