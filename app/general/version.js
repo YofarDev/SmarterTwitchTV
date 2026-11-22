@@ -24,8 +24,15 @@ var version = {
     publishVersionCode: 403, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/403/SmarterPurpleTV_3_0_403.apk',
     WebVersion: 'November 22 2026',
-    WebTag: 797, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 798, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 22 2026 (Web 798)',
+            changes: [
+                'Fix: VOD chat on busy channels fell minutes behind the video — chat loaded at most one page of about 50 messages per second, so above roughly 25 messages per second it drifted up to 200 seconds behind before snapping back. Chat now shows every due line and swaps in every loaded page on each tick, keeps loading pages until it is 30 seconds ahead of the video, and if a slow connection still cannot keep up it reloads from the video position after 30 seconds instead of 200 (#43)',
+                'Fix: the last message of each VOD chat page was never shown'
+            ]
+        },
         {
             title: 'November 22 2026 (Web 797 / APK 403)',
             changes: [
