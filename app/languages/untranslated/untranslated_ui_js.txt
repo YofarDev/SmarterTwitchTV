@@ -1,7 +1,8 @@
 New UI strings in en_USLang: STR_UI object.
-Pending translations for es_ES, fr_FR, pt_BR, ru_RU, tr_TR, uk_UA.
+Pending translations for es_ES, fr_FR, pt_BR, ru_RU, tr_TR.
 English is initialized first by Settings_SetAppLang and remains the fallback.
 Do not copy untranslated strings into translated language functions.
+Done in uk_UA (2026-11-22, Web 800): every entry below listing uk_UA is translated (#44). The only strings still falling back to English are language-neutral (glyphs like '›' and '···', codec and proxy names, separators, placeholders) plus STR_KEY_UP_DOWN ('PG up/down', awaiting re-translation).
 Changed in en_US (2026-10-25, Web 765): STR_NOKEY ('No user' -> 'Sign in'), STR_CANT_FOLLOW (now ' to follow or unfollow channels', combines as 'Sign in to follow or unfollow channels'), STR_ENTER_TO_OPEN (now the language-neutral disclosure glyph '›'). Re-translate or sync these in es_ES, fr_FR, pt_BR, ru_RU, tr_TR, uk_UA.
 Changed in en_US (2026-10-26, Web 769): STR_THUMB_OPTIONS_TOP (now 'Hold OK for thumbnail options', matching the footer's 'Hold OK · Options' and the Direct browsing mode default), STR_VIEWER/STR_VIEWERS (now lowercase 'viewer'/'viewers', matching the player info line and DESIGN.md secondary-line spec), STR_DISABLE_EMBED_SUMMARY (rewritten for grammar; same meaning). Re-translate or sync these in es_ES, fr_FR, pt_BR, ru_RU, tr_TR, uk_UA.
 New in en_US (2026-10-30): STR_UI.qualityAutoPlaying ('{quality} ({playing})', the player bar's quality caption while Auto is selected, e.g. 'Auto (1080p60 | source)'). Keep the {quality} and {playing} placeholders; only the surrounding punctuation or order may change.
