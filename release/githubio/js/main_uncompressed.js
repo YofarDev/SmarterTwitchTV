@@ -8568,11 +8568,17 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 403, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/403/SmarterPurpleTV_3_0_403.apk',
+        publishVersionCode: 404, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/404/SmarterPurpleTV_3_0_404.apk',
         WebVersion: 'November 22 2026',
-        WebTag: 798, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 799, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 22 2026 (Web 799 / APK 404)',
+                changes: [
+                    'Fix: on long VODs with stream drops, chat ran behind the video by the time the stream was down, about 2 minutes 43 hours into a long subathon VOD — Twitch counts chat time from when the VOD started recording, while the VOD video skips the minutes the stream was offline. The APK now reads the real time stamped on each video segment and VOD chat follows it, so chat lines up again after every drop; needs APK 404, older APKs keep the previous behaviour (#43)'
+                ]
+            },
             {
                 title: 'November 22 2026 (Web 798)',
                 changes: [
@@ -18391,7 +18397,7 @@
         if (Chat_Id[0] === id) {
             Chat_loadChatId = Main_setTimeout(
                 function () {
-                    var time = OSInterface_gettime() / 1000;
+                    var time = Chat_PlayerTime();
 
                     if (time && time < Chat_offset) {
                         Chat_offset = time;
@@ -18683,9 +18689,29 @@
     //Chat further behind the player than this is reloaded from the player position, in seconds
     var Chat_ResyncSeconds = 30;
 
-    //Player position in seconds, the time base of the VOD chat
+    //Player position mapped to VOD chat time, in seconds
     function Chat_PlayerTime() {
-        return OSInterface_gettime() / 1000 + ChannelVod_vodOffset;
+        return OSInterface_gettime() / 1000 + ChannelVod_vodOffset + Chat_VodGap();
+    }
+
+    //A gap past this is a wrong wall clock or creation date, not stream downtime, in seconds
+    var Chat_VodGapMax = 6 * 3600;
+
+    //Seconds the VOD chat is ahead of the VOD timeline at the player position. Chat offsets count wall
+    //clock from the VOD creation, the VOD timeline skips the time the stream was down (reconnects), so
+    //on a long VOD chat drifts minutes behind. The APK reads the wall clock of each segment from its ID3
+    //tag; 0 when unknown (not a VOD, older APK, no segment played yet)
+    function Chat_VodGap() {
+        if (!PlayVod_isOn) return 0;
+
+        var wallClock = OSInterface_getWallClockOffset(),
+            createdAt = Main_values_Play_data && Main_values_Play_data[12] ? new Date(Main_values_Play_data[12]).getTime() : 0;
+
+        if (!wallClock || !createdAt) return 0;
+
+        var gap = (wallClock - createdAt) / 1000;
+
+        return gap > -60 && gap < Chat_VodGapMax ? gap : 0;
     }
 
     function Main_Addline(id) {
@@ -24112,6 +24138,18 @@
     //returns PlayerCurrentPosition valued used to show vod/clip position and sync vod/clip chat and video
     function OSInterface_gettime() {
         return Main_IsOn_OSInterface ? Android.gettime() : Chat_fakeClock * 1000;
+    }
+
+    //public long getWallClockOffset()
+    //Android specific: true
+    //returns the wall clock (epoch ms) of main player position 0, read from the ID3 tag of the last
+    //Twitch segment played, 0 when unknown or on an APK without the method (Web 799+ / APK 404+)
+    function OSInterface_getWallClockOffset() {
+        try {
+            return Main_IsOn_OSInterface && Android.getWallClockOffset ? Android.getWallClockOffset() : 0;
+        } catch (e) {
+            return 0;
+        }
     }
 
     //public long gettimepreview()
@@ -37264,7 +37302,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (!Play_isEndDialogVisible()) {
             if (PlayVod_isOn) {
                 Chat_Pause();
-                Chat_offset = PlayVod_TimeToJump;
+                //Chat time, the gap of the old position is the best guess until the new segment plays
+                Chat_offset = PlayVod_TimeToJump + Chat_VodGap();
                 Main_setItem('Main_vodOffset', PlayVod_TimeToJump);
                 PlayVod_SaveVodIds(PlayVod_TimeToJump);
                 PlayVod_ChaptersSetGame(PlayVod_TimeToJump * 1000);
