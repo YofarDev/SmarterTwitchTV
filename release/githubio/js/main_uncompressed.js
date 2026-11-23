@@ -7159,6 +7159,7 @@
             loadingQualities: 'Завантаження якостей…',
             switchTo: 'OK перемикає на ',
             liveFor: 'В ефірі ',
+            separator: ' · ',
             watching: 'Дивляться ',
             paused: 'Пауза',
             chat: 'Чат',
@@ -7174,6 +7175,7 @@
             pause: 'Пауза',
             channels: 'Канали',
             quality: 'Якість',
+            qualityAutoPlaying: '{quality} ({playing})',
             unavailable: 'Недоступно в цьому режимі відтворення',
             settingsHelp: 'Про програму, керування та оновлення',
             loading: 'Завантаження ваших каналів…',
@@ -7198,6 +7200,7 @@
         Sidepannel_MoveldefaultMargin = 17;
 
         //Below are variables to translate
+        STR_KEY_UP_DOWN = 'Вгору/вниз';
         STR_KEY_MEDIA_FF = 'або медіаклавіші перемотки вперед/назад';
         STR_GUIDE_EXTRA = 'або натисніть клавішу 2';
         STR_GUIDE_EXTRA2 = 'або медіаклавіша наступний трек';
@@ -7533,8 +7536,8 @@
         STR_QUALITY_MULTI = [STR_PLAYER_MULTI_ALL, 'Верх ліворуч', 'Верх праворуч', 'Низ ліворуч', 'Низ праворуч'];
         STR_QUALITY_MULTI_BIG = [STR_PLAYER_MULTI_ALL, 'Верх', 'Низ ліворуч', 'Низ по центру', 'Низ праворуч'];
         STR_PLAYER_BITRATE_UNLIMITED = 'Необмежено';
-        STR_PLAYER_BITRATE = 'Макс. роздільна здатність/бітрейт для Auto-якості';
-        STR_PLAYER_BITRATE_SHORT_SUMMARY = 'Обмежує макс. якість (роздільна здатність/бітрейт) для Auto-відтворення';
+        STR_PLAYER_BITRATE = 'Максимальна роздільна здатність/бітрейт для якості Auto';
+        STR_PLAYER_BITRATE_SHORT_SUMMARY = 'Обмежує максимальну якість відтворення (роздільна здатність/бітрейт) для якості Auto';
         STR_PLAYER_BITRATE_SUMMARY =
             'Використовується для уникнення зависань на слабких пристроях при одночасному відтворенні декількох відео. Також дозволяє обмежити споживання інтернету. Рекомендовано 720p/3 Мбіт/с для малих плеєрів, а для основних — необмежено.';
         STR_PLAYER_BITRATE_SUMMARY_ETC =
@@ -8200,7 +8203,7 @@
         STR_EDIT_SEARCH = 'Редагувати пошук';
         STR_REMOTE_CONTROLS = 'Керування пультом під час перегляду';
         STR_REMOTE_CONTROLS_SUMMARY =
-            'Натисніть OK, щоб дивитися; утримуйте OK, щоб відкрити опції картки. У режимі «Класичний» опції також відкриваються утриманням «Вліво». У режимі «Прямий» перехід виконується за кожним натисканням.';
+            'Натисніть OK, щоб дивитися; утримуйте OK, щоб відкрити опції картки. У режимі "Класичний" опції також відкриваються утриманням "Вліво". У режимі "Прямий" перехід виконується за кожним натисканням.';
         STR_REMOTE_CONTROLS_LEGACY = 'Класичний';
         STR_REMOTE_CONTROLS_DIRECT = 'Прямий (миттєвий)';
 
@@ -8576,8 +8579,14 @@
         publishVersionCode: 404, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/404/SmarterPurpleTV_3_0_404.apk',
         WebVersion: 'November 22 2026',
-        WebTag: 800, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 801, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 23 2026 (Web 801)',
+                changes: [
+                    'Ukrainian: follow-up polish — the controls help key name is Ukrainian again (Вгору/вниз instead of the English fallback), reworded the max bitrate settings labels and normalized quote style (thank you @btncua, #46)'
+                ]
+            },
             {
                 title: 'November 22 2026 (Web 800)',
                 changes: [
