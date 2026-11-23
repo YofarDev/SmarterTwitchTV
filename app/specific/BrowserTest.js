@@ -809,7 +809,7 @@ function BrowserTestFun() {
                 } else if (pos === UserLiveFeedobj_GamesPos) {
                     pos = UserLiveFeedobj_CurrentAGameEnable ? 0 : 1;
                 } else if (pos === UserLiveFeedobj_UserGamesPos) {
-                    pos = UserLiveFeedobj_CurrentUserAGameEnable ? 8 : 7;
+                    pos = UserLiveFeedobj_CurrentUserAGameEnable ? UserLiveFeedobj_UserAGamesPos : UserLiveFeedobj_UserGamesPos;
                 }
 
                 if (pos !== UserLiveFeedobj_AGamesPos || pos !== UserLiveFeedobj_UserAGamesPos) {

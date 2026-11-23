@@ -44,6 +44,7 @@ function Screens_InitScreens() {
     ScreensObj_InitAGame();
     //Live user screens
     ScreensObj_InitUserLive();
+    ScreensObj_InitUserRecommended();
 
     //Clips screens
     ScreensObj_InitClip();
@@ -218,6 +219,7 @@ function Screens_first_init() {
     if (
         !AddUser_UserIsSet() &&
         (Main_GoBefore === Main_UserLive ||
+            Main_GoBefore === Main_UserRecommended ||
             Main_GoBefore === Main_usergames ||
             Main_GoBefore === Main_UserVod ||
             Main_GoBefore === Main_UserChannels ||
@@ -227,6 +229,9 @@ function Screens_first_init() {
             Main_GoBefore === Main_Blocked)
     ) {
         Main_GoBefore = Main_Live;
+    } else if (Main_GoBefore === Main_UserRecommended && !ScreensObj_RecommendedEnabled()) {
+        //The Recommended tab was turned off while it was the last screen
+        Main_GoBefore = Main_UserLive;
     }
 
     Main_values.API_Change = false;
@@ -454,7 +459,11 @@ function Screens_loadDataRequest(key) {
         var PostString = null;
 
         if (ScreenObj[key].isQuery) {
-            HeadersArray = ScreenObj[key].useUserToken ? Main_OAuth_User_Headers : Play_base_backup_headers_Array;
+            HeadersArray = ScreenObj[key].queryHeaders
+                ? ScreenObj[key].queryHeaders()
+                : ScreenObj[key].useUserToken
+                  ? Main_OAuth_User_Headers
+                  : Play_base_backup_headers_Array;
             Method = 'POST';
             PostString = ScreenObj[key].post;
         } else if (!ScreenObj[key].useHelix) {
@@ -500,7 +509,13 @@ function Screens_HttpResultStatus(resultObj, key, requestId) {
         if (AddUser_UserHasToken() && !ScreenObj[key].isQuery) {
             AddCode_validateToken(0);
             Screens_loadDataFail(key);
-        } else if (key === Main_UserLive || key === Main_usergames || key === Main_UserVod || key === Main_UserChannels) {
+        } else if (
+            key === Main_UserLive ||
+            key === Main_UserRecommended ||
+            key === Main_usergames ||
+            key === Main_UserVod ||
+            key === Main_UserChannels
+        ) {
             Screens_loadDataFail(key);
         } else {
             AddCode_AppToken(0, Screens_loadDataRequestStart, Screens_loadDataFail, key);

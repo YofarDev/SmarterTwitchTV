@@ -63,6 +63,7 @@ var Main_HistoryClip = 23;
 var Main_Password = 24;
 var Main_Blocked = 25;
 var Main_SearchVod = 26;
+var Main_UserRecommended = 27;
 
 var Main_History = [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip];
 
@@ -107,6 +108,7 @@ var Main_values = {
     UserSidePannel_LastPosition: 0,
     UserLiveFeed_LastPositionId: [],
     UserLiveFeed_LastPosition: [],
+    UserLiveFeed_RowLayout: 0,
     IsUpDating: false,
     WasLangChanged: false,
     banner_pos: 0,
@@ -662,9 +664,10 @@ function Main_SetStringsSecondary() {
     Main_innerHTML('feed_end_1', STR_FEATURED);
     Main_innerHTML('feed_end_3', STR_LIVE);
     Main_innerHTML('feed_end_4', STR_USER + STR_SPACE_HTML + STR_LIVE);
-    Main_innerHTML('feed_end_5', STR_LIVE + STR_SPACE_HTML + STR_HISTORY);
-    Main_innerHTML('feed_end_7', STR_USER + STR_SPACE_HTML + 'VOD');
-    Main_innerHTML('feed_end_8', 'VOD ' + STR_HISTORY);
+    Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserRecommendedPos - 1), STR_UI.recommended);
+    Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserHistoryPos - 1), STR_LIVE + STR_SPACE_HTML + STR_HISTORY);
+    Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodPos - 2), STR_USER + STR_SPACE_HTML + 'VOD');
+    Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodHistoryPos - 2), 'VOD ' + STR_HISTORY);
     Main_innerHTML('icon_feed_back', STR_SPACE_HTML);
 }
 
@@ -1107,6 +1110,13 @@ function Main_SaveValues(backup) {
 
 function Main_RestoreValues() {
     Main_values = Screens_assign(Main_values, Main_getItemJson('Main_values', {}));
+
+    //Layout 1 added the Recommended row, positions saved per row index before it belong to other rows now
+    if (Main_values.UserLiveFeed_RowLayout !== 1) {
+        Main_values.UserLiveFeed_LastPositionId = [];
+        Main_values.UserLiveFeed_LastPosition = [];
+        Main_values.UserLiveFeed_RowLayout = 1;
+    }
     Play_data = Screens_assign(Play_data, Main_getItemJson('Play_data', {}));
 }
 

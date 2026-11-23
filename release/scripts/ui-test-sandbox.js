@@ -8,8 +8,10 @@ module.exports = function loadUIFoundation() {
     const ids = fs
         .readFileSync('app/specific/Main.js', 'utf8')
         .match(/^var Main_[A-Za-z_]+ = \d+;/gm)
-        .slice(0, 27)
+        .slice(0, 28)
         .join('\n');
+    // Recommended (ScreensObj.js) is off unless a test turns it on; Navigation reads it lazily
+    sandbox.ScreensObj_RecommendedEnabled = () => false;
     if (process.argv.includes('--built')) {
         // Run the actual emitted production definitions, retaining their closure dependencies.
         // Extraction avoids publishing fixture-only exports on the native bridge API.

@@ -14,6 +14,27 @@ for (const route of s.Navigation_Destinations()) {
     });
 }
 check(s.Navigation_Target('following', 0) === s.Main_UserLive, 'Following starts with live');
+
+/* Recommended is the second Following tab only while ScreensObj_RecommendedEnabled (signed in, setting on). */
+{
+    const strings = ['STR_UI', 'STR_VIDEOS', 'STR_CHANNELS'];
+    const saved = strings.map(name => s[name]);
+    s.STR_UI = {liveNow: 'live', recommended: 'recommended', categories: 'categories'};
+    s.STR_VIDEOS = 'videos';
+    s.STR_CHANNELS = 'channels';
+    check(s.Navigation_Route(s.Main_UserRecommended) === null, 'Recommended has no route while disabled');
+    check(s.Navigation_Tabs('following').length === 4, 'four Following tabs while disabled');
+    s.ScreensObj_RecommendedEnabled = () => true;
+    const following = s.Navigation_Destinations()[0].screens;
+    check(following[1] === s.Main_UserRecommended && s.Navigation_Target('following', 2) === s.Main_UserVod, 'Recommended is tab two, Videos moves to three');
+    check(s.Navigation_Route(s.Main_UserRecommended).tab === 1, 'Recommended route round trip');
+    check(
+        s.Navigation_Tabs('following').length === following.length && s.Navigation_Tabs('following')[1] === 'recommended',
+        'Following tab labels follow the screens'
+    );
+    s.ScreensObj_RecommendedEnabled = () => false;
+    strings.forEach((name, i) => (s[name] = saved[i]));
+}
 check(s.Navigation_Target('following', 1) === s.Main_UserVod, 'Videos second');
 check(s.Navigation_Target('following', 2) === s.Main_UserChannels, 'Channels third');
 for (const tab of [-1, 99, 0.5, NaN]) check(s.Navigation_Target('following', tab) === null, 'invalid tab rejected');

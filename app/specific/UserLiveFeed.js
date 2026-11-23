@@ -153,6 +153,13 @@ function UserLiveFeed_Prepare() {
     UserLiveFeed_obj[UserLiveFeedobj_UserLivePos].Screen = 'preview_user_live';
     UserLiveFeed_obj[UserLiveFeedobj_UserLivePos].CheckSort = 1;
 
+    //User recommended
+    UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].load = UserLiveFeedobj_Recommended;
+    UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].show = UserLiveFeedobj_ShowRecommended;
+    UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].hide = UserLiveFeedobj_HideRecommended;
+    UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].div = Main_getElementById('user_recommended_scroll');
+    UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].Screen = 'preview_user_recommended';
+
     //User live history
     UserLiveFeed_obj[UserLiveFeedobj_UserHistoryPos].load = UserLiveFeedobj_History;
     UserLiveFeed_obj[UserLiveFeedobj_UserHistoryPos].show = UserLiveFeedobj_ShowHistory;
@@ -1232,7 +1239,10 @@ function UserLiveFeed_KeyUpDown(Adder) {
             UserLiveFeed_FeedPosX = UserLiveFeedobj_AGamesPos;
             UserLiveFeed_obj[UserLiveFeed_FeedPosX].show();
             return;
-        } else if (UserLiveFeed_FeedPosX === UserLiveFeedobj_UserVodPos && (!userSet || !AddUser_UsernameArray[0].access_token)) {
+        } else if (
+            (UserLiveFeed_FeedPosX === UserLiveFeedobj_UserVodPos && (!userSet || !AddUser_UsernameArray[0].access_token)) ||
+            (UserLiveFeed_FeedPosX === UserLiveFeedobj_UserRecommendedPos && !ScreensObj_RecommendedEnabled())
+        ) {
             UserLiveFeed_obj[UserLiveFeed_FeedPosX].hide();
             UserLiveFeed_FeedPosX = NextPos;
             UserLiveFeed_KeyUpDown(Adder);

@@ -35,6 +35,7 @@ node release/scripts/chat-badge-tests.js        # badge HTTP contracts/cache and
 node release/scripts/chat-optimization-tests.js # TV scheduler/cache with fake clock
 node release/scripts/grid-window-tests.js        # browse grid row window; add --built for generated bundle
 node release/scripts/vod-nosub-tests.js          # sub-only VOD fallback URL/playlist checks
+node release/scripts/recommended-live-tests.js   # recommended live query/device id/conversion and feed row layout; add --built for generated bundle
 node release/scripts/vod-chat-sync-tests.js      # VOD chat paging and stream-downtime gap (fake clock) + segment ID3 wall clock parser (JDK 8+); add --built for generated bundle
 node release/scripts/ad-filter-tests.js          # ad playlist filter (JDK 8+) and web ad probe chain
 node release/scripts/request-dispatcher-tests.js # production dispatcher, JDK 8+ (--release 8)

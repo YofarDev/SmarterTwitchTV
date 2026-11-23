@@ -74,6 +74,11 @@ var gamesQuery = '{"query":"{games(first:100 %y){pageInfo{hasNextPage},edges{cur
 var userLiveQuery =
     '{"operationName":"FollowingLive_CurrentUser","query":"query,FollowingLive_CurrentUser{currentUser{followedLiveUsers(first:100 %y){pageInfo{hasNextPage},edges{cursor,node{stream{type,game{displayName,id},isMature,title,id,previewImageURL,viewersCount,createdAt,broadcaster{roles{isPartner},id,login,displayName,language,profileImageURL(width:300)}}}}}}}"}';
 
+//Personalized live recommendations (twitch.tv left nav "Recommended"), see jsonreferences/recommended_live_query.txt
+//User data needs the named operation and the X-Device-Id header (ScreensObj_RecommendedHeaders)
+var recommendedLiveQuery =
+    '{"operationName":"RecommendedStreams","query":"query RecommendedStreams{recommendedStreams(first:40,recRequestID:\\"%r\\",location:\\"LEFT_NAV\\",context:{platform:\\"web\\"}){edges{node{type,game{displayName,id},isMature,title,id,previewImageURL,viewersCount,createdAt,broadcaster{roles{isPartner},id,login,displayName,language,profileImageURL(width:300)}}}}}"}';
+
 var userLiveByIdsQuery =
     '{"query":"{users(ids: %a ){stream{type,game{displayName,id},isMature,title,id,previewImageURL,viewersCount,createdAt,broadcaster{roles{isPartner},id,login,displayName,language,profileImageURL(width:300)}}}}"}';
 
@@ -1705,6 +1710,98 @@ function ScreensObj_InitUserLive() {
 
     ScreenObj[key].Set_Scroll();
 }
+
+//Recommended live channels start
+function ScreensObj_RecommendedEnabled() {
+    //Settings_SetDefaults normalizes defaultValue to the 0-based index of values ['no', 'yes'], so 'yes' is 1 at runtime
+    return Settings_value.recommended_live.defaultValue === 1 && AddUser_UserHasToken();
+}
+
+//Twitch only serves recommendations with a device id; keep one per install, outside the synced Main_values
+var ScreensObj_DeviceId = '';
+function ScreensObj_GqlDeviceId() {
+    if (ScreensObj_DeviceId) return ScreensObj_DeviceId;
+
+    ScreensObj_DeviceId = Main_getItemString('gql_device_id', '');
+
+    if (!/^[0-9a-f]{32}$/.test(ScreensObj_DeviceId)) {
+        var id = '',
+            i = 0;
+
+        for (i; i < 32; i++) id += Math.floor(Math.random() * 16).toString(16);
+
+        ScreensObj_DeviceId = id;
+        Main_setItem('gql_device_id', id);
+    }
+
+    return ScreensObj_DeviceId;
+}
+
+function ScreensObj_RecommendedHeaders() {
+    return Main_OAuth_User_Headers.concat([['X-Device-Id', ScreensObj_GqlDeviceId()]]);
+}
+
+function ScreensObj_RecommendedPost() {
+    return recommendedLiveQuery.replace('%r', new Date().getTime() + '');
+}
+
+//Returns the recommendations as [{stream}] items, the shape of featuredStreams, or [] for any other response
+function ScreensObj_RecommendedToStreams(responseObj) {
+    var edges = responseObj && responseObj.data && responseObj.data.recommendedStreams && responseObj.data.recommendedStreams.edges,
+        result = [],
+        node,
+        i = 0,
+        len = edges && edges.length ? edges.length : 0;
+
+    for (i; i < len; i++) {
+        node = edges[i] && edges[i].node;
+
+        if (node && node.broadcaster && node.broadcaster.id && ScreensObj_CheckIsMature(node)) result.push({stream: node});
+    }
+
+    return result;
+}
+
+function ScreensObj_InitUserRecommended() {
+    var key = Main_UserRecommended;
+
+    ScreenObj[key] = Screens_assign(
+        {
+            isQuery: true,
+            useUserToken: true,
+            queryHeaders: ScreensObj_RecommendedHeaders,
+            ids: Screens_ScreenIds('UserRecommended', key),
+            ScreenName: 'UserRecommended',
+            table: 'stream_table_user_recommended',
+            screen: key,
+            IsUser: true,
+            key_pgDown: Main_UserVod,
+            key_pgUp: Main_UserLive,
+            set_url: function () {
+                //One page, Twitch returns no cursor for this list
+                this.dataEnded = true;
+                this.post = ScreensObj_RecommendedPost();
+            },
+            label_init: function () {
+                ScreensObj_TopLableUserInit(this.screen);
+                ScreensObj_SetTopLable(STR_USER, STR_UI.recommended);
+            },
+            object: 'recommended'
+        },
+        Base_obj
+    );
+
+    ScreenObj[key] = Screens_assign(ScreenObj[key], Base_Live_obj);
+
+    ScreenObj[key].Set_Scroll();
+
+    ScreenObj[key].concatenate = function (responseObj) {
+        this.data = ScreensObj_RecommendedToStreams(responseObj);
+        this.loadDataSuccess();
+        this.loadingData = false;
+    };
+}
+//Recommended live channels end
 
 function ScreensObj_InitAGame() {
     var key = Main_aGame;

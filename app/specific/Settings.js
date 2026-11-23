@@ -317,6 +317,11 @@ var Settings_value = {
         values: ['views_more', 'views_less', 'name_a-z', 'name_z-a', 'game_a-z', 'game_z-a', 'uptime_new', 'uptime_old'],
         defaultValue: 1
     },
+    recommended_live: {
+        //Migrated to dialog
+        values: ['no', 'yes'],
+        defaultValue: 2
+    },
     burn_in_protection: {
         //Migrated to dialog
         values: ['no', 'yes'],
@@ -3139,6 +3144,7 @@ function Settings_DialogShowUIOpt(click) {
 
 function Settings_DialogShowCustomOpt(click) {
     Settings_value.auto_refresh_background.values = [STR_NO, STR_YES];
+    Settings_value.recommended_live.values = [STR_NO, STR_YES];
     Settings_value.auto_refresh_screen.values[0] = STR_DISABLED;
     Settings_value.auto_minimize_inactive.values[0] = STR_DISABLED;
 
@@ -3159,6 +3165,12 @@ function Settings_DialogShowCustomOpt(click) {
             values: Settings_value.live_feed_sort.values,
             title: STR_LIVE_FEED_SORT,
             summary: STR_LIVE_FEED_SORT_SUMMARY
+        },
+        recommended_live: {
+            defaultValue: Settings_value.recommended_live.defaultValue,
+            values: Settings_value.recommended_live.values,
+            title: STR_RECOMMENDED_LIVE,
+            summary: STR_RECOMMENDED_LIVE_SUMMARY
         },
         auto_minimize_inactive: {
             defaultValue: Settings_value.auto_minimize_inactive.defaultValue,

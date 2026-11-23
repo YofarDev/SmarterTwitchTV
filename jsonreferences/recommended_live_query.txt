@@ -1,0 +1,22 @@
+Recommended live channels (personalized), probed 2026-11-23
+Sample response: json_recommended_live_ref.json (taken signed out, same shape as signed in)
+
+POST https://gql.twitch.tv/gql
+Headers:
+    Client-ID: AddCode_backup_client_id
+    Authorization: OAuth <user access_token>   (without it Twitch returns generic, geo-based popular streams)
+    X-Device-Id: <32 hex chars>                  (required, else "missing \"X-Device-ID\" header"; keep one stable id per install)
+Body:
+    {"operationName":"RecommendedStreams","query":"query RecommendedStreams{recommendedStreams(first:20,recRequestID:\"<any id>\",location:\"LEFT_NAV\",context:{platform:\"web\"}){edges{node{type,game{displayName,id},isMature,title,id,previewImageURL,viewersCount,createdAt,broadcaster{roles{isPartner},id,login,displayName,language,profileImageURL(width:300)}}}}}"}
+
+Node fields match the stream node of userLiveQuery (FollowingLive_CurrentUser), so the live cell code can be reused.
+Signed in, the list excluded every followed channel and favored mid-size channels in watched categories.
+currentUser{recommendations{liveRecommendations(first,recRequestID,language:"en")}} returned the same list.
+
+Findings:
+- User-scoped fields need a named operation (operationName + "query Name{...}"); anonymous queries get "service error".
+- personalSections(input:{sectionInputs:[RECOMMENDED_SECTION,SIMILAR_SECTION],...}) always falls back to POPULAR_SECTION
+  for this client, signed in or not, so "Viewers of X also watch" (SIMILAR_SECTION) is not reachable.
+- recommendedStreams ignores context channelName/lastChannelName/categoryName; accepted location: LEFT_NAV
+  (HOME, DIRECTORY, CHANNEL, SIDE_NAV are rejected as "invalid location parameter").
+- No pagination cursor was probed; treat as one page of up to first:N items.

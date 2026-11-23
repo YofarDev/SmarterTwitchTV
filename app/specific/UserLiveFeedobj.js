@@ -26,11 +26,15 @@ var UserLiveFeedobj_CurrentGamePos = 3;
 var UserLiveFeedobj_LivePos = 4;
 //User
 var UserLiveFeedobj_UserLivePos = 5;
-var UserLiveFeedobj_UserHistoryPos = 6;
-var UserLiveFeedobj_UserGamesPos = 7;
-var UserLiveFeedobj_UserAGamesPos = 8;
-var UserLiveFeedobj_UserVodPos = 9;
-var UserLiveFeedobj_UserVodHistoryPos = 10;
+//Rows from here on were shifted by one when Recommended was added, Main_RestoreValues resets
+//the per-row positions saved under the old numbering (UserLiveFeed_RowLayout)
+var UserLiveFeedobj_UserRecommendedPos = 6;
+var UserLiveFeedobj_UserHistoryPos = 7;
+var UserLiveFeedobj_UserGamesPos = 8;
+var UserLiveFeedobj_UserAGamesPos = 9;
+//Every row from UserVodPos on is a VOD row, live rows must stay below it
+var UserLiveFeedobj_UserVodPos = 10;
+var UserLiveFeedobj_UserVodHistoryPos = 11;
 
 var UserLiveFeedobj_FeedSort = [
     [null, 'viewersCount', 0], //0
@@ -258,6 +262,64 @@ function UserLiveFeedobj_HideFeed() {
     UserLiveFeed_CheckIfIsLiveSTop();
     UserLiveFeed_obj[UserLiveFeedobj_UserLivePos].div.classList.add('hide');
 }
+
+//Recommended start
+var UserLiveFeedobj_RecommendedOldUserName = '';
+function UserLiveFeedobj_ShowRecommended() {
+    UserLiveFeedobj_SetBottomText(UserLiveFeedobj_UserRecommendedPos - 1);
+
+    if (ScreensObj_RecommendedEnabled()) {
+        UserLiveFeedobj_ShowFeedCheck(
+            UserLiveFeedobj_UserRecommendedPos,
+            UserLiveFeedobj_RecommendedOldUserName !== AddUser_UsernameArray[0].name
+        );
+        UserLiveFeedobj_RecommendedOldUserName = AddUser_UsernameArray[0].name;
+    }
+}
+
+function UserLiveFeedobj_HideRecommended() {
+    UserLiveFeed_CheckIfIsLiveSTop();
+    UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].div.classList.add('hide');
+}
+
+function UserLiveFeedobj_Recommended() {
+    var pos = UserLiveFeedobj_UserRecommendedPos;
+
+    UserLiveFeedobj_StartDefault(pos);
+    //One page, Twitch returns no cursor for this list
+    UserLiveFeed_obj[pos].dataEnded = true;
+
+    Navigation_FeedFull(
+        PlayClip_BaseUrl,
+        ScreensObj_RecommendedHeaders(),
+        UserLiveFeedobj_loadRecommendedResult,
+        noop_fun,
+        pos,
+        pos, //checkResult
+        'POST', //Method, null for get
+        ScreensObj_RecommendedPost()
+    );
+}
+
+function UserLiveFeedobj_loadRecommendedResult(resultObj) {
+    var pos = UserLiveFeedobj_UserRecommendedPos,
+        response;
+
+    if (resultObj.status !== 200) {
+        UserLiveFeedobj_loadDataError(pos);
+        return;
+    }
+
+    try {
+        response = ScreensObj_RecommendedToStreams(JSON.parse(resultObj.responseText));
+    } catch (e) {
+        UserLiveFeedobj_loadDataError(pos);
+        return;
+    }
+
+    UserLiveFeedobj_loadDataBaseLiveSuccessEnd(response, null, pos, UserLiveFeed_itemsCount[pos]);
+}
+//Recommended end
 
 //Live history start
 function UserLiveFeedobj_HideHistory() {
@@ -946,12 +1008,14 @@ function UserLiveFeedobj_SetBottomText(pos) {
 
     Main_AddClass('feed_end_' + pos, 'feed_end_name_focus');
 
+    Main_getElementById('feed_end_' + (UserLiveFeedobj_UserRecommendedPos - 1)).style.display = ScreensObj_RecommendedEnabled() ? '' : 'none';
+
     len = UserLiveFeedobj_MAX - 2;
 
     Main_innerHTML('feed_end_0', UserLiveFeedobj_CurrentAGameEnable ? UserLiveFeedobj_CurrentAGameNameEnter : STR_GAMES);
     Main_innerHTML('feed_end_2', Play_data.data[3] !== '' ? Play_data.data[3] : STR_NO_GAME);
     Main_innerHTML(
-        'feed_end_6',
+        'feed_end_' + (UserLiveFeedobj_UserGamesPos - 1),
         UserLiveFeedobj_CurrentUserAGameEnable ? UserLiveFeedobj_CurrentUserAGameNameEnter : STR_USER + STR_SPACE_HTML + STR_GAMES
     );
 
@@ -1661,7 +1725,9 @@ function UserLiveFeedobj_loadDataBaseLiveSuccessEnd(response, total, pos, itemsC
         mArray,
         i = 0,
         isHistory = pos === UserLiveFeedobj_UserHistoryPos,
-        isFeatured = pos === UserLiveFeedobj_FeaturedPos;
+        isFeatured = pos === UserLiveFeedobj_FeaturedPos,
+        //Featured, history and recommended items are {stream} GQL objects
+        isStreamItem = isFeatured || isHistory || pos === UserLiveFeedobj_UserRecommendedPos;
 
     if (response_items) {
         if (isFeatured) {
@@ -1739,7 +1805,7 @@ function UserLiveFeedobj_loadDataBaseLiveSuccessEnd(response, total, pos, itemsC
         var useHelix = UserLiveFeed_obj[pos].useHelix;
 
         for (i; i < response_items; i++) {
-            if (isFeatured || isHistory) {
+            if (isStreamItem) {
                 stream = response[i];
 
                 //stream or stream.stream may be null
@@ -1753,8 +1819,8 @@ function UserLiveFeedobj_loadDataBaseLiveSuccessEnd(response, total, pos, itemsC
                 id = useHelix ? stream.user_id : stream.channel._id;
             }
 
-            if (!UserLiveFeed_idObject[pos][id] && (isFeatured || isHistory || ScreensObj_CheckIsMature(stream))) {
-                mArray = isFeatured || isHistory ? ScreensObj_LiveQueryCellArray(stream) : ScreensObj_LiveCellArray(stream);
+            if (!UserLiveFeed_idObject[pos][id] && (isStreamItem || ScreensObj_CheckIsMature(stream))) {
+                mArray = isStreamItem ? ScreensObj_LiveQueryCellArray(stream) : ScreensObj_LiveCellArray(stream);
 
                 if (
                     isHistory ||

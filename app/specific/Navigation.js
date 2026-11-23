@@ -2,9 +2,16 @@
 var Navigation_State = {destination: 'following', tab: 0, generation: 0, account: '', origins: [], bookmarks: []};
 var Navigation_BookmarkLimit = 24;
 
+//Recommended is the second Following tab while signed in with the setting on, Navigation_Tabs mirrors it
+function Navigation_FollowingScreens() {
+    return ScreensObj_RecommendedEnabled()
+        ? [Main_UserLive, Main_UserRecommended, Main_UserVod, Main_UserChannels, Main_usergames]
+        : [Main_UserLive, Main_UserVod, Main_UserChannels, Main_usergames];
+}
+
 function Navigation_Destinations() {
     return [
-        {id: 'following', screens: [Main_UserLive, Main_UserVod, Main_UserChannels, Main_usergames], account: true},
+        {id: 'following', screens: Navigation_FollowingScreens(), account: true},
         {id: 'browse', screens: [Main_Live, Main_Featured, Main_games, Main_Vod, Main_Clip]},
         {id: 'search', screens: [Main_Search, Main_SearchLive, Main_SearchChannels, Main_SearchGames, Main_SearchVod]},
         {id: 'library', screens: [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip], account: true},
@@ -145,7 +152,10 @@ function Navigation_Labels() {
 }
 
 function Navigation_Tabs(destination) {
-    if (destination === 'following') return [STR_UI.liveNow, STR_VIDEOS, STR_CHANNELS, STR_UI.categories];
+    if (destination === 'following')
+        return ScreensObj_RecommendedEnabled()
+            ? [STR_UI.liveNow, STR_UI.recommended, STR_VIDEOS, STR_CHANNELS, STR_UI.categories]
+            : [STR_UI.liveNow, STR_VIDEOS, STR_CHANNELS, STR_UI.categories];
     if (destination === 'browse') return [STR_LIVE, STR_FEATURED, STR_UI.categories, STR_VIDEOS, STR_CLIPS];
     if (destination === 'library') return [STR_LIVE, STR_VIDEOS, STR_CLIPS];
     if (destination === 'search')

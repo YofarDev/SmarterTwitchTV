@@ -27,6 +27,7 @@ function en_USLang() {
         account: 'Account',
         switchAccount: 'Switch account',
         liveNow: 'Live now',
+        recommended: 'Recommended',
         categories: 'Categories',
         noAccount: 'No account',
         welcomeTitle: 'Your channels, together',
@@ -806,6 +807,9 @@ function en_USLang() {
     STR_RAID_FOLLOW_SUMMARY =
         'When the watched streamer raids another channel, switch the player to the raided channel. Works in single-stream live playback and requires being logged in.';
     STR_RAID_AUTO = 'Switch automatically';
+    STR_RECOMMENDED_LIVE = 'Recommended live channels';
+    STR_RECOMMENDED_LIVE_SUMMARY =
+        'Shows live channels Twitch recommends for your account, which you do not follow yet, as a Following tab and a row in the player live feed. Needs a signed in account';
     STR_RAID_SWITCHING = ' is raiding, switching to ';
     STR_POINTS_OPT = 'Channel points and drops';
     STR_POINTS_WATCH = 'Earn channel points from watch time';
