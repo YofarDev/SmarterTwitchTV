@@ -24,8 +24,15 @@ var version = {
     publishVersionCode: 404, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/404/SmarterPurpleTV_3_0_404.apk',
     WebVersion: 'November 23 2026',
-    WebTag: 802, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 803, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 23 2026 (Web 803)',
+            changes: [
+                'New: Recommended live channels — the live channels Twitch recommends for your account (the "Recommended" list of the Twitch website sidebar, channels you do not follow yet) now have their own tab in Following and a row right after User Live in the player live feed. Needs a signed in account; turn it off in Settings › Customize content, sorting, auto refresh, timeouts and related › Recommended live channels',
+                'Note: saved scroll positions of the player live feed rows reset once after this update, as the rows after User Live moved by one'
+            ]
+        },
         {
             title: 'November 23 2026 (Web 802)',
             changes: [

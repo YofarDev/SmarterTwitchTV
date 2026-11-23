@@ -511,6 +511,8 @@
         STR_RAID_FOLLOW,
         STR_RAID_FOLLOW_SUMMARY,
         STR_RAID_AUTO,
+        STR_RECOMMENDED_LIVE,
+        STR_RECOMMENDED_LIVE_SUMMARY,
         STR_RAID_SWITCHING,
         STR_POINTS_OPT,
         STR_POINTS_WATCH,
@@ -1468,6 +1470,7 @@
             account: 'Account',
             switchAccount: 'Switch account',
             liveNow: 'Live now',
+            recommended: 'Recommended',
             categories: 'Categories',
             noAccount: 'No account',
             welcomeTitle: 'Your channels, together',
@@ -2249,6 +2252,9 @@
         STR_RAID_FOLLOW_SUMMARY =
             'When the watched streamer raids another channel, switch the player to the raided channel. Works in single-stream live playback and requires being logged in.';
         STR_RAID_AUTO = 'Switch automatically';
+        STR_RECOMMENDED_LIVE = 'Recommended live channels';
+        STR_RECOMMENDED_LIVE_SUMMARY =
+            'Shows live channels Twitch recommends for your account, which you do not follow yet, as a Following tab and a row in the player live feed. Needs a signed in account';
         STR_RAID_SWITCHING = ' is raiding, switching to ';
         STR_POINTS_OPT = 'Channel points and drops';
         STR_POINTS_WATCH = 'Earn channel points from watch time';
@@ -8579,8 +8585,15 @@
         publishVersionCode: 404, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/404/SmarterPurpleTV_3_0_404.apk',
         WebVersion: 'November 23 2026',
-        WebTag: 802, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 803, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 23 2026 (Web 803)',
+                changes: [
+                    'New: Recommended live channels — the live channels Twitch recommends for your account (the "Recommended" list of the Twitch website sidebar, channels you do not follow yet) now have their own tab in Following and a row right after User Live in the player live feed. Needs a signed in account; turn it off in Settings › Customize content, sorting, auto refresh, timeouts and related › Recommended live channels',
+                    'Note: saved scroll positions of the player live feed rows reset once after this update, as the rows after User Live moved by one'
+                ]
+            },
             {
                 title: 'November 23 2026 (Web 802)',
                 changes: [
@@ -12134,7 +12147,7 @@
                     } else if (pos === UserLiveFeedobj_GamesPos) {
                         pos = UserLiveFeedobj_CurrentAGameEnable ? 0 : 1;
                     } else if (pos === UserLiveFeedobj_UserGamesPos) {
-                        pos = UserLiveFeedobj_CurrentUserAGameEnable ? 8 : 7;
+                        pos = UserLiveFeedobj_CurrentUserAGameEnable ? UserLiveFeedobj_UserAGamesPos : UserLiveFeedobj_UserGamesPos;
                     }
 
                     if (pos !== UserLiveFeedobj_AGamesPos || pos !== UserLiveFeedobj_UserAGamesPos) {
@@ -19023,6 +19036,7 @@
     var Main_Password = 24;
     var Main_Blocked = 25;
     var Main_SearchVod = 26;
+    var Main_UserRecommended = 27;
 
     var Main_History = [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip];
 
@@ -19067,6 +19081,7 @@
         UserSidePannel_LastPosition: 0,
         UserLiveFeed_LastPositionId: [],
         UserLiveFeed_LastPosition: [],
+        UserLiveFeed_RowLayout: 0,
         IsUpDating: false,
         WasLangChanged: false,
         banner_pos: 0,
@@ -19624,9 +19639,10 @@
         Main_innerHTML('feed_end_1', STR_FEATURED);
         Main_innerHTML('feed_end_3', STR_LIVE);
         Main_innerHTML('feed_end_4', STR_USER + STR_SPACE_HTML + STR_LIVE);
-        Main_innerHTML('feed_end_5', STR_LIVE + STR_SPACE_HTML + STR_HISTORY);
-        Main_innerHTML('feed_end_7', STR_USER + STR_SPACE_HTML + 'VOD');
-        Main_innerHTML('feed_end_8', 'VOD ' + STR_HISTORY);
+        Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserRecommendedPos - 1), STR_UI.recommended);
+        Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserHistoryPos - 1), STR_LIVE + STR_SPACE_HTML + STR_HISTORY);
+        Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodPos - 2), STR_USER + STR_SPACE_HTML + 'VOD');
+        Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodHistoryPos - 2), 'VOD ' + STR_HISTORY);
         Main_innerHTML('icon_feed_back', STR_SPACE_HTML);
     }
 
@@ -20069,6 +20085,13 @@
 
     function Main_RestoreValues() {
         Main_values = Screens_assign(Main_values, Main_getItemJson('Main_values', {}));
+
+        //Layout 1 added the Recommended row, positions saved per row index before it belong to other rows now
+        if (Main_values.UserLiveFeed_RowLayout !== 1) {
+            Main_values.UserLiveFeed_LastPositionId = [];
+            Main_values.UserLiveFeed_LastPosition = [];
+            Main_values.UserLiveFeed_RowLayout = 1;
+        }
         Play_data = Screens_assign(Play_data, Main_getItemJson('Play_data', {}));
     }
 
@@ -22714,9 +22737,16 @@
     var Navigation_State = {destination: 'following', tab: 0, generation: 0, account: '', origins: [], bookmarks: []};
     var Navigation_BookmarkLimit = 24;
 
+    //Recommended is the second Following tab while signed in with the setting on, Navigation_Tabs mirrors it
+    function Navigation_FollowingScreens() {
+        return ScreensObj_RecommendedEnabled()
+            ? [Main_UserLive, Main_UserRecommended, Main_UserVod, Main_UserChannels, Main_usergames]
+            : [Main_UserLive, Main_UserVod, Main_UserChannels, Main_usergames];
+    }
+
     function Navigation_Destinations() {
         return [
-            {id: 'following', screens: [Main_UserLive, Main_UserVod, Main_UserChannels, Main_usergames], account: true},
+            {id: 'following', screens: Navigation_FollowingScreens(), account: true},
             {id: 'browse', screens: [Main_Live, Main_Featured, Main_games, Main_Vod, Main_Clip]},
             {id: 'search', screens: [Main_Search, Main_SearchLive, Main_SearchChannels, Main_SearchGames, Main_SearchVod]},
             {id: 'library', screens: [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip], account: true},
@@ -22857,7 +22887,10 @@
     }
 
     function Navigation_Tabs(destination) {
-        if (destination === 'following') return [STR_UI.liveNow, STR_VIDEOS, STR_CHANNELS, STR_UI.categories];
+        if (destination === 'following')
+            return ScreensObj_RecommendedEnabled()
+                ? [STR_UI.liveNow, STR_UI.recommended, STR_VIDEOS, STR_CHANNELS, STR_UI.categories]
+                : [STR_UI.liveNow, STR_VIDEOS, STR_CHANNELS, STR_UI.categories];
         if (destination === 'browse') return [STR_LIVE, STR_FEATURED, STR_UI.categories, STR_VIDEOS, STR_CLIPS];
         if (destination === 'library') return [STR_LIVE, STR_VIDEOS, STR_CLIPS];
         if (destination === 'search')
@@ -39579,6 +39612,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         ScreensObj_InitAGame();
         //Live user screens
         ScreensObj_InitUserLive();
+        ScreensObj_InitUserRecommended();
 
         //Clips screens
         ScreensObj_InitClip();
@@ -39752,6 +39786,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (
             !AddUser_UserIsSet() &&
             (Main_GoBefore === Main_UserLive ||
+                Main_GoBefore === Main_UserRecommended ||
                 Main_GoBefore === Main_usergames ||
                 Main_GoBefore === Main_UserVod ||
                 Main_GoBefore === Main_UserChannels ||
@@ -39761,6 +39796,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 Main_GoBefore === Main_Blocked)
         ) {
             Main_GoBefore = Main_Live;
+        } else if (Main_GoBefore === Main_UserRecommended && !ScreensObj_RecommendedEnabled()) {
+            //The Recommended tab was turned off while it was the last screen
+            Main_GoBefore = Main_UserLive;
         }
 
         Main_values.API_Change = false;
@@ -39993,7 +40031,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             var PostString = null;
 
             if (ScreenObj[key].isQuery) {
-                HeadersArray = ScreenObj[key].useUserToken ? Main_OAuth_User_Headers : Play_base_backup_headers_Array;
+                HeadersArray = ScreenObj[key].queryHeaders
+                    ? ScreenObj[key].queryHeaders()
+                    : ScreenObj[key].useUserToken
+                      ? Main_OAuth_User_Headers
+                      : Play_base_backup_headers_Array;
                 Method = 'POST';
                 PostString = ScreenObj[key].post;
             } else if (!ScreenObj[key].useHelix) {
@@ -40040,7 +40082,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             if (AddUser_UserHasToken() && !ScreenObj[key].isQuery) {
                 AddCode_validateToken(0);
                 Screens_loadDataFail(key);
-            } else if (key === Main_UserLive || key === Main_usergames || key === Main_UserVod || key === Main_UserChannels) {
+            } else if (
+                key === Main_UserLive ||
+                key === Main_UserRecommended ||
+                key === Main_usergames ||
+                key === Main_UserVod ||
+                key === Main_UserChannels
+            ) {
                 Screens_loadDataFail(key);
             } else {
                 AddCode_AppToken(0, Screens_loadDataRequestStart, Screens_loadDataFail, key);
@@ -44247,6 +44295,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var userLiveQuery =
         '{"operationName":"FollowingLive_CurrentUser","query":"query,FollowingLive_CurrentUser{currentUser{followedLiveUsers(first:100 %y){pageInfo{hasNextPage},edges{cursor,node{stream{type,game{displayName,id},isMature,title,id,previewImageURL,viewersCount,createdAt,broadcaster{roles{isPartner},id,login,displayName,language,profileImageURL(width:300)}}}}}}}"}';
 
+    //Personalized live recommendations (twitch.tv left nav "Recommended"), see jsonreferences/recommended_live_query.txt
+    //User data needs the named operation and the X-Device-Id header (ScreensObj_RecommendedHeaders)
+    var recommendedLiveQuery =
+        '{"operationName":"RecommendedStreams","query":"query RecommendedStreams{recommendedStreams(first:40,recRequestID:\\"%r\\",location:\\"LEFT_NAV\\",context:{platform:\\"web\\"}){edges{node{type,game{displayName,id},isMature,title,id,previewImageURL,viewersCount,createdAt,broadcaster{roles{isPartner},id,login,displayName,language,profileImageURL(width:300)}}}}}"}';
+
     var userLiveByIdsQuery =
         '{"query":"{users(ids: %a ){stream{type,game{displayName,id},isMature,title,id,previewImageURL,viewersCount,createdAt,broadcaster{roles{isPartner},id,login,displayName,language,profileImageURL(width:300)}}}}"}';
 
@@ -45885,6 +45938,98 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         ScreenObj[key].Set_Scroll();
     }
+
+    //Recommended live channels start
+    function ScreensObj_RecommendedEnabled() {
+        //Settings_SetDefaults normalizes defaultValue to the 0-based index of values ['no', 'yes'], so 'yes' is 1 at runtime
+        return Settings_value.recommended_live.defaultValue === 1 && AddUser_UserHasToken();
+    }
+
+    //Twitch only serves recommendations with a device id; keep one per install, outside the synced Main_values
+    var ScreensObj_DeviceId = '';
+    function ScreensObj_GqlDeviceId() {
+        if (ScreensObj_DeviceId) return ScreensObj_DeviceId;
+
+        ScreensObj_DeviceId = Main_getItemString('gql_device_id', '');
+
+        if (!/^[0-9a-f]{32}$/.test(ScreensObj_DeviceId)) {
+            var id = '',
+                i = 0;
+
+            for (i; i < 32; i++) id += Math.floor(Math.random() * 16).toString(16);
+
+            ScreensObj_DeviceId = id;
+            Main_setItem('gql_device_id', id);
+        }
+
+        return ScreensObj_DeviceId;
+    }
+
+    function ScreensObj_RecommendedHeaders() {
+        return Main_OAuth_User_Headers.concat([['X-Device-Id', ScreensObj_GqlDeviceId()]]);
+    }
+
+    function ScreensObj_RecommendedPost() {
+        return recommendedLiveQuery.replace('%r', new Date().getTime() + '');
+    }
+
+    //Returns the recommendations as [{stream}] items, the shape of featuredStreams, or [] for any other response
+    function ScreensObj_RecommendedToStreams(responseObj) {
+        var edges = responseObj && responseObj.data && responseObj.data.recommendedStreams && responseObj.data.recommendedStreams.edges,
+            result = [],
+            node,
+            i = 0,
+            len = edges && edges.length ? edges.length : 0;
+
+        for (i; i < len; i++) {
+            node = edges[i] && edges[i].node;
+
+            if (node && node.broadcaster && node.broadcaster.id && ScreensObj_CheckIsMature(node)) result.push({stream: node});
+        }
+
+        return result;
+    }
+
+    function ScreensObj_InitUserRecommended() {
+        var key = Main_UserRecommended;
+
+        ScreenObj[key] = Screens_assign(
+            {
+                isQuery: true,
+                useUserToken: true,
+                queryHeaders: ScreensObj_RecommendedHeaders,
+                ids: Screens_ScreenIds('UserRecommended', key),
+                ScreenName: 'UserRecommended',
+                table: 'stream_table_user_recommended',
+                screen: key,
+                IsUser: true,
+                key_pgDown: Main_UserVod,
+                key_pgUp: Main_UserLive,
+                set_url: function () {
+                    //One page, Twitch returns no cursor for this list
+                    this.dataEnded = true;
+                    this.post = ScreensObj_RecommendedPost();
+                },
+                label_init: function () {
+                    ScreensObj_TopLableUserInit(this.screen);
+                    ScreensObj_SetTopLable(STR_USER, STR_UI.recommended);
+                },
+                object: 'recommended'
+            },
+            Base_obj
+        );
+
+        ScreenObj[key] = Screens_assign(ScreenObj[key], Base_Live_obj);
+
+        ScreenObj[key].Set_Scroll();
+
+        ScreenObj[key].concatenate = function (responseObj) {
+            this.data = ScreensObj_RecommendedToStreams(responseObj);
+            this.loadDataSuccess();
+            this.loadingData = false;
+        };
+    }
+    //Recommended live channels end
 
     function ScreensObj_InitAGame() {
         var key = Main_aGame;
@@ -48344,6 +48489,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             //Migrated to dialog
             values: ['views_more', 'views_less', 'name_a-z', 'name_z-a', 'game_a-z', 'game_z-a', 'uptime_new', 'uptime_old'],
             defaultValue: 1
+        },
+        recommended_live: {
+            //Migrated to dialog
+            values: ['no', 'yes'],
+            defaultValue: 2
         },
         burn_in_protection: {
             //Migrated to dialog
@@ -51174,6 +51324,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
     function Settings_DialogShowCustomOpt(click) {
         Settings_value.auto_refresh_background.values = [STR_NO, STR_YES];
+        Settings_value.recommended_live.values = [STR_NO, STR_YES];
         Settings_value.auto_refresh_screen.values[0] = STR_DISABLED;
         Settings_value.auto_minimize_inactive.values[0] = STR_DISABLED;
 
@@ -51194,6 +51345,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 values: Settings_value.live_feed_sort.values,
                 title: STR_LIVE_FEED_SORT,
                 summary: STR_LIVE_FEED_SORT_SUMMARY
+            },
+            recommended_live: {
+                defaultValue: Settings_value.recommended_live.defaultValue,
+                values: Settings_value.recommended_live.values,
+                title: STR_RECOMMENDED_LIVE,
+                summary: STR_RECOMMENDED_LIVE_SUMMARY
             },
             auto_minimize_inactive: {
                 defaultValue: Settings_value.auto_minimize_inactive.defaultValue,
@@ -53671,7 +53828,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         8, //Main_AGameClip 23
         3, //Main_AGameClip 24
         9, //Main_AGameClip 25
-        1 // Main_SearchVod 26
+        1, // Main_SearchVod 26
+        3 // Main_UserRecommended 27
     ];
 
     function Sidepannel_UnSetTopOpacity() {
@@ -54273,6 +54431,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         UserLiveFeed_obj[UserLiveFeedobj_UserLivePos].div = Main_getElementById('user_feed_scroll');
         UserLiveFeed_obj[UserLiveFeedobj_UserLivePos].Screen = 'preview_user_live';
         UserLiveFeed_obj[UserLiveFeedobj_UserLivePos].CheckSort = 1;
+
+        //User recommended
+        UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].load = UserLiveFeedobj_Recommended;
+        UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].show = UserLiveFeedobj_ShowRecommended;
+        UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].hide = UserLiveFeedobj_HideRecommended;
+        UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].div = Main_getElementById('user_recommended_scroll');
+        UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].Screen = 'preview_user_recommended';
 
         //User live history
         UserLiveFeed_obj[UserLiveFeedobj_UserHistoryPos].load = UserLiveFeedobj_History;
@@ -55378,7 +55543,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 UserLiveFeed_FeedPosX = UserLiveFeedobj_AGamesPos;
                 UserLiveFeed_obj[UserLiveFeed_FeedPosX].show();
                 return;
-            } else if (UserLiveFeed_FeedPosX === UserLiveFeedobj_UserVodPos && (!userSet || !AddUser_UsernameArray[0].access_token)) {
+            } else if (
+                (UserLiveFeed_FeedPosX === UserLiveFeedobj_UserVodPos && (!userSet || !AddUser_UsernameArray[0].access_token)) ||
+                (UserLiveFeed_FeedPosX === UserLiveFeedobj_UserRecommendedPos && !ScreensObj_RecommendedEnabled())
+            ) {
                 UserLiveFeed_obj[UserLiveFeed_FeedPosX].hide();
                 UserLiveFeed_FeedPosX = NextPos;
                 UserLiveFeed_KeyUpDown(Adder);
@@ -55563,11 +55731,15 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var UserLiveFeedobj_LivePos = 4;
     //User
     var UserLiveFeedobj_UserLivePos = 5;
-    var UserLiveFeedobj_UserHistoryPos = 6;
-    var UserLiveFeedobj_UserGamesPos = 7;
-    var UserLiveFeedobj_UserAGamesPos = 8;
-    var UserLiveFeedobj_UserVodPos = 9;
-    var UserLiveFeedobj_UserVodHistoryPos = 10;
+    //Rows from here on were shifted by one when Recommended was added, Main_RestoreValues resets
+    //the per-row positions saved under the old numbering (UserLiveFeed_RowLayout)
+    var UserLiveFeedobj_UserRecommendedPos = 6;
+    var UserLiveFeedobj_UserHistoryPos = 7;
+    var UserLiveFeedobj_UserGamesPos = 8;
+    var UserLiveFeedobj_UserAGamesPos = 9;
+    //Every row from UserVodPos on is a VOD row, live rows must stay below it
+    var UserLiveFeedobj_UserVodPos = 10;
+    var UserLiveFeedobj_UserVodHistoryPos = 11;
 
     var UserLiveFeedobj_FeedSort = [
         [null, 'viewersCount', 0], //0
@@ -55794,6 +55966,64 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         UserLiveFeed_CheckIfIsLiveSTop();
         UserLiveFeed_obj[UserLiveFeedobj_UserLivePos].div.classList.add('hide');
     }
+
+    //Recommended start
+    var UserLiveFeedobj_RecommendedOldUserName = '';
+    function UserLiveFeedobj_ShowRecommended() {
+        UserLiveFeedobj_SetBottomText(UserLiveFeedobj_UserRecommendedPos - 1);
+
+        if (ScreensObj_RecommendedEnabled()) {
+            UserLiveFeedobj_ShowFeedCheck(
+                UserLiveFeedobj_UserRecommendedPos,
+                UserLiveFeedobj_RecommendedOldUserName !== AddUser_UsernameArray[0].name
+            );
+            UserLiveFeedobj_RecommendedOldUserName = AddUser_UsernameArray[0].name;
+        }
+    }
+
+    function UserLiveFeedobj_HideRecommended() {
+        UserLiveFeed_CheckIfIsLiveSTop();
+        UserLiveFeed_obj[UserLiveFeedobj_UserRecommendedPos].div.classList.add('hide');
+    }
+
+    function UserLiveFeedobj_Recommended() {
+        var pos = UserLiveFeedobj_UserRecommendedPos;
+
+        UserLiveFeedobj_StartDefault(pos);
+        //One page, Twitch returns no cursor for this list
+        UserLiveFeed_obj[pos].dataEnded = true;
+
+        Navigation_FeedFull(
+            PlayClip_BaseUrl,
+            ScreensObj_RecommendedHeaders(),
+            UserLiveFeedobj_loadRecommendedResult,
+            noop_fun,
+            pos,
+            pos, //checkResult
+            'POST', //Method, null for get
+            ScreensObj_RecommendedPost()
+        );
+    }
+
+    function UserLiveFeedobj_loadRecommendedResult(resultObj) {
+        var pos = UserLiveFeedobj_UserRecommendedPos,
+            response;
+
+        if (resultObj.status !== 200) {
+            UserLiveFeedobj_loadDataError(pos);
+            return;
+        }
+
+        try {
+            response = ScreensObj_RecommendedToStreams(JSON.parse(resultObj.responseText));
+        } catch (e) {
+            UserLiveFeedobj_loadDataError(pos);
+            return;
+        }
+
+        UserLiveFeedobj_loadDataBaseLiveSuccessEnd(response, null, pos, UserLiveFeed_itemsCount[pos]);
+    }
+    //Recommended end
 
     //Live history start
     function UserLiveFeedobj_HideHistory() {
@@ -56484,12 +56714,14 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         Main_AddClass('feed_end_' + pos, 'feed_end_name_focus');
 
+        Main_getElementById('feed_end_' + (UserLiveFeedobj_UserRecommendedPos - 1)).style.display = ScreensObj_RecommendedEnabled() ? '' : 'none';
+
         len = UserLiveFeedobj_MAX - 2;
 
         Main_innerHTML('feed_end_0', UserLiveFeedobj_CurrentAGameEnable ? UserLiveFeedobj_CurrentAGameNameEnter : STR_GAMES);
         Main_innerHTML('feed_end_2', Play_data.data[3] !== '' ? Play_data.data[3] : STR_NO_GAME);
         Main_innerHTML(
-            'feed_end_6',
+            'feed_end_' + (UserLiveFeedobj_UserGamesPos - 1),
             UserLiveFeedobj_CurrentUserAGameEnable ? UserLiveFeedobj_CurrentUserAGameNameEnter : STR_USER + STR_SPACE_HTML + STR_GAMES
         );
 
@@ -57212,7 +57444,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             mArray,
             i = 0,
             isHistory = pos === UserLiveFeedobj_UserHistoryPos,
-            isFeatured = pos === UserLiveFeedobj_FeaturedPos;
+            isFeatured = pos === UserLiveFeedobj_FeaturedPos,
+            //Featured, history and recommended items are {stream} GQL objects
+            isStreamItem = isFeatured || isHistory || pos === UserLiveFeedobj_UserRecommendedPos;
 
         if (response_items) {
             if (isFeatured) {
@@ -57290,7 +57524,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             var useHelix = UserLiveFeed_obj[pos].useHelix;
 
             for (i; i < response_items; i++) {
-                if (isFeatured || isHistory) {
+                if (isStreamItem) {
                     stream = response[i];
 
                     //stream or stream.stream may be null
@@ -57304,8 +57538,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                     id = useHelix ? stream.user_id : stream.channel._id;
                 }
 
-                if (!UserLiveFeed_idObject[pos][id] && (isFeatured || isHistory || ScreensObj_CheckIsMature(stream))) {
-                    mArray = isFeatured || isHistory ? ScreensObj_LiveQueryCellArray(stream) : ScreensObj_LiveCellArray(stream);
+                if (!UserLiveFeed_idObject[pos][id] && (isStreamItem || ScreensObj_CheckIsMature(stream))) {
+                    mArray = isStreamItem ? ScreensObj_LiveQueryCellArray(stream) : ScreensObj_LiveCellArray(stream);
 
                     if (
                         isHistory ||
