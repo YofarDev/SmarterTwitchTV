@@ -45,7 +45,7 @@ function uk_UALang() {
         playerHelpList: '{up}{down} Обрати    {ok} Вибрати    {back} Назад',
         playerHelpAction: '{up}{down} Обрати    {ok} Застосувати    {back} Назад',
         loadingQualities: 'Завантаження якостей…',
-        switchTo: 'OK перемикає на ',       
+        switchTo: 'OK перемикає на ',
         liveFor: 'В ефірі ',
         separator: ' · ',
         watching: 'Дивляться ',
