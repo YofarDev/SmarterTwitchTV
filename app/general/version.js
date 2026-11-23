@@ -23,9 +23,15 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 404, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/404/SmarterPurpleTV_3_0_404.apk',
-    WebVersion: 'November 22 2026',
-    WebTag: 801, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'November 23 2026',
+    WebTag: 802, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 23 2026 (Web 802)',
+            changes: [
+                'Fix: after a live stream ended without a raid, opening another stream could load forever, and every stream opened afterwards did the same until the app was restarted — a stream picked from the end screen loads while that screen is still up, and its result was being discarded; it now plays, while a late reload of the ended stream is still ignored'
+            ]
+        },
         {
             title: 'November 23 2026 (Web 801)',
             changes: [

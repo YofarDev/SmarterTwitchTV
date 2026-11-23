@@ -8578,9 +8578,15 @@
         VersionBase: '3.0',
         publishVersionCode: 404, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/404/SmarterPurpleTV_3_0_404.apk',
-        WebVersion: 'November 22 2026',
-        WebTag: 801, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebVersion: 'November 23 2026',
+        WebTag: 802, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 23 2026 (Web 802)',
+                changes: [
+                    'Fix: after a live stream ended without a raid, opening another stream could load forever, and every stream opened afterwards did the same until the app was restarted — a stream picked from the end screen loads while that screen is still up, and its result was being discarded; it now plays, while a late reload of the ended stream is still ignored'
+                ]
+            },
             {
                 title: 'November 23 2026 (Web 801)',
                 changes: [
@@ -26382,8 +26388,12 @@
 
     function Play_loadDataResult(response) {
         //An ad escape or quality restore reload may complete after the stream was declared ended,
-        //letting it through restarts the native player behind the end dialog with no session left
-        if (Play_isOn && !Play_isEndDialogVisible()) {
+        //letting it through restarts the native player behind the end dialog with no session left.
+        //A stream picked from the end dialog feed (Play_EndDialogEnter) loads with the dialog still
+        //up and must pass, or the player spins forever and Play_EndDialogEnter stays set, keeping
+        //the dialog up for every later open; a late reload from the ended stream carries an older
+        //Play_loadDataId and is still dropped below
+        if (Play_isOn && (Play_EndDialogEnter || !Play_isEndDialogVisible())) {
             if (response) {
                 var responseObj = JSON.parse(response);
 
