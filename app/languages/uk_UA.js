@@ -46,6 +46,7 @@ function uk_UALang() {
         playerHelpAction: '{up}{down} Обрати    {ok} Застосувати    {back} Назад',
         loadingQualities: 'Завантаження якостей…',
         switchTo: 'OK перемикає на ',
+        separator: ' · ',       
         liveFor: 'В ефірі ',
         watching: 'Дивляться ',
         paused: 'Пауза',
@@ -62,6 +63,7 @@ function uk_UALang() {
         pause: 'Пауза',
         channels: 'Канали',
         quality: 'Якість',
+        qualityAutoPlaying: '{quality} ({playing})',
         unavailable: 'Недоступно в цьому режимі відтворення',
         settingsHelp: 'Про програму, керування та оновлення',
         loading: 'Завантаження ваших каналів…',
@@ -86,6 +88,7 @@ function uk_UALang() {
     Sidepannel_MoveldefaultMargin = 17;
 
     //Below are variables to translate
+    STR_KEY_UP_DOWN = 'Вгору/вниз';
     STR_KEY_MEDIA_FF = 'або медіаклавіші перемотки вперед/назад';
     STR_GUIDE_EXTRA = 'або натисніть клавішу 2';
     STR_GUIDE_EXTRA2 = 'або медіаклавіша наступний трек';
