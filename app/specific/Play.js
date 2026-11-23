@@ -851,8 +851,12 @@ function Play_AdHoldChanged(position, held) {
 
 function Play_loadDataResult(response) {
     //An ad escape or quality restore reload may complete after the stream was declared ended,
-    //letting it through restarts the native player behind the end dialog with no session left
-    if (Play_isOn && !Play_isEndDialogVisible()) {
+    //letting it through restarts the native player behind the end dialog with no session left.
+    //A stream picked from the end dialog feed (Play_EndDialogEnter) loads with the dialog still
+    //up and must pass, or the player spins forever and Play_EndDialogEnter stays set, keeping
+    //the dialog up for every later open; a late reload from the ended stream carries an older
+    //Play_loadDataId and is still dropped below
+    if (Play_isOn && (Play_EndDialogEnter || !Play_isEndDialogVisible())) {
         if (response) {
             var responseObj = JSON.parse(response);
 

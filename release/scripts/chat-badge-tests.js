@@ -456,6 +456,18 @@ function runChecks(factory, check) {
         check(nativeCount(h) === 0, 'ended/replaced session cannot resurrect native playback');
     }
     {
+        //Stream picked from the live end dialog feed: the dialog stays up while it loads
+        const h = factory();
+        h.s.Play_isEndDialogVisible = () => true;
+        h.s.Play_EndDialogEnter = 1;
+        h.s.Play_loadDataId = 100;
+        playlist(h);
+        check(nativeCount(h) === 0, 'late reload of the ended stream is dropped while a stream opened from the end dialog loads');
+        h.s.Play_loadDataId = 99;
+        playlist(h);
+        check(nativeCount(h) === 1 && h.s.Play_EndDialogEnter === 0, 'stream opened from the end dialog starts playback');
+    }
+    {
         const h = factory();
         h.s.Chat_GlobalBadges = {};
         h.s.Chat_Init();
