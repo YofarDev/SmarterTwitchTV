@@ -95,6 +95,22 @@ function respondMaster(s, status, responseText, url) {
     );
 }
 
+//Answer the newest request as an ad probe result (a variant playlist body)
+function respondAdProbe(s, variantText) {
+    const call = s.lastCall;
+    assert.ok(String(call.args[5]) === 'PlayHLS_AdProbeResult', 'probe request expected, got ' + call.args[5]);
+    s[call.args[5]](
+        JSON.stringify({status: 200, responseText: variantText}),
+        call.args[6],
+        call.args[7],
+        call.args[8],
+        call.args[9],
+        call.args[10],
+        call.args[11],
+        call.args[12]
+    );
+}
+
 function startLoad(s, channel, checkId) {
     return s.PlayHLS_GetPlayListAsync(true, channel || 'chan', checkId || 1000, null, s.testCallback);
 }
@@ -211,7 +227,8 @@ function startLoad(s, channel, checkId) {
     checkEqual(JSON.parse(s.finished).checkResult, 1009, 'cache hit carries its own check id');
 })();
 
-//The ad escape reload (explicit retry token) bypasses the cache and mints its own session
+//The ad escape reload (explicit retry token) consults that round's player type in the cache;
+//a miss mints the round's own session
 (function () {
     const s = makeSandbox();
     startLoad(s);
@@ -220,7 +237,7 @@ function startLoad(s, channel, checkId) {
 
     s.PlayHLS_AdRetryToken = s.Play_live_token.replace('"playerType":"site"', '"playerType":"embed"');
     startLoad(s, 'chan', 1009);
-    checkEqual(s.lastCall.url, 'https://gql.twitch.tv/gql', 'ad escape ignores the cache');
+    checkEqual(s.lastCall.url, 'https://gql.twitch.tv/gql', 'ad escape with no embed cache mints');
     checkEqual(String(s.lastCall.args[2]).indexOf('"playerType":"embed"') !== -1, true, 'ad escape posts the embed token');
     s.PlayHLS_AdRetryToken = null;
 
@@ -230,6 +247,59 @@ function startLoad(s, channel, checkId) {
     respondMaster(s, 200, master);
     checkEqual(s.PlayHLS_CacheGet('chan', 'embed', new Date().getTime()) !== null, true, 'embed master cached under embed');
     checkEqual(s.PlayHLS_CacheGet('chan', 'site', new Date().getTime()) !== null, true, 'site entry untouched');
+})();
+
+//A prewarm with the ad filter on resolves only (token + master): it never probes the
+//variants, never starts the player type ladder, and never schedules the quality restore
+//reload of whatever is currently playing
+(function () {
+    const s = makeSandbox();
+    s.Settings_value = {};
+    s.Settings_Obj_default = key => (key === 'ad_filter' ? 1 : 0);
+
+    s.PlayHLS_Prewarm('chan');
+    checkEqual(s.OSInterface_calls.length, 1, 'prewarm mints the token');
+    respondToken(s);
+    checkEqual(s.OSInterface_calls.length, 2, 'prewarm fetches the master');
+    respondMaster(s, 200, master);
+    checkEqual(s.OSInterface_calls.length, 2, 'ad-filter-on prewarm never probes a variant');
+    checkEqual(Object.keys(s.PlayHLS_AdRetryStates).length, 0, 'prewarm starts no ladder state');
+    checkEqual(s.PlayHLS_AdRestoreScheduled, false, 'prewarm schedules no quality restore');
+})();
+
+//With the ad filter on, a normal open of a cached master still probes (only prewarms skip),
+//and the ladder's embed round is served from its cached master without a token mint
+(function () {
+    const s = makeSandbox();
+    s.Settings_value = {};
+    s.Settings_Obj_default = key => (key === 'ad_filter' ? 1 : 0);
+
+    const adVariant = '#EXTM3U\n#EXTINF:2.000,Amazon|123\nhttps://host/ad.ts\n';
+    const cleanVariant = '#EXTM3U\n#EXTINF:2.000,live\nhttps://host/live.ts\n';
+    const adMaster = '#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=1\nhttps://host/v1/playlist/ad.m3u8\n';
+    const embedMaster = '#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=1\nhttps://host/v1/playlist/embed.m3u8\n';
+    const now = new Date().getTime();
+    s.PlayHLS_CachePut('chan', 'site', 'siteUrl', adMaster, now);
+    s.PlayHLS_CachePut('chan', 'embed', 'embedUrl', embedMaster, now);
+
+    //Cache hit on site: no token or master request, only the variant probe fires
+    startLoad(s, 'chan', 1100);
+    checkEqual(s.OSInterface_calls.length, 1, 'only the probe request runs on a cache hit');
+    checkEqual(s.lastCall.url, 'https://host/v1/playlist/ad.m3u8', 'the cached site master is still probed');
+
+    //Ads on the variant: the ladder retries embed, whose cached master serves the round
+    respondAdProbe(s, adVariant);
+    checkEqual(s.lastCall.url, 'https://host/v1/playlist/embed.m3u8', 'embed round served from the cache, probed');
+    checkEqual(
+        s.OSInterface_calls.every(call => String(call.url).indexOf('gql.twitch.tv') === -1),
+        true,
+        'the embed round minted no token'
+    );
+    checkEqual(s.PlayHLS_AdRetryToken === null || s.PlayHLS_AdRetryToken === undefined, true, 'no retry token left set');
+
+    //The embed variant is clean: playback starts from the cached embed master
+    respondAdProbe(s, cleanVariant);
+    checkEqual(JSON.parse(s.finished).responseText, embedMaster, 'the cached embed master reaches playback');
 })();
 
 //Proxy flows never touch the cache

@@ -2023,7 +2023,8 @@ var Play_ChannelStepSettleId;
 var Play_ChannelStepSettleMs = 400;
 function Play_ChannelStep(Adder) {
     //The apk bridge can call this on any screen; only a live stream (not VOD, clip, the end
-    //dialog, multi view or the corner player) can channel flip
+    //dialog, multi view, the corner player or the options panel — Up navigates the panel,
+    //the rocker must not open the feed over it) can channel flip
     if (
         !Play_isOn ||
         PlayVod_isOn ||
@@ -2031,6 +2032,7 @@ function Play_ChannelStep(Adder) {
         Play_MultiEnable ||
         PlayExtra_PicturePicture ||
         Play_isEndDialogVisible() ||
+        Play_isPanelShowing() ||
         !Main_IsOn_OSInterface
     ) {
         return;

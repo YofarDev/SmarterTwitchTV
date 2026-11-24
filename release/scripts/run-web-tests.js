@@ -33,6 +33,7 @@ var TESTS = [
     'phonechat-collector',
     'player-feed',
     'player-ui',
+    'prewarm',
     'raid',
     'remote-input',
     'request-dispatcher',

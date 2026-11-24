@@ -68,6 +68,7 @@ vm.runInContext(fs.readFileSync('app/specific/PlayEtc.js', 'utf8'), ks);
 
 let settleCalls = [];
 let feedShowing = false;
+let panelShowing = false;
 let stepAdders = [];
 let showFeedCalls = 0;
 let injectedKeys = [];
@@ -81,7 +82,7 @@ Object.assign(ks, {
     Play_MultiEnable: false,
     PlayExtra_PicturePicture: false,
     Play_data_base: {data: []},
-    Play_isPanelShowing: () => false,
+    Play_isPanelShowing: () => panelShowing,
     Play_MultiDialogVisible: () => false,
     Play_isFullScreen: false,
     Play_isChatShown: () => false,
@@ -163,6 +164,15 @@ ks.PlayVod_isOn = true;
 pressChannel(1);
 check(stepAdders.length === 0, 'rocker during a VOD does nothing');
 ks.PlayVod_isOn = false;
+
+//Blocked while the options panel is showing (Up navigates the panel, the rocker must
+//not open the feed over it)
+panelShowing = true;
+feedShowing = true;
+showFeedCalls = 0;
+pressChannel(1);
+check(stepAdders.length === 0 && showFeedCalls === 0, 'rocker with the options panel open does nothing');
+panelShowing = false;
 
 //Hidden feed: opens it, no step, no settle armed yet
 feedShowing = false;

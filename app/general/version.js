@@ -33,6 +33,7 @@ var version = {
                 'APK: ad breaks fenced only by the SCTE-35 CUE-OUT/CUE-IN markers (some edge nodes serve them without the stitched-ad range) are now stripped and escaped like the stitched ones, on both the APK filter and the web pre-playback probe',
                 'New: stream opens get a master playlist cache — opening a channel again within 90 seconds (channel surfing, feed previews, quality restore after a 360p ad escape) skips the playback token request and starts from the cached playlist, and focusing a feed card with previews off resolves its stream in the background so pressing OK is instant',
                 'Improvement: chat emotes download smaller images (2x instead of 3x/4x for the main source; high-res versions are still fetched on high-density screens through srcset), cutting chat bandwidth on busy channels',
+                'APK: the app ships a baseline profile, so after an update the player code starts pre-compiled instead of warming up during the first stream',
                 'Needs APK 405, older APKs keep the previous behaviour'
             ]
         },

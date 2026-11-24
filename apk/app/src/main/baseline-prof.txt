@@ -10,11 +10,10 @@
 # Format: ART baseline profile text (https://developer.android.com/topic/performance/baselineprofiles),
 # compiled into assets/dexopt/baseline.prof by AGP at build time.
 #
-# Startup: activity + webview host lifecycle
+# Startup: activity lifecycle overrides that exist (onStart/onPause are inherited, not
+# overridden, so they are deliberately not listed — rules for missing methods are dropped)
 HSPLcom/fgl27/twitch/PlayerActivity;->onCreate(Landroid/os/Bundle;)V
-HSPLcom/fgl27/twitch/PlayerActivity;->onStart()V
 HSPLcom/fgl27/twitch/PlayerActivity;->onResume()V
-HSPLcom/fgl27/twitch/PlayerActivity;->onPause()V
 HSPLcom/fgl27/twitch/PlayerActivity;->onStop()V
 HSPLcom/fgl27/twitch/PlayerActivity;->onDestroy()V
 HSPLcom/fgl27/twitch/PlayerActivity;->onNewIntent(Landroid/content/Intent;)V

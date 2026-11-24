@@ -8332,8 +8332,9 @@
     var KEY_MEDIA_NEXT = 176;
     var KEY_MEDIA_PREVIOUS = 177;
 
-    //Remote channel rocker, delivered by the apk dispatchKeyEvent override as a
-    //javascript:smartTwitchTV.Play_ChannelStep() call (166/167 never reach the WebView)
+    //Remote channel rocker: the apk dispatchKeyEvent override calls
+    //javascript:smartTwitchTV.Play_ChannelStep() for these, and the live player also handles
+    //the raw 166/167 keydown as a fallback (browsers, webviews that deliver them natively)
     var KEY_CHANNEL_UP = 166;
     var KEY_CHANNEL_DOWN = 167;
 
@@ -8585,6 +8586,7 @@
                     'APK: ad breaks fenced only by the SCTE-35 CUE-OUT/CUE-IN markers (some edge nodes serve them without the stitched-ad range) are now stripped and escaped like the stitched ones, on both the APK filter and the web pre-playback probe',
                     'New: stream opens get a master playlist cache — opening a channel again within 90 seconds (channel surfing, feed previews, quality restore after a 360p ad escape) skips the playback token request and starts from the cached playlist, and focusing a feed card with previews off resolves its stream in the background so pressing OK is instant',
                     'Improvement: chat emotes download smaller images (2x instead of 3x/4x for the main source; high-res versions are still fetched on high-density screens through srcset), cutting chat bandwidth on busy channels',
+                    'APK: the app ships a baseline profile, so after an update the player code starts pre-compiled instead of warming up during the first stream',
                     'Needs APK 405, older APKs keep the previous behaviour'
                 ]
             },
@@ -31429,7 +31431,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var Play_ChannelStepSettleMs = 400;
     function Play_ChannelStep(Adder) {
         //The apk bridge can call this on any screen; only a live stream (not VOD, clip, the end
-        //dialog, multi view or the corner player) can channel flip
+        //dialog, multi view, the corner player or the options panel — Up navigates the panel,
+        //the rocker must not open the feed over it) can channel flip
         if (
             !Play_isOn ||
             PlayVod_isOn ||
@@ -31437,6 +31440,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             Play_MultiEnable ||
             PlayExtra_PicturePicture ||
             Play_isEndDialogVisible() ||
+            Play_isPanelShowing() ||
             !Main_IsOn_OSInterface
         ) {
             return;
@@ -34801,8 +34805,18 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         PlayHLS_PrewarmLast[key] = now;
 
+        //One entry per channel ever focused; a long session would grow it forever, so evict
+        //the oldest (same cap style as the master cache, harmless: an evicted channel can just
+        //prewarm again sooner than the interval)
+        var prewarmKeys = Object.keys(PlayHLS_PrewarmLast);
+        while (prewarmKeys.length > PlayHLS_CacheMax) {
+            delete PlayHLS_PrewarmLast[prewarmKeys.shift()];
+            prewarmKeys = Object.keys(PlayHLS_PrewarmLast);
+        }
+
         //Prewarm ids walk negative so they can never collide with the playback load ids
-        //(timestamps) or the feed check ids the callbacks compare against
+        //(timestamps) or the feed check ids the callbacks compare against; they also mark the
+        //request as a prewarm for PlayHLS_PlayListUrlResult (see PlayHLS_IsPrewarmCheck)
         PlayHLS_PrewarmId--;
         PlayHLS_GetPlayListAsync(true, Channel_or_VOD_Id, PlayHLS_PrewarmId, PlayHLS_PrewarmId, PlayHLS_PrewarmResult);
     }
@@ -34811,6 +34825,18 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         //The master cache write happens in PlayHLS_PlayListUrlResult for every live fetch,
         //this only has to note failures (already recorded there) and stay quiet
         if (!result) PlayHLS_AdLog('prewarm failed');
+    }
+
+    //The player type a token request template asks for ("site", "embed", ...)
+    function PlayHLS_PlayerTypeOfToken(tokenTemplate) {
+        return tokenTemplate.replace(/^.*"playerType":"(\w+)".*$/, '$1');
+    }
+
+    //Whether a result belongs to a prewarm resolve (its check id walks negative). Prewarms never
+    //run the ad probe or the player type ladder: they only fill the cache, the open flow
+    //re-validates whatever is cached when it actually plays the channel
+    function PlayHLS_IsPrewarmCheck(CheckId_y) {
+        return typeof CheckId_y === 'number' && CheckId_y < 0;
     }
 
     //VOD
@@ -34832,14 +34858,32 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         if (use_proxy && isLive && !proxy_has_token) {
             PlayHLS_PlayListUrl(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, null, null, true);
+        } else if (isLive && !use_proxy && PlayHLS_AdRetryToken) {
+            //An ad escape round: the round's player type may have a cached master (probed clean
+            //within the TTL) that serves it without a new token mint; on a miss the token is
+            //minted as before
+            if (
+                PlayHLS_MasterCacheGetSynth(
+                    Channel_or_VOD_Id,
+                    CheckId_y,
+                    CheckId_x,
+                    callBackSuccess.name,
+                    PlayHLS_PlayerTypeOfToken(PlayHLS_AdRetryToken)
+                )
+            ) {
+                //Served from the cache: consume the round's token override so a later normal
+                //load mints the default type again (GetToken consumes it on the mint path)
+                PlayHLS_AdRetryToken = null;
+                return;
+            }
+
+            PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, use_proxy, useUserAuth);
         } else if (
             isLive &&
             !use_proxy &&
-            !PlayHLS_AdRetryToken &&
-            //An explicit retry token (ad escape reload) wants its fresh session, every other
-            //live load can start from the cached master and skip the token mint entirely; the
-            //synthesized result re-enters PlayHLS_PlayListUrlResult so the ad probe chain and
-            //every downstream guard run exactly as on a fresh fetch
+            //Every other live load can start from the cached master and skip the token mint
+            //entirely; the synthesized result re-enters PlayHLS_PlayListUrlResult so the ad
+            //probe chain and every downstream guard run exactly as on a fresh fetch
             PlayHLS_MasterCacheGetSynth(Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name)
         ) {
             return;
@@ -34850,11 +34894,17 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
     //Cache hit as a PlayHLS_PlayListUrlResult-shaped request, true when served; CheckId_x may be
     //null (Play_loadData passes null), the parseInt in the result handler turns that into NaN
-    //just like the Java bridge does for the same call
-    function PlayHLS_MasterCacheGetSynth(Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess) {
-        var cached = PlayHLS_CacheGet(Channel_or_VOD_Id, 'site', new Date().getTime());
+    //just like the Java bridge does for the same call. playerType defaults to 'site' (normal
+    //opens) and is the escape round's type on the retry path
+    function PlayHLS_MasterCacheGetSynth(Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, playerType) {
+        var type = playerType || 'site';
+        var cached = PlayHLS_CacheGet(Channel_or_VOD_Id, type, new Date().getTime());
 
         if (!cached) return false;
+
+        //So the result handler's cache write lands back under the serving type (the identical
+        //content guard there keeps the original fetch time)
+        PlayHLS_PlayerTypeByCheck[CheckId_y] = type;
 
         PlayHLS_AdLog('master cache hit for ' + Channel_or_VOD_Id);
 
@@ -34883,7 +34933,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
     function PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, useProxy, useUserAuth) {
         var tokenTemplate = isLive ? PlayHLS_AdRetryToken || Play_live_token : Play_vod_token;
-        var playerType = tokenTemplate.replace(/^.*"playerType":"(\w+)".*$/, '$1');
+        var playerType = PlayHLS_PlayerTypeOfToken(tokenTemplate);
 
         //Remember the type for the result handler's cache write; the map is bounded because the
         //ids are unbounded (timestamps, feed positions, prewarm ids)
@@ -35095,10 +35145,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 );
             }
 
-            if (isLive && !useProxy && PlayHLS_AdFilterOn()) {
+            if (isLive && !useProxy && PlayHLS_AdFilterOn() && !PlayHLS_IsPrewarmCheck(CheckId_y)) {
                 //Before starting playback check that the stream is not serving a preroll; when it is,
                 //a token with an alternate player type often gets an ad free playlist for the same
-                //stream (the retry happens before playback, never mid stream)
+                //stream (the retry happens before playback, never mid stream). A prewarm resolve
+                //never probes or ladders — it only fills the cache, the open flow re-validates
+                //when it plays, and a ladder here would also schedule the quality restore reload
+                //of whatever is playing on the prewarm's behalf
                 if (PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, callBackSuccess)) {
                     return;
                 }
@@ -35264,6 +35317,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         //the 360p one), those often get playlists without the current ad stitched in
         var playerType = state.attempt === 1 ? 'embed' : state.attempt === 2 ? 'popout' : 'autoplay';
         PlayHLS_AdLog('retrying with the ' + playerType + ' player type');
+
+        //The round's type may already hold a cached master (probed clean within the TTL): serve
+        //it and the probe below re-validates its variants, skipping only the token mint. A miss
+        //mints the round's fresh session as before. callBackSuccess is the callback name string
+        //at this depth, the synth takes it as-is
+        if (PlayHLS_MasterCacheGetSynth(check_3, checkResult, parseInt(check_5), callBackSuccess, playerType)) return;
+
         PlayHLS_AdRetryToken = Play_live_token.replace('"playerType":"site"', '"playerType":"' + playerType + '"');
         PlayHLS_GetToken(true, check_3, checkResult, parseInt(check_5), callBackSuccess, false);
     }
