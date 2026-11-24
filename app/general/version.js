@@ -21,11 +21,21 @@
 //Spacing for release maker not trow errors from jshint
 var version = {
     VersionBase: '3.0',
-    publishVersionCode: 404, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/404/SmarterPurpleTV_3_0_404.apk',
-    WebVersion: 'November 22 2026',
-    WebTag: 799, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    publishVersionCode: 405, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+    ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/405/SmarterPurpleTV_3_0_405.apk',
+    WebVersion: 'November 24 2026',
+    WebTag: 800, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 24 2026 (Web 800 / APK 405)',
+            changes: [
+                'APK: the CH+/CH- keys on the remote change channels like a TV tuner — they open the followed-live strip, step through it with live previews, and tune the focused channel once the presses settle; holding the key sweeps',
+                'APK: ad breaks fenced only by the SCTE-35 CUE-OUT/CUE-IN markers (some edge nodes serve them without the stitched-ad range) are now stripped and escaped like the stitched ones, on both the APK filter and the web pre-playback probe',
+                'New: stream opens get a master playlist cache — opening a channel again within 90 seconds (channel surfing, feed previews, quality restore after a 360p ad escape) skips the playback token request and starts from the cached playlist, and focusing a feed card with previews off resolves its stream in the background so pressing OK is instant',
+                'Improvement: chat emotes download smaller images (2x instead of 3x/4x for the main source; high-res versions are still fetched on high-density screens through srcset), cutting chat bandwidth on busy channels',
+                'Needs APK 405, older APKs keep the previous behaviour'
+            ]
+        },
         {
             title: 'November 22 2026 (Web 799 / APK 404)',
             changes: [

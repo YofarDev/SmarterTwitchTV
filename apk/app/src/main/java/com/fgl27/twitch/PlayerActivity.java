@@ -1908,7 +1908,17 @@ public class PlayerActivity extends Activity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        //Override key play and pause as those get send to js as KEYCODE_MEDIA_PLAY_PAUSE
+        //The remote channel rocker tunes channels on the web side (opens the live feed strip,
+        //steps focus and auto-tunes once presses settle); delivered only on ACTION_DOWN so
+        //holding the key repeats the step and releasing never double-fires
+        if (event.getKeyCode() == KeyEvent.KEYCODE_CHANNEL_UP || event.getKeyCode() == KeyEvent.KEYCODE_CHANNEL_DOWN) {
+            if (event.getAction() != KeyEvent.ACTION_DOWN) return true;
+
+            LoadUrlWebView(
+                "javascript:smartTwitchTV.Play_ChannelStep(" + (event.getKeyCode() == KeyEvent.KEYCODE_CHANNEL_UP ? 1 : -1) + ")"
+            );
+            return true;
+        } //Override key play and pause as those get send to js as KEYCODE_MEDIA_PLAY_PAUSE
         if (event.getKeyCode() == KeyEvent.KEYCODE_MEDIA_PLAY) {
             //Prevent send it up down and up
             if (event.getAction() == KeyEvent.ACTION_DOWN) return true;

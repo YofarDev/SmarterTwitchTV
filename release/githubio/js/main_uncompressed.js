@@ -8332,6 +8332,11 @@
     var KEY_MEDIA_NEXT = 176;
     var KEY_MEDIA_PREVIOUS = 177;
 
+    //Remote channel rocker, delivered by the apk dispatchKeyEvent override as a
+    //javascript:smartTwitchTV.Play_ChannelStep() call (166/167 never reach the WebView)
+    var KEY_CHANNEL_UP = 166;
+    var KEY_CHANNEL_DOWN = 167;
+
     var KEY_MEDIA_FAST_FORWARD = 228;
     var KEY_MEDIA_REWIND = 227;
 
@@ -8568,11 +8573,21 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 404, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/404/SmarterPurpleTV_3_0_404.apk',
-        WebVersion: 'November 22 2026',
-        WebTag: 799, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        publishVersionCode: 405, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/405/SmarterPurpleTV_3_0_405.apk',
+        WebVersion: 'November 24 2026',
+        WebTag: 800, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 24 2026 (Web 800 / APK 405)',
+                changes: [
+                    'APK: the CH+/CH- keys on the remote change channels like a TV tuner — they open the followed-live strip, step through it with live previews, and tune the focused channel once the presses settle; holding the key sweeps',
+                    'APK: ad breaks fenced only by the SCTE-35 CUE-OUT/CUE-IN markers (some edge nodes serve them without the stitched-ad range) are now stripped and escaped like the stitched ones, on both the APK filter and the web pre-playback probe',
+                    'New: stream opens get a master playlist cache — opening a channel again within 90 seconds (channel surfing, feed previews, quality restore after a 360p ad escape) skips the playback token request and starts from the cached playlist, and focusing a feed card with previews off resolves its stream in the background so pressing OK is instant',
+                    'Improvement: chat emotes download smaller images (2x instead of 3x/4x for the main source; high-res versions are still fetched on high-density screens through srcset), cutting chat bandwidth on busy channels',
+                    'Needs APK 405, older APKs keep the previous behaviour'
+                ]
+            },
             {
                 title: 'November 22 2026 (Web 799 / APK 404)',
                 changes: [
@@ -14420,7 +14435,9 @@
 
     function ChatLive_bttv_entry(emote) {
         var srcset = ChatLive_bttv_srcset(emote.id),
-            url = ChatLive_Base_BTTV_url + emote.id + '/3x';
+            //Main src is the preload fallback for browsers without srcset support; chat renders
+            //emotes at ~1.75em so 2x is plenty and saves bandwidth over 3x (srcset keeps all sizes)
+            url = ChatLive_Base_BTTV_url + emote.id + '/2x';
 
         return {
             code: emote.code,
@@ -14451,7 +14468,7 @@
 
         var base = ChatLive_Base_BTTV_url + emote.id + '/static/';
 
-        return emoteTemplate(base + '3x.webp', base + '1x.webp 1x,' + base + '2x.webp 2x,' + base + '3x.webp 3x');
+        return emoteTemplate(base + '2x.webp', base + '1x.webp 1x,' + base + '2x.webp 2x,' + base + '3x.webp 3x');
     }
 
     function ChatLive_loadCheersChannel(chat_number, id) {
@@ -14774,7 +14791,8 @@
         if (emoticon.urls[2] && typeof emoticon.urls[2] !== 'string') return null;
 
         var srcset = ChatLive_ffz_srcset(emoticon.urls),
-            url = emoticon.urls[4] || emoticon.urls[2] || emoticon.urls[1];
+            //Main src prefers 2x (chat renders at ~1.75em), srcset keeps every size for DPR scaling
+            url = emoticon.urls[2] || emoticon.urls[1];
 
         return {
             code: emoticon.name,
@@ -14895,8 +14913,9 @@
         }
 
         // emote url is made up of host.url and the image file names (1x.webp, 2x.webp, etc)
+        //Main src prefers 2x (chat renders at ~1.75em), '4x' keeps the biggest file for the picker
         var baseEmoteUrl = emote.host.url,
-            url = ChatLive_seven_tv_getEmoteUrl(baseEmoteUrl, emoteUrls[emoteUrls.length - 1]),
+            url = ChatLive_seven_tv_getEmoteUrl(baseEmoteUrl, ChatLive_seven_tv_size(emoteUrls, '2x')),
             srcset = ChatLive_seven_tv_srcset(baseEmoteUrl, emoteUrls),
             chat_div = emoteTemplate(url, srcset);
 
@@ -14907,9 +14926,19 @@
             chat_div_static: emote.animated ? ChatLive_seven_tv_static(baseEmoteUrl, emoteUrls) : null,
             chat_div_zero: emote.flags === 256 ? chat_div.replace('emoticon', 'emoticon zero-width-emote') : null,
 
-            '4x': url,
+            '4x': ChatLive_seven_tv_getEmoteUrl(baseEmoteUrl, emoteUrls[emoteUrls.length - 1]),
             srcset: srcset
         };
+    }
+
+    //The file of [files] whose name starts with [size] ("2x" of 2x.webp), falling back to the
+    //largest (the 7TV host serves 1x/2x/4x but a set can list fewer)
+    function ChatLive_seven_tv_size(files, size) {
+        for (var i = 0; i < files.length; i++) {
+            if (Main_startsWith(files[i].name, size)) return files[i];
+        }
+
+        return files[files.length - 1];
     }
 
     function ChatLive_seven_tv_getEmoteUrl(emoteBaseUrl, emote) {
@@ -14954,7 +14983,10 @@
 
         if (!stills.length) return null;
 
-        return emoteTemplate(ChatLive_seven_tv_getEmoteUrl(emoteUrl, stills[stills.length - 1]), ChatLive_seven_tv_srcset(emoteUrl, stills));
+        return emoteTemplate(
+            ChatLive_seven_tv_getEmoteUrl(emoteUrl, ChatLive_seven_tv_size(stills, '2x')),
+            ChatLive_seven_tv_srcset(emoteUrl, stills)
+        );
     }
 
     //Live emote updates, live chat only (VOD chat also runs ChatLive_SetOptions). 7TV announces each change of a
@@ -19177,6 +19209,7 @@
                         PlayHLS_PlayListUrlResult: PlayHLS_PlayListUrlResult,
                         PlayHLS_AdProbeResult: PlayHLS_AdProbeResult,
                         Play_AdBlockReload: Play_AdBlockReload,
+                        Play_ChannelStep: Play_ChannelStep,
                         Play_AdHoldChanged: Play_AdHoldChanged,
                         AddCode_AppTokenResult: AddCode_AppTokenResult,
                         Play_UpdateDurationDiv: Play_UpdateDurationDiv,
@@ -31079,12 +31112,22 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         //console.log('Play_handleKeyDown', e.keyCode);
 
         if (!Play_isOn || !Main_isScene2DocVisible()) {
+            Play_ChannelStepCancelSettle();
             return;
         }
+
+        //Any other key while a channel-flip settle is pending cancels the auto-tune
+        if (e.keyCode !== KEY_CHANNEL_UP && e.keyCode !== KEY_CHANNEL_DOWN) Play_ChannelStepCancelSettle();
 
         Play_screeOn();
 
         switch (e.keyCode) {
+            case KEY_CHANNEL_UP:
+            case KEY_CHANNEL_DOWN:
+                //The rocker cases also serve browsers/webviews that deliver 166/167 natively;
+                //on the apk the dispatchKeyEvent override calls Play_ChannelStep directly
+                Play_ChannelStep(e.keyCode === KEY_CHANNEL_UP ? 1 : -1);
+                break;
             case KEY_LEFT:
                 if (Play_isPanelShowing()) {
                     if (PlayVod_PanelY === 2) Play_BottomLeftRigt(1, -1);
@@ -31376,6 +31419,57 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             default:
                 break;
         }
+    }
+    //The remote channel rocker (CH+/CH-, KEYCODE_CHANNEL_UP/DOWN 166/167): opens the live feed
+    //strip and steps the focus, then auto-tunes the focused channel once the presses settle (the
+    //same semantics as puretv's PendingFlip: hold to sweep, release to tune). Steps go through the
+    //feed so every stop gets its preview player and the OK flow (quality selection, history) is
+    //the exact one a manual channel change already uses
+    var Play_ChannelStepSettleId;
+    var Play_ChannelStepSettleMs = 400;
+    function Play_ChannelStep(Adder) {
+        //The apk bridge can call this on any screen; only a live stream (not VOD, clip, the end
+        //dialog, multi view or the corner player) can channel flip
+        if (
+            !Play_isOn ||
+            PlayVod_isOn ||
+            PlayClip_isOn ||
+            Play_MultiEnable ||
+            PlayExtra_PicturePicture ||
+            Play_isEndDialogVisible() ||
+            !Main_IsOn_OSInterface
+        ) {
+            return;
+        }
+
+        Play_ChannelStepCancelSettle();
+
+        if (!UserLiveFeed_isPreviewShowing()) {
+            UserLiveFeed_ResetFeedPosX();
+            UserLiveFeed_ShowFeed();
+            return;
+        }
+
+        if (UserLiveFeed_KeyRightLeft(Adder)) {
+            Play_ChannelStepSettleId = Main_setTimeout(Play_ChannelStepSettle, Play_ChannelStepSettleMs, Play_ChannelStepSettleId);
+        }
+    }
+
+    function Play_ChannelStepCancelSettle() {
+        Main_clearTimeout(Play_ChannelStepSettleId);
+        Play_ChannelStepSettleId = null;
+    }
+
+    //Tune the focused channel by injecting an OK press through the key bridge, so the feed's own
+    //Enter path (with all its guards, the preview player reuse and the keyup handoff) runs
+    //unchanged; skipped when the user already moved on (feed hidden, other key pressed)
+    function Play_ChannelStepSettle() {
+        Play_ChannelStepSettleId = null;
+
+        if (!Play_isOn || Play_isEndDialogVisible() || !UserLiveFeed_isPreviewShowing()) return;
+
+        OSInterface_keyEvent(4, 0);
+        OSInterface_keyEvent(4, 1);
     }
 
     var Play_controls = {};
@@ -34623,6 +34717,102 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var proxy_fail_counter = 0;
     var proxy_fail_counter_checker = 0;
 
+    //Master playlist cache: what PlayHLS_PlayListUrl fetched per channel|playerType, so a repeat
+    //open (channel surfing, the feed preview, a quality restore reload) skips the GQL token mint
+    //and the usher fetch and starts playback from the cached master within the TTL. Entries also
+    //record failures (a stale token 403s) with a short backoff so a failing channel does not re-mint
+    //on every retry. Keyed 'login|playerType', insertion ordered so the oldest evicts first.
+    var PlayHLS_CacheTtl = 90000;
+    var PlayHLS_CacheFailBackoff = 15000;
+    var PlayHLS_CacheMax = 32;
+    var PlayHLS_MasterCache = {};
+    var PlayHLS_MasterCacheFail = {};
+    //playerType used by the token request of an in-flight load, keyed by its CheckId_y so the
+    //result can be cached under the right type (cleared when it grows past the cache cap)
+    var PlayHLS_PlayerTypeByCheck = {};
+    //Resolve-only prewarm (PlayHLS_Prewarm): per-channel gate so sweeping focus across the feed
+    //does not mint a token per card; an entry is prewarmed at most once per interval
+    var PlayHLS_PrewarmInterval = 45000;
+    var PlayHLS_PrewarmLast = {};
+    var PlayHLS_PrewarmId = 0;
+
+    function PlayHLS_CacheKey(Channel_or_VOD_Id, playerType) {
+        return (Channel_or_VOD_Id + '|' + playerType).toLowerCase();
+    }
+
+    //A fresh cached master for [Channel_or_VOD_Id] at [playerType], or null; also honors the
+    //failure backoff (a failed fetch is remembered so retries wait instead of re-minting)
+    function PlayHLS_CacheGet(Channel_or_VOD_Id, playerType, now) {
+        var key = PlayHLS_CacheKey(Channel_or_VOD_Id, playerType);
+        var failedAt = PlayHLS_MasterCacheFail[key];
+
+        if (failedAt !== undefined) {
+            if (now - failedAt < PlayHLS_CacheFailBackoff) return null;
+            delete PlayHLS_MasterCacheFail[key];
+        }
+
+        var entry = PlayHLS_MasterCache[key];
+
+        if (!entry) return null;
+
+        if (now - entry.at >= PlayHLS_CacheTtl) {
+            delete PlayHLS_MasterCache[key];
+            return null;
+        }
+
+        return entry;
+    }
+
+    function PlayHLS_CachePut(Channel_or_VOD_Id, playerType, url, responseText, now) {
+        var key = PlayHLS_CacheKey(Channel_or_VOD_Id, playerType);
+        var existing = PlayHLS_MasterCache[key];
+
+        //An identical master re-put (a cache hit re-enters the result handler) keeps its original
+        //fetch time, only new content resets the TTL — otherwise repeated opens would keep a
+        //stale master alive forever
+        if (existing && existing.url === url && existing.responseText === responseText) return;
+
+        delete PlayHLS_MasterCacheFail[key];
+        PlayHLS_MasterCache[key] = {url: url, responseText: responseText, at: now};
+
+        //Oldest entries (first keys) evict first; the active channel's entry is the newest
+        var keys = Object.keys(PlayHLS_MasterCache);
+        while (keys.length > PlayHLS_CacheMax) {
+            delete PlayHLS_MasterCache[keys.shift()];
+            keys = Object.keys(PlayHLS_MasterCache);
+        }
+    }
+
+    function PlayHLS_CacheFail(Channel_or_VOD_Id, playerType, now) {
+        PlayHLS_MasterCacheFail[PlayHLS_CacheKey(Channel_or_VOD_Id, playerType)] = now;
+    }
+
+    //Resolve a channel's stream in the background (token mint + master fetch) so pressing OK a
+    //moment later starts playback from the cache. Called with intent only (feed focus dwell),
+    //gated per channel so a focus sweep costs at most one resolve per interval
+    function PlayHLS_Prewarm(Channel_or_VOD_Id) {
+        if (!Main_IsOn_OSInterface || !Channel_or_VOD_Id) return;
+
+        var now = new Date().getTime();
+        var key = (Channel_or_VOD_Id + '').toLowerCase();
+        var last = PlayHLS_PrewarmLast[key];
+
+        if (last !== undefined && now - last < PlayHLS_PrewarmInterval) return;
+
+        PlayHLS_PrewarmLast[key] = now;
+
+        //Prewarm ids walk negative so they can never collide with the playback load ids
+        //(timestamps) or the feed check ids the callbacks compare against
+        PlayHLS_PrewarmId--;
+        PlayHLS_GetPlayListAsync(true, Channel_or_VOD_Id, PlayHLS_PrewarmId, PlayHLS_PrewarmId, PlayHLS_PrewarmResult);
+    }
+
+    function PlayHLS_PrewarmResult(result) {
+        //The master cache write happens in PlayHLS_PlayListUrlResult for every live fetch,
+        //this only has to note failures (already recorded there) and stay quiet
+        if (!result) PlayHLS_AdLog('prewarm failed');
+    }
+
     //VOD
     var Play_vod_token_prop = 'videoPlaybackAccessToken';
     var Play_vod_token =
@@ -34642,9 +34832,44 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         if (use_proxy && isLive && !proxy_has_token) {
             PlayHLS_PlayListUrl(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, null, null, true);
+        } else if (
+            isLive &&
+            !use_proxy &&
+            !PlayHLS_AdRetryToken &&
+            //An explicit retry token (ad escape reload) wants its fresh session, every other
+            //live load can start from the cached master and skip the token mint entirely; the
+            //synthesized result re-enters PlayHLS_PlayListUrlResult so the ad probe chain and
+            //every downstream guard run exactly as on a fresh fetch
+            PlayHLS_MasterCacheGetSynth(Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name)
+        ) {
+            return;
         } else {
             PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, use_proxy, useUserAuth);
         }
+    }
+
+    //Cache hit as a PlayHLS_PlayListUrlResult-shaped request, true when served; CheckId_x may be
+    //null (Play_loadData passes null), the parseInt in the result handler turns that into NaN
+    //just like the Java bridge does for the same call
+    function PlayHLS_MasterCacheGetSynth(Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess) {
+        var cached = PlayHLS_CacheGet(Channel_or_VOD_Id, 'site', new Date().getTime());
+
+        if (!cached) return false;
+
+        PlayHLS_AdLog('master cache hit for ' + Channel_or_VOD_Id);
+
+        PlayHLS_PlayListUrlResult(
+            JSON.stringify({status: 200, url: cached.url, responseText: cached.responseText, checkResult: CheckId_y}),
+            CheckId_y,
+            '1',
+            '0',
+            Channel_or_VOD_Id,
+            '0',
+            CheckId_x === null ? null : String(CheckId_x),
+            callBackSuccess
+        );
+
+        return true;
     }
 
     //Same headers HttpGetSetUserHeader builds for the logged user, built on demand so a retry
@@ -34657,10 +34882,25 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     function PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, useProxy, useUserAuth) {
+        var tokenTemplate = isLive ? PlayHLS_AdRetryToken || Play_live_token : Play_vod_token;
+        var playerType = tokenTemplate.replace(/^.*"playerType":"(\w+)".*$/, '$1');
+
+        //Remember the type for the result handler's cache write; the map is bounded because the
+        //ids are unbounded (timestamps, feed positions, prewarm ids)
+        if (isLive) {
+            PlayHLS_PlayerTypeByCheck[CheckId_y] = playerType;
+
+            var checkKeys = Object.keys(PlayHLS_PlayerTypeByCheck);
+            while (checkKeys.length > PlayHLS_CacheMax * 2) {
+                delete PlayHLS_PlayerTypeByCheck[checkKeys.shift()];
+                checkKeys = Object.keys(PlayHLS_PlayerTypeByCheck);
+            }
+        }
+
         OSInterface_XmlHttpGetFull(
             PlayClip_BaseUrl, //String urlString
             DefaultHttpGetTimeout, //int timeout
-            (isLive ? PlayHLS_AdRetryToken || Play_live_token : Play_vod_token).replace('%x', Channel_or_VOD_Id), // String postMessage
+            tokenTemplate.replace('%x', Channel_or_VOD_Id), // String postMessage
             'POST', //String Method
             useUserAuth && AddUser_UserHasToken() ? PlayHLS_UserAuthHeaders() : Play_Headers, //String JsonHeadersArray
             'PlayHLS_GetTokenResult', //String callback
@@ -34819,6 +35059,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             response = JSON.parse(result);
 
         if (response.status !== 200) {
+            //The cached session is gone (stream ended, token expired), drop the channel's entries
+            //and remember the failure so the next minutes' opens re-mint instead of hitting cache
+            if (isLive && !useProxy && (response.status === 403 || response.status === 404 || response.status === 410)) {
+                PlayHLS_CacheFail(Channel_or_VOD_Id, PlayHLS_PlayerTypeByCheck[CheckId_y] || 'site', new Date().getTime());
+            }
+
             //in case we fail using proxy restart the process without using proxy
             if (isLive && useProxy && PlayHLS_CheckProxyResultFail(response.responseText)) {
                 PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, false);
@@ -34836,12 +35082,26 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 responseText: response.responseText,
                 checkResult: response.checkResult
             });
-        } else if (isLive && !useProxy && PlayHLS_AdFilterOn()) {
-            //Before starting playback check that the stream is not serving a preroll; when it is,
-            //a token with an alternate player type often gets an ad free playlist for the same
-            //stream (the retry happens before playback, never mid stream)
-            if (PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, callBackSuccess)) {
-                return;
+        } else {
+            if (isLive && !useProxy && Channel_or_VOD_Id) {
+                //Cache every live master under the player type that minted it, so repeat opens
+                //and ladder rounds can skip the token mint within the TTL
+                PlayHLS_CachePut(
+                    Channel_or_VOD_Id,
+                    PlayHLS_PlayerTypeByCheck[CheckId_y] || 'site',
+                    response.url,
+                    response.responseText,
+                    new Date().getTime()
+                );
+            }
+
+            if (isLive && !useProxy && PlayHLS_AdFilterOn()) {
+                //Before starting playback check that the stream is not serving a preroll; when it is,
+                //a token with an alternate player type often gets an ad free playlist for the same
+                //stream (the retry happens before playback, never mid stream)
+                if (PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, callBackSuccess)) {
+                    return;
+                }
             }
         }
 
@@ -34940,11 +35200,15 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         try {
             var response = JSON.parse(result);
 
+            //'#EXT-X-CUE-OUT' is the SCTE-35 bracket some edge nodes emit without the
+            //'stitched' DATERANGE, so a pure-SCTE pod must still count as ads
             status = response.status;
             hasAds =
                 live &&
                 status === 200 &&
-                (Main_A_includes_B(response.responseText, 'stitched') || Main_A_includes_B(response.responseText, 'Amazon|'));
+                (Main_A_includes_B(response.responseText, 'stitched') ||
+                    Main_A_includes_B(response.responseText, 'Amazon|') ||
+                    Main_A_includes_B(response.responseText, '#EXT-X-CUE-OUT'));
         } catch (error) {
             hasAds = false;
         }
@@ -54846,12 +55110,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     var UserLiveFeed_LoadPreviewId;
+    var UserLiveFeed_PrewarmId;
     function UserLiveFeed_CheckIfIsLiveStart(pos) {
+        var feedShowing =
+            !Main_isStopped && UserLiveFeed_isPreviewShowing() && pos === UserLiveFeed_FeedPosX && (!Play_isEndDialogVisible() || !Play_EndFocus);
+
         if (
-            !Main_isStopped &&
-            UserLiveFeed_isPreviewShowing() &&
-            pos === UserLiveFeed_FeedPosX &&
-            (!Play_isEndDialogVisible() || !Play_EndFocus) &&
+            feedShowing &&
             Settings_Obj_default('show_feed_player') &&
             UserLiveFeed_obj[UserLiveFeed_FeedPosX].checkPreview &&
             (!Play_MultiEnable || !Settings_Obj_default('disable_feed_player_multi')) &&
@@ -54881,6 +55146,24 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
                     OSInterface_SetFeedPosition(UserLiveFeed_CheckIfIsLiveGetPos(UserLiveFeed_FeedPosY[UserLiveFeed_FeedPosX]));
                 }
+            }
+        } else if (feedShowing && UserLiveFeed_obj[pos].checkPreview && pos < UserLiveFeedobj_UserVodPos) {
+            //The preview player is off (setting, max instances) or blocked: resolve the focused
+            //channel's stream in the background only, so pressing OK starts from the master cache
+            //instead of minting a token on the keypress. Same dwell as the preview so a D-pad
+            //sweep across the row resolves at most one channel
+            var prewarmObj = Play_CheckLiveThumb(false, true);
+
+            if (prewarmObj && prewarmObj[6]) {
+                var channelLogin = prewarmObj[6];
+
+                UserLiveFeed_PrewarmId = Main_setTimeout(
+                    function () {
+                        PlayHLS_Prewarm(channelLogin);
+                    },
+                    DefaultPreviewDelay + Settings_PreviewDelay[Settings_Obj_default('show_feed_player_delay')],
+                    UserLiveFeed_PrewarmId
+                );
             }
         }
     }
@@ -55268,7 +55551,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             var NextPos = UserLiveFeed_FeedPosY[UserLiveFeed_FeedPosX] + Adder;
 
             if (NextPos > UserLiveFeed_GetSize(UserLiveFeed_FeedPosX) - 1 || NextPos < 0) {
-                return;
+                return false;
             }
 
             UserLiveFeed_FeedRemoveFocus(UserLiveFeed_FeedPosX);
@@ -55279,7 +55562,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
             Main_values.UserLiveFeed_LastPositionId[UserLiveFeed_FeedPosX] =
                 UserLiveFeed_DataObj[UserLiveFeed_FeedPosX][UserLiveFeed_FeedPosY[UserLiveFeed_FeedPosX]][14];
+
+            //True so the channel rocker (Play_ChannelStep) knows the focus really moved and the
+            //auto-tune settle is worth arming
+            return true;
         }
+
+        return false;
     }
 
     function UserLiveFeed_KeyUpDown(Adder) {
@@ -61551,6 +61840,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         PlayHLS_PlayListUrlResult: PlayHLS_PlayListUrlResult,
         PlayHLS_AdProbeResult: PlayHLS_AdProbeResult,
         Play_AdBlockReload: Play_AdBlockReload,
+        Play_ChannelStep: Play_ChannelStep,
         Play_AdHoldChanged: Play_AdHoldChanged,
         AddCode_AppTokenResult: AddCode_AppTokenResult,
         Play_UpdateDurationDiv: Play_UpdateDurationDiv,

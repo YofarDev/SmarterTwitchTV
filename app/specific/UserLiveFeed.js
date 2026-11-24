@@ -747,12 +747,16 @@ function UserLiveFeed_MaxInstances() {
 }
 
 var UserLiveFeed_LoadPreviewId;
+var UserLiveFeed_PrewarmId;
 function UserLiveFeed_CheckIfIsLiveStart(pos) {
-    if (
+    var feedShowing =
         !Main_isStopped &&
         UserLiveFeed_isPreviewShowing() &&
         pos === UserLiveFeed_FeedPosX &&
-        (!Play_isEndDialogVisible() || !Play_EndFocus) &&
+        (!Play_isEndDialogVisible() || !Play_EndFocus);
+
+    if (
+        feedShowing &&
         Settings_Obj_default('show_feed_player') &&
         UserLiveFeed_obj[UserLiveFeed_FeedPosX].checkPreview &&
         (!Play_MultiEnable || !Settings_Obj_default('disable_feed_player_multi')) &&
@@ -782,6 +786,24 @@ function UserLiveFeed_CheckIfIsLiveStart(pos) {
 
                 OSInterface_SetFeedPosition(UserLiveFeed_CheckIfIsLiveGetPos(UserLiveFeed_FeedPosY[UserLiveFeed_FeedPosX]));
             }
+        }
+    } else if (feedShowing && UserLiveFeed_obj[pos].checkPreview && pos < UserLiveFeedobj_UserVodPos) {
+        //The preview player is off (setting, max instances) or blocked: resolve the focused
+        //channel's stream in the background only, so pressing OK starts from the master cache
+        //instead of minting a token on the keypress. Same dwell as the preview so a D-pad
+        //sweep across the row resolves at most one channel
+        var prewarmObj = Play_CheckLiveThumb(false, true);
+
+        if (prewarmObj && prewarmObj[6]) {
+            var channelLogin = prewarmObj[6];
+
+            UserLiveFeed_PrewarmId = Main_setTimeout(
+                function () {
+                    PlayHLS_Prewarm(channelLogin);
+                },
+                DefaultPreviewDelay + Settings_PreviewDelay[Settings_Obj_default('show_feed_player_delay')],
+                UserLiveFeed_PrewarmId
+            );
         }
     }
 }
@@ -1152,7 +1174,7 @@ function UserLiveFeed_KeyRightLeft(Adder) {
         var NextPos = UserLiveFeed_FeedPosY[UserLiveFeed_FeedPosX] + Adder;
 
         if (NextPos > UserLiveFeed_GetSize(UserLiveFeed_FeedPosX) - 1 || NextPos < 0) {
-            return;
+            return false;
         }
 
         UserLiveFeed_FeedRemoveFocus(UserLiveFeed_FeedPosX);
@@ -1163,7 +1185,13 @@ function UserLiveFeed_KeyRightLeft(Adder) {
 
         Main_values.UserLiveFeed_LastPositionId[UserLiveFeed_FeedPosX] =
             UserLiveFeed_DataObj[UserLiveFeed_FeedPosX][UserLiveFeed_FeedPosY[UserLiveFeed_FeedPosX]][14];
+
+        //True so the channel rocker (Play_ChannelStep) knows the focus really moved and the
+        //auto-tune settle is worth arming
+        return true;
     }
+
+    return false;
 }
 
 function UserLiveFeed_KeyUpDown(Adder) {

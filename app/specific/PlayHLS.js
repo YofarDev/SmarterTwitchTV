@@ -62,6 +62,102 @@ var use_proxy = false;
 var proxy_fail_counter = 0;
 var proxy_fail_counter_checker = 0;
 
+//Master playlist cache: what PlayHLS_PlayListUrl fetched per channel|playerType, so a repeat
+//open (channel surfing, the feed preview, a quality restore reload) skips the GQL token mint
+//and the usher fetch and starts playback from the cached master within the TTL. Entries also
+//record failures (a stale token 403s) with a short backoff so a failing channel does not re-mint
+//on every retry. Keyed 'login|playerType', insertion ordered so the oldest evicts first.
+var PlayHLS_CacheTtl = 90000;
+var PlayHLS_CacheFailBackoff = 15000;
+var PlayHLS_CacheMax = 32;
+var PlayHLS_MasterCache = {};
+var PlayHLS_MasterCacheFail = {};
+//playerType used by the token request of an in-flight load, keyed by its CheckId_y so the
+//result can be cached under the right type (cleared when it grows past the cache cap)
+var PlayHLS_PlayerTypeByCheck = {};
+//Resolve-only prewarm (PlayHLS_Prewarm): per-channel gate so sweeping focus across the feed
+//does not mint a token per card; an entry is prewarmed at most once per interval
+var PlayHLS_PrewarmInterval = 45000;
+var PlayHLS_PrewarmLast = {};
+var PlayHLS_PrewarmId = 0;
+
+function PlayHLS_CacheKey(Channel_or_VOD_Id, playerType) {
+    return (Channel_or_VOD_Id + '|' + playerType).toLowerCase();
+}
+
+//A fresh cached master for [Channel_or_VOD_Id] at [playerType], or null; also honors the
+//failure backoff (a failed fetch is remembered so retries wait instead of re-minting)
+function PlayHLS_CacheGet(Channel_or_VOD_Id, playerType, now) {
+    var key = PlayHLS_CacheKey(Channel_or_VOD_Id, playerType);
+    var failedAt = PlayHLS_MasterCacheFail[key];
+
+    if (failedAt !== undefined) {
+        if (now - failedAt < PlayHLS_CacheFailBackoff) return null;
+        delete PlayHLS_MasterCacheFail[key];
+    }
+
+    var entry = PlayHLS_MasterCache[key];
+
+    if (!entry) return null;
+
+    if (now - entry.at >= PlayHLS_CacheTtl) {
+        delete PlayHLS_MasterCache[key];
+        return null;
+    }
+
+    return entry;
+}
+
+function PlayHLS_CachePut(Channel_or_VOD_Id, playerType, url, responseText, now) {
+    var key = PlayHLS_CacheKey(Channel_or_VOD_Id, playerType);
+    var existing = PlayHLS_MasterCache[key];
+
+    //An identical master re-put (a cache hit re-enters the result handler) keeps its original
+    //fetch time, only new content resets the TTL — otherwise repeated opens would keep a
+    //stale master alive forever
+    if (existing && existing.url === url && existing.responseText === responseText) return;
+
+    delete PlayHLS_MasterCacheFail[key];
+    PlayHLS_MasterCache[key] = {url: url, responseText: responseText, at: now};
+
+    //Oldest entries (first keys) evict first; the active channel's entry is the newest
+    var keys = Object.keys(PlayHLS_MasterCache);
+    while (keys.length > PlayHLS_CacheMax) {
+        delete PlayHLS_MasterCache[keys.shift()];
+        keys = Object.keys(PlayHLS_MasterCache);
+    }
+}
+
+function PlayHLS_CacheFail(Channel_or_VOD_Id, playerType, now) {
+    PlayHLS_MasterCacheFail[PlayHLS_CacheKey(Channel_or_VOD_Id, playerType)] = now;
+}
+
+//Resolve a channel's stream in the background (token mint + master fetch) so pressing OK a
+//moment later starts playback from the cache. Called with intent only (feed focus dwell),
+//gated per channel so a focus sweep costs at most one resolve per interval
+function PlayHLS_Prewarm(Channel_or_VOD_Id) {
+    if (!Main_IsOn_OSInterface || !Channel_or_VOD_Id) return;
+
+    var now = new Date().getTime();
+    var key = (Channel_or_VOD_Id + '').toLowerCase();
+    var last = PlayHLS_PrewarmLast[key];
+
+    if (last !== undefined && now - last < PlayHLS_PrewarmInterval) return;
+
+    PlayHLS_PrewarmLast[key] = now;
+
+    //Prewarm ids walk negative so they can never collide with the playback load ids
+    //(timestamps) or the feed check ids the callbacks compare against
+    PlayHLS_PrewarmId--;
+    PlayHLS_GetPlayListAsync(true, Channel_or_VOD_Id, PlayHLS_PrewarmId, PlayHLS_PrewarmId, PlayHLS_PrewarmResult);
+}
+
+function PlayHLS_PrewarmResult(result) {
+    //The master cache write happens in PlayHLS_PlayListUrlResult for every live fetch,
+    //this only has to note failures (already recorded there) and stay quiet
+    if (!result) PlayHLS_AdLog('prewarm failed');
+}
+
 //VOD
 var Play_vod_token_prop = 'videoPlaybackAccessToken';
 var Play_vod_token = '{"query":"{videoPlaybackAccessToken(id:\\"%x\\", params:{platform:\\"android\\",playerType:\\"mobile\\"}){value signature}}"}';
@@ -80,9 +176,44 @@ function PlayHLS_GetPlayListAsync(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_
 
     if (use_proxy && isLive && !proxy_has_token) {
         PlayHLS_PlayListUrl(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, null, null, true);
+    } else if (
+        isLive &&
+        !use_proxy &&
+        !PlayHLS_AdRetryToken &&
+        //An explicit retry token (ad escape reload) wants its fresh session, every other
+        //live load can start from the cached master and skip the token mint entirely; the
+        //synthesized result re-enters PlayHLS_PlayListUrlResult so the ad probe chain and
+        //every downstream guard run exactly as on a fresh fetch
+        PlayHLS_MasterCacheGetSynth(Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name)
+    ) {
+        return;
     } else {
         PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, use_proxy, useUserAuth);
     }
+}
+
+//Cache hit as a PlayHLS_PlayListUrlResult-shaped request, true when served; CheckId_x may be
+//null (Play_loadData passes null), the parseInt in the result handler turns that into NaN
+//just like the Java bridge does for the same call
+function PlayHLS_MasterCacheGetSynth(Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess) {
+    var cached = PlayHLS_CacheGet(Channel_or_VOD_Id, 'site', new Date().getTime());
+
+    if (!cached) return false;
+
+    PlayHLS_AdLog('master cache hit for ' + Channel_or_VOD_Id);
+
+    PlayHLS_PlayListUrlResult(
+        JSON.stringify({status: 200, url: cached.url, responseText: cached.responseText, checkResult: CheckId_y}),
+        CheckId_y,
+        '1',
+        '0',
+        Channel_or_VOD_Id,
+        '0',
+        CheckId_x === null ? null : String(CheckId_x),
+        callBackSuccess
+    );
+
+    return true;
 }
 
 //Same headers HttpGetSetUserHeader builds for the logged user, built on demand so a retry
@@ -92,10 +223,25 @@ function PlayHLS_UserAuthHeaders() {
 }
 
 function PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, useProxy, useUserAuth) {
+    var tokenTemplate = isLive ? PlayHLS_AdRetryToken || Play_live_token : Play_vod_token;
+    var playerType = tokenTemplate.replace(/^.*"playerType":"(\w+)".*$/, '$1');
+
+    //Remember the type for the result handler's cache write; the map is bounded because the
+    //ids are unbounded (timestamps, feed positions, prewarm ids)
+    if (isLive) {
+        PlayHLS_PlayerTypeByCheck[CheckId_y] = playerType;
+
+        var checkKeys = Object.keys(PlayHLS_PlayerTypeByCheck);
+        while (checkKeys.length > PlayHLS_CacheMax * 2) {
+            delete PlayHLS_PlayerTypeByCheck[checkKeys.shift()];
+            checkKeys = Object.keys(PlayHLS_PlayerTypeByCheck);
+        }
+    }
+
     OSInterface_XmlHttpGetFull(
         PlayClip_BaseUrl, //String urlString
         DefaultHttpGetTimeout, //int timeout
-        (isLive ? PlayHLS_AdRetryToken || Play_live_token : Play_vod_token).replace('%x', Channel_or_VOD_Id), // String postMessage
+        tokenTemplate.replace('%x', Channel_or_VOD_Id), // String postMessage
         'POST', //String Method
         useUserAuth && AddUser_UserHasToken() ? PlayHLS_UserAuthHeaders() : Play_Headers, //String JsonHeadersArray
         'PlayHLS_GetTokenResult', //String callback
@@ -253,6 +399,12 @@ function PlayHLS_PlayListUrlResult(result, checkResult, check_1, check_2, check_
         response = JSON.parse(result);
 
     if (response.status !== 200) {
+        //The cached session is gone (stream ended, token expired), drop the channel's entries
+        //and remember the failure so the next minutes' opens re-mint instead of hitting cache
+        if (isLive && !useProxy && (response.status === 403 || response.status === 404 || response.status === 410)) {
+            PlayHLS_CacheFail(Channel_or_VOD_Id, PlayHLS_PlayerTypeByCheck[CheckId_y] || 'site', new Date().getTime());
+        }
+
         //in case we fail using proxy restart the process without using proxy
         if (isLive && useProxy && PlayHLS_CheckProxyResultFail(response.responseText)) {
             PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, false);
@@ -270,12 +422,26 @@ function PlayHLS_PlayListUrlResult(result, checkResult, check_1, check_2, check_
             responseText: response.responseText,
             checkResult: response.checkResult
         });
-    } else if (isLive && !useProxy && PlayHLS_AdFilterOn()) {
-        //Before starting playback check that the stream is not serving a preroll; when it is,
-        //a token with an alternate player type often gets an ad free playlist for the same
-        //stream (the retry happens before playback, never mid stream)
-        if (PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, callBackSuccess)) {
-            return;
+    } else {
+        if (isLive && !useProxy && Channel_or_VOD_Id) {
+            //Cache every live master under the player type that minted it, so repeat opens
+            //and ladder rounds can skip the token mint within the TTL
+            PlayHLS_CachePut(
+                Channel_or_VOD_Id,
+                PlayHLS_PlayerTypeByCheck[CheckId_y] || 'site',
+                response.url,
+                response.responseText,
+                new Date().getTime()
+            );
+        }
+
+        if (isLive && !useProxy && PlayHLS_AdFilterOn()) {
+            //Before starting playback check that the stream is not serving a preroll; when it is,
+            //a token with an alternate player type often gets an ad free playlist for the same
+            //stream (the retry happens before playback, never mid stream)
+            if (PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, callBackSuccess)) {
+                return;
+            }
         }
     }
 
@@ -375,8 +541,15 @@ function PlayHLS_AdProbeResult(result, checkResult, check_1, check_2, check_3, c
     try {
         var response = JSON.parse(result);
 
+        //'#EXT-X-CUE-OUT' is the SCTE-35 bracket some edge nodes emit without the
+        //'stitched' DATERANGE, so a pure-SCTE pod must still count as ads
         status = response.status;
-        hasAds = live && status === 200 && (Main_A_includes_B(response.responseText, 'stitched') || Main_A_includes_B(response.responseText, 'Amazon|'));
+        hasAds =
+            live &&
+            status === 200 &&
+            (Main_A_includes_B(response.responseText, 'stitched') ||
+                Main_A_includes_B(response.responseText, 'Amazon|') ||
+                Main_A_includes_B(response.responseText, '#EXT-X-CUE-OUT'));
     } catch (error) {
         hasAds = false;
     }

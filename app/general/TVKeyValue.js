@@ -44,6 +44,11 @@ var KEY_KEYBOARD_SPACE = 32;
 var KEY_MEDIA_NEXT = 176;
 var KEY_MEDIA_PREVIOUS = 177;
 
+//Remote channel rocker, delivered by the apk dispatchKeyEvent override as a
+//javascript:smartTwitchTV.Play_ChannelStep() call (166/167 never reach the WebView)
+var KEY_CHANNEL_UP = 166;
+var KEY_CHANNEL_DOWN = 167;
+
 var KEY_MEDIA_FAST_FORWARD = 228;
 var KEY_MEDIA_REWIND = 227;
 

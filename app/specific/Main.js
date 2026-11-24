@@ -244,6 +244,7 @@ function Main_StartApp() {
                     PlayHLS_PlayListUrlResult: PlayHLS_PlayListUrlResult,
                     PlayHLS_AdProbeResult: PlayHLS_AdProbeResult,
                     Play_AdBlockReload: Play_AdBlockReload,
+                    Play_ChannelStep: Play_ChannelStep,
                     Play_AdHoldChanged: Play_AdHoldChanged,
                     AddCode_AppTokenResult: AddCode_AppTokenResult,
                     Play_UpdateDurationDiv: Play_UpdateDurationDiv,

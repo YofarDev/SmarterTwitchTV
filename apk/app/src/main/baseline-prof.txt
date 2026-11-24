@@ -1,0 +1,53 @@
+# Baseline profile for Smarter Purple TV (APK).
+#
+# The app is sideloaded, so Play's cloud profiles never apply and every update
+# starts from interpreted/JIT bytecode on device (worst on the low-end Fire TV
+# sticks this app targets). The AndroidX/Media3 libraries ship their own profiles
+# in their AARs and AGP merges those automatically; what is missing is the app's
+# own code, listed here: class loads for every app class plus hot/startup method
+# marks for the paths exercised on every cold start and stream open.
+#
+# Format: ART baseline profile text (https://developer.android.com/topic/performance/baselineprofiles),
+# compiled into assets/dexopt/baseline.prof by AGP at build time.
+#
+# Startup: activity + webview host lifecycle
+HSPLcom/fgl27/twitch/PlayerActivity;->onCreate(Landroid/os/Bundle;)V
+HSPLcom/fgl27/twitch/PlayerActivity;->onStart()V
+HSPLcom/fgl27/twitch/PlayerActivity;->onResume()V
+HSPLcom/fgl27/twitch/PlayerActivity;->onPause()V
+HSPLcom/fgl27/twitch/PlayerActivity;->onStop()V
+HSPLcom/fgl27/twitch/PlayerActivity;->onDestroy()V
+HSPLcom/fgl27/twitch/PlayerActivity;->onNewIntent(Landroid/content/Intent;)V
+HSPLcom/fgl27/twitch/PlayerActivity;->onWindowFocusChanged(Z)V
+HSPLcom/fgl27/twitch/PlayerActivity;->onKeyDown(ILandroid/view/KeyEvent;)Z
+HSPLcom/fgl27/twitch/PlayerActivity;->onKeyUp(ILandroid/view/KeyEvent;)Z
+HSPLcom/fgl27/twitch/PlayerActivity;->onKeyLongPress(ILandroid/view/KeyEvent;)Z
+HSPLcom/fgl27/twitch/PlayerActivity;->dispatchKeyEvent(Landroid/view/KeyEvent;)Z
+
+# Every app class: class-load + verification cost paid at install/first-use instead of at startup
+Lcom/fgl27/twitch/BlackListMediaCodecSelector;
+Lcom/fgl27/twitch/BootBroadcastReceiver;
+Lcom/fgl27/twitch/Constants;
+Lcom/fgl27/twitch/DataSource/AdPlaylistFilter;
+Lcom/fgl27/twitch/DataSource/AdPlaylistFilter$AdHoldListener;
+Lcom/fgl27/twitch/DataSource/AdPlaylistFilter$AdReloadListener;
+Lcom/fgl27/twitch/DataSource/AdPlaylistFilter$FilterResult;
+Lcom/fgl27/twitch/DataSource/DefaultHttpDataSource;
+Lcom/fgl27/twitch/DebugLogServer;
+Lcom/fgl27/twitch/PhoneChatServer;
+Lcom/fgl27/twitch/PlayerActivity;
+Lcom/fgl27/twitch/PlayerActivity$WebAppInterface;
+Lcom/fgl27/twitch/RequestDispatcher;
+Lcom/fgl27/twitch/SegmentWallClock;
+Lcom/fgl27/twitch/Tools;
+Lcom/fgl27/twitch/channels/ChannelsUtils;
+Lcom/fgl27/twitch/channels/SyncChannelJobService;
+Lcom/fgl27/twitch/notification/NotificationService;
+Lcom/fgl27/twitch/notification/NotificationUtils;
+Lcom/fgl27/twitch/notification/ScreenReceiver;
+
+# Hot per-refresh paths: every playlist refresh runs the filter, every VOD segment the wall-clock reader
+HSPLcom/fgl27/twitch/DataSource/AdPlaylistFilter;->filter([BLjava/lang/String;)Lcom/fgl27/twitch/DataSource/AdPlaylistFilter$FilterResult;
+HSPLcom/fgl27/twitch/DataSource/AdPlaylistFilter;->isAdSegment(Ljava/lang/String;Ljava/lang/String;Z)Z
+HSPLcom/fgl27/twitch/DataSource/AdPlaylistFilter;->shouldFilter(Landroid/net/Uri;)Z
+HSPLcom/fgl27/twitch/SegmentWallClock;->fromFrame(Ljava/lang/String;Ljava/lang/String;)J

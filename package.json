@@ -1,4 +1,14 @@
 {
+  "name": "smarterpurpletv",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "lint": "node release/scripts/maker.js jsh",
+    "test": "node release/scripts/run-web-tests.js",
+    "build": "node release/scripts/maker.js"
+  },
   "dependencies": {
     "crass": "^0.12.3",
     "html-minifier": "^4.0.0",

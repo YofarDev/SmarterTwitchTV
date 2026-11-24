@@ -168,4 +168,31 @@ function startProbe(s) {
     checkEqual(s.PlayHLS_AdCheckOrRetry(noVariants, 'chk2', '1', 'chan', '9', 'testCallback'), false, 'no variants: caller proceeds');
 })();
 
+//A pure SCTE-35 pod (CUE-OUT bracket without any 'stitched' DATERANGE) counts as ads: the
+//probe must rotate the player type instead of passing the playlist through as clean
+(function () {
+    const s = makeSandbox();
+    const cueMaster = JSON.stringify({
+        status: 200,
+        responseText: '#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=1\nhttps://host/cue.m3u8\n',
+        checkResult: 'x'
+    });
+    checkEqual(s.PlayHLS_AdCheckOrRetry(cueMaster, 'chkCue', '1', 'chan', '9', 'testCallback'), true, 'cue flow: caller waits');
+    const call = s.lastCall;
+    assert.ok(call, 'probe request expected');
+    s[call.args[5]](
+        JSON.stringify({status: 200, responseText: '#EXTM3U\n#EXT-X-CUE-OUT:30\n#EXTINF:2.000,Amazon\nhttps://host/ad.ts\n'}),
+        call.args[6],
+        call.args[7],
+        call.args[8],
+        call.args[9],
+        call.args[10],
+        call.args[11],
+        call.args[12]
+    );
+    checkEqual(s.lastCall.url, 'https://gql.twitch.tv/gql', 'pure CUE-OUT pod hands off to the token retry');
+    checkEqual(String(s.lastCall.args[2]).indexOf('"playerType":"embed"') !== -1, true, 'CUE-OUT rotates to the embed player type');
+    checkEqual(s.finished, undefined, 'CUE-OUT master was not handed to playback');
+})();
+
 console.log(passed + ' ad probe checks passed');
