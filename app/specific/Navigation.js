@@ -7,7 +7,7 @@ function Navigation_Destinations() {
         {id: 'following', screens: [Main_UserLive, Main_UserVod, Main_UserChannels, Main_usergames], account: true},
         {id: 'browse', screens: [Main_Live, Main_Featured, Main_games, Main_Vod, Main_Clip]},
         {id: 'search', screens: [Main_Search, Main_SearchLive, Main_SearchChannels, Main_SearchGames, Main_SearchVod]},
-        {id: 'library', screens: [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip], account: true},
+        {id: 'library', screens: [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip, Main_HistorySaved], account: true},
         {id: 'account', screens: [Main_Users, Main_addUser, Main_Blocked]},
         {id: 'settings', screens: []},
         {id: 'exit', screens: []}
@@ -147,7 +147,7 @@ function Navigation_Labels() {
 function Navigation_Tabs(destination) {
     if (destination === 'following') return [STR_UI.liveNow, STR_VIDEOS, STR_CHANNELS, STR_UI.categories];
     if (destination === 'browse') return [STR_LIVE, STR_FEATURED, STR_UI.categories, STR_VIDEOS, STR_CLIPS];
-    if (destination === 'library') return [STR_LIVE, STR_VIDEOS, STR_CLIPS];
+    if (destination === 'library') return [STR_LIVE, STR_VIDEOS, STR_CLIPS, STR_SAVED];
     if (destination === 'search')
         // With results in the session the form tab is Edit search, keeping the visible path to correct a query.
         return [Search_Session.active && Search_Session.submitted ? STR_EDIT_SEARCH : STR_SEARCH, STR_LIVE, STR_CHANNELS, STR_UI.categories, STR_VIDEOS];

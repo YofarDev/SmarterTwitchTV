@@ -1004,7 +1004,10 @@ function ScreensObj_StartAllVars() {
         set_url: noop_fun,
         history_concatenate: function () {
             this.streamerID = {};
-            this.data = AddUser_UserIsSet() ? JSON.parse(JSON.stringify(Main_values_History_data[AddUser_UsernameArray[0].id][this.Type])) : [];
+            //saved may not exist on history restored from an older version
+            this.data = AddUser_UserIsSet()
+                ? JSON.parse(JSON.stringify(Main_values_History_data[AddUser_UsernameArray[0].id][this.Type] || []))
+                : [];
 
             Main_History_Sort(this.data, this.sortingValues[this.histPosX[0]][0], this.sortingValues[this.histPosX[0]][1]);
             this.dataEnded = true;
@@ -1665,6 +1668,42 @@ function ScreensObj_InitSearchLive() {
     };
 }
 
+//Stable favorites-first ordering for the followed live list: favorites pin to the top and
+//everything else keeps the API order (viewer count). Decorate-sort because old TV WebViews
+//have no guaranteed-stable Array.prototype.sort. Returns true when a favorite from an
+//unrendered position moved into the rendered prefix, so rows must be rebuilt
+function ScreensObj_SortFavoritesFirst(data, rendered) {
+    var i = 0,
+        len = data.length,
+        decorated = [],
+        anyFavorite = false,
+        entry,
+        rebuild = false;
+
+    if (!len) return false;
+
+    for (i; i < len; i++) {
+        entry = {index: i, cell: data[i], fav: Screens_isFavorite(data[i].user_id)};
+        if (entry.fav) anyFavorite = true;
+        decorated.push(entry);
+    }
+
+    if (!anyFavorite) return false;
+
+    decorated.sort(function (a, b) {
+        if (a.fav !== b.fav) return a.fav ? -1 : 1;
+        return a.index < b.index ? -1 : 1;
+    });
+
+    for (i = 0; i < len; i++) {
+        entry = decorated[i];
+        if (entry.fav && rendered > 0 && entry.index >= rendered && i < rendered) rebuild = true;
+        data[i] = entry.cell;
+    }
+
+    return rebuild;
+}
+
 function ScreensObj_InitUserLive() {
     var key = Main_UserLive;
 
@@ -1702,6 +1741,15 @@ function ScreensObj_InitUserLive() {
     );
 
     ScreenObj[key] = Screens_assign(ScreenObj[key], Base_Live_obj);
+
+    //Favorites always on top of the Live now list (issue #48)
+    ScreenObj[key].loadDataSuccess = function () {
+        if (this.data && AddUser_UserIsSet() && ScreensObj_SortFavoritesFirst(this.data, this.data_cursor)) {
+            Screens_RebuildRows(this.screen);
+        }
+
+        Screens_loadDataSuccess(this.screen);
+    };
 
     ScreenObj[key].Set_Scroll();
 }
@@ -2466,12 +2514,13 @@ function ScreensObj_HistoryLive() {
                     this.column_id++;
                 }
             },
-            SwitchesIcons: ['movie-play', 'movie', 'settings'],
+            SwitchesIcons: ['movie-play', 'movie', 'history', 'settings'],
             addSwitches: function () {
                 ScreensObj_addSwitches(
                     [
                         STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_VIDEOS,
                         STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_CLIPS,
+                        STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_SAVED,
                         STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_LIVE + STR_SPACE_HTML + STR_SETTINGS
                     ],
                     this.screen
@@ -2494,6 +2543,10 @@ function ScreensObj_HistoryLive() {
                 Main_SwitchScreen();
             } else if (this.posX === 1) {
                 Main_values.Main_Go = Main_HistoryClip;
+                this.history_exit();
+                Main_SwitchScreen();
+            } else if (this.posX === 2) {
+                Main_values.Main_Go = Main_HistorySaved;
                 this.history_exit();
                 Main_SwitchScreen();
             } else Screens_histStart(this.screen, click);
@@ -2558,6 +2611,10 @@ function ScreensObj_HistoryVod() {
                         Main_values.Main_Go = Main_HistoryClip;
                         this.history_exit();
                         Main_SwitchScreen();
+                    } else if (this.posX === 2) {
+                        Main_values.Main_Go = Main_HistorySaved;
+                        this.history_exit();
+                        Main_SwitchScreen();
                     } else Screens_histStart(this.screen, click);
                 } else this.OpenVodStart();
             },
@@ -2573,12 +2630,13 @@ function ScreensObj_HistoryVod() {
                     this.column_id++;
                 }
             },
-            SwitchesIcons: ['play', 'movie', 'settings'],
+            SwitchesIcons: ['play', 'movie', 'history', 'settings'],
             addSwitches: function () {
                 ScreensObj_addSwitches(
                     [
                         STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_LIVE,
                         STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_CLIPS,
+                        STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_SAVED,
                         STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_VIDEOS + STR_SPACE_HTML + STR_SETTINGS
                     ],
                     this.screen
@@ -2647,6 +2705,10 @@ function ScreensObj_HistoryClip() {
                         Main_values.Main_Go = Main_HistoryVod;
                         this.history_exit();
                         Main_SwitchScreen();
+                    } else if (this.posX === 2) {
+                        Main_values.Main_Go = Main_HistorySaved;
+                        this.history_exit();
+                        Main_SwitchScreen();
                     } else Screens_histStart(this.screen, click);
                 } else {
                     this.OpenClip();
@@ -2664,13 +2726,118 @@ function ScreensObj_HistoryClip() {
                     this.column_id++;
                 }
             },
-            SwitchesIcons: ['play', 'movie-play', 'settings'],
+            SwitchesIcons: ['play', 'movie-play', 'history', 'settings'],
             addSwitches: function () {
                 ScreensObj_addSwitches(
                     [
                         STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_LIVE,
                         STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_VIDEOS,
+                        STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_SAVED,
                         STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_CLIPS + STR_SPACE_HTML + STR_SETTINGS
+                    ],
+                    this.screen
+                );
+            }
+        },
+        Base_obj
+    );
+
+    ScreenObj[key] = Screens_assign(ScreenObj[key], Base_History_obj);
+    ScreenObj[key].Upsorting();
+    ScreenObj[key].Set_Scroll();
+}
+
+function ScreensObj_HistorySaved() {
+    var key = Main_HistorySaved;
+
+    ScreenObj[key] = Screens_assign(
+        {
+            Type: 'saved',
+            ids: Screens_ScreenIds('HistorySaved', key),
+            ScreenName: 'HistorySaved',
+            table: 'stream_table_historysaved',
+            screen: key,
+            img_404: IMG_404_VIDEO,
+            histPosXName: 'HistorySaved_histPosX',
+            screenType: 0,
+            histPosX: Main_getItemJson('HistorySaved_histPosX', [0, 0, 0, 0]),
+            sethistDialog: function () {
+                Main_textContent('dialog_hist_setting_name_1', STR_HISTORY_SAVED_DIS);
+                Main_innerHTML('dialog_hist_text', STR_SAVED + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_SETTINGS);
+                this.sethistMainDialog();
+            },
+            setTODialog: function (skipShowDelete) {
+                if (!skipShowDelete) {
+                    Main_RemoveClass('dialog_thumb_opt_setting_-1', 'hideimp');
+                }
+                Main_textContent(Screens_ThumbFollowHistory, STR_HISTORY_SAVED_DIS);
+            },
+            history_Type: function () {
+                return STR_SAVED;
+            },
+            label_init: function () {
+                Main_values.HistoryPos = 3;
+                ScreensObj_TopLableUserInit(this.screen);
+                ScreensObj_SetTopLable(
+                    STR_USER,
+                    STR_HISTORY + STR_SPACE_HTML + STR_SAVED + STR_SPACE_HTML + '(' + this.sorting[this.histPosX[0]] + ')'
+                );
+            },
+            key_play: function (click) {
+                if (this.is_a_Banner()) return;
+
+                if (this.posY === -1) {
+                    if (this.posX === 0) {
+                        Main_values.Main_Go = Main_HistoryLive;
+                        this.history_exit();
+                        Main_SwitchScreen();
+                    } else if (this.posX === 1) {
+                        Main_values.Main_Go = Main_HistoryVod;
+                        this.history_exit();
+                        Main_SwitchScreen();
+                    } else if (this.posX === 2) {
+                        Main_values.Main_Go = Main_HistoryClip;
+                        this.history_exit();
+                        Main_SwitchScreen();
+                    } else Screens_histStart(this.screen, click);
+                } else {
+                    if (this.itemsCount) {
+                        Main_RemoveClass(this.ids[1] + this.posY + '_' + this.posX, 'opacity_zero');
+                        Screens_OpenSavedVod(this.screen);
+                    }
+                }
+            },
+            addCell: function (cell) {
+                //cell.data[14] check here to a bug that introduce emtpy values, see HistoryLive
+                if (!this.idObject[cell.data[7]] && cell.data[14] && cell.data[14] !== '') {
+                    this.itemsCount++;
+                    this.idObject[cell.data[7]] = 1;
+
+                    //Always a VOD cell: the entry reopens the broadcast's VOD at the saved
+                    //position, the live thumb keeps working a while after the stream ended
+                    this.tempHtml.push(
+                        Screens_createCellLive(
+                            this.row_id + '_' + this.column_id,
+                            this.ids,
+                            cell.data,
+                            this.screen,
+                            cell.date,
+                            cell.data[0] ? cell.data[0].replace('{width}x{height}', Main_VideoSize) + Main_randomImg : null,
+                            true
+                        )
+                    );
+
+                    this.column_id++;
+                }
+            },
+            SwitchesIcons: ['play', 'movie-play', 'movie', 'settings'],
+            addSwitches: function () {
+                ScreensObj_addSwitches(
+                    [
+                        STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_LIVE,
+                        STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_VIDEOS,
+                        STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_CLIPS,
+                        STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_SAVED + STR_SPACE_HTML + STR_SETTINGS
                     ],
                     this.screen
                 );

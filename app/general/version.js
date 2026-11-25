@@ -23,9 +23,16 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 405, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/405/SmarterPurpleTV_3_0_405.apk',
-    WebVersion: 'November 24 2026',
-    WebTag: 800, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'November 25 2026',
+    WebTag: 801, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 25 2026 (Web 801)',
+            changes: [
+                'New: favorite channels — Hold OK on a live channel card and pick Favorite channel: favorites always sit on top of the Live now list and wear a star next to the channel name on every live grid; favoriting from Live now re-sorts the list right away (#48)',
+                'New: save a live stream position to watch it later as a VOD — the player menu gains a Save position button, and the Library (History) destination gains a Saved tab listing every saved stream; opening one resumes the broadcast\'s VOD exactly where you left it (or says the VOD is not available yet), and the entry keeps following the live edge while you keep watching (#48)'
+            ]
+        },
         {
             title: 'November 24 2026 (Web 800 / APK 405)',
             changes: [

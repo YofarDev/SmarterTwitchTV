@@ -9,7 +9,7 @@ vm.createContext(sandbox);
 const ids = fs
     .readFileSync('app/specific/Main.js', 'utf8')
     .match(/^var Main_[A-Za-z_]+ = \d+;/gm)
-    .slice(0, 27)
+    .slice(0, 28)
     .join('\n');
 
 if (process.argv.includes('--built')) {

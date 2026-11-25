@@ -75,6 +75,7 @@ function Screens_InitScreens() {
     ScreensObj_HistoryLive();
     ScreensObj_HistoryVod();
     ScreensObj_HistoryClip();
+    ScreensObj_HistorySaved();
 
     //Blocked screen
     ScreensObj_Blocked();
@@ -224,6 +225,7 @@ function Screens_first_init() {
             Main_GoBefore === Main_HistoryLive ||
             Main_GoBefore === Main_HistoryVod ||
             Main_GoBefore === Main_HistoryClip ||
+            Main_GoBefore === Main_HistorySaved ||
             Main_GoBefore === Main_Blocked)
     ) {
         Main_GoBefore = Main_Live;
@@ -417,6 +419,32 @@ function Screens_StartLoad(key) {
         Main_CounterDialogRst();
     }
     Screens_loadDataRequestStart(key);
+}
+
+//A late page moved favorites into already rendered rows: reset the render state like
+//Screens_StartLoad does on a reload (keeping the pagination cursor and data), the caller
+//then reruns Screens_loadDataSuccess and the navigation restore path refocuses the window
+function Screens_RebuildRows(key) {
+    Navigation_Capture(key);
+    ScreenObj[key].navigationRestorePending = true;
+
+    Main_empty(ScreenObj[key].table);
+    ScreenObj[key].DataObj = {};
+    ScreenObj[key].Cells = [];
+    ScreenObj[key].tempHtml = [];
+    ScreenObj[key].idObject = {};
+    ScreenObj[key].itemsCount = 0;
+    ScreenObj[key].row_id = 0;
+    ScreenObj[key].currY = 0;
+    ScreenObj[key].column_id = 0;
+    ScreenObj[key].data_cursor = 0;
+    ScreenObj[key].TopRowCreated = false;
+    ScreenObj[key].BannerCreated = false;
+    ScreenObj[key].skippedCellLoadMore = false;
+    ScreenObj[key].emptyContent = true;
+    ScreenObj[key].status = false;
+    ScreenObj[key].isRefreshing = true;
+    Screens_Some_Screen_Is_Refreshing = true;
 }
 
 function Screens_loadDataRequestStart(key) {
@@ -1002,6 +1030,7 @@ function Screens_createCellLive(id, idArray, valuesArray, key, Extra_when, Extra
     if (!valuesArray[1]) valuesArray[1] = valuesArray[6];
 
     var ishosting = valuesArray[16],
+        isFavorite = Screens_isFavorite(valuesArray[14]),
         image = force_VOD ? Extra_vodimg : valuesArray[0].replace('{width}x{height}', Main_VideoSize) + Main_randomImg;
 
     ScreenObj[key].DataObj[id] = valuesArray;
@@ -1045,6 +1074,9 @@ function Screens_createCellLive(id, idArray, valuesArray, key, Extra_when, Extra
         //Focused cards swap the color dot for the LIVE text badge (Badge-Not-Color); VOD cells hide it
         '<span class="stream_live_badge' + (force_VOD ? ' hideimp' : '') + '">' + STR_LIVE + '</span>' +
         valuesArray[1] +
+        //The star is always present so the options toggle can flip it without a re-render
+        '<i class="icon-star stream_fav_icon strokedeline' + (isFavorite ? '' : ' hideimp') +
+        '" style="color: #' + Main_ColorBadgeFavorite + ';" aria-hidden="true"></i>' +
         '</div><div class="stream_info_live" style="width:' +
         (ishosting ? 0 : 33) +
         '%; float: right; text-align: right; display: inline-block;">' +
@@ -1259,7 +1291,7 @@ function Screens_CheckRefreshAfterResume() {
     if (Settings_Obj_default('auto_refresh_screen') && Settings_Obj_default('auto_refresh_background')) {
         var i = 0,
             run = 1,
-            len = Main_HistoryClip + 1,
+            len = Main_HistorySaved + 1,
             date = new Date().getTime(),
             UserIsSet = AddUser_UserIsSet();
 
@@ -3017,8 +3049,14 @@ function Screens_checkDeleteObj() {
         Main_values_History_data[AddUser_UsernameArray[0].id].deleted = {
             live: {},
             vod: {},
-            clip: {}
+            clip: {},
+            saved: {}
         };
+    }
+
+    //saved came later, existing stored history lacks the key
+    if (!Main_values_History_data[AddUser_UsernameArray[0].id].deleted.saved) {
+        Main_values_History_data[AddUser_UsernameArray[0].id].deleted.saved = {};
     }
 }
 
@@ -3306,6 +3344,9 @@ function Screens_ThumbOptionStart(key, click) {
         Screens_ThumbOptionShowSpecial();
         Screens_ThumbOptionHideSpecial();
 
+        //Banner and preview rows have no channel to favorite
+        Main_AddClass('dialog_thumb_opt_setting_9', 'hideimp');
+
         if (ScreenObj[key].histPosXName) {
             ScreenObj[key].setTODialog(true);
         }
@@ -3370,7 +3411,7 @@ var Screens_ThumbGotoValue = 'dialog_thumb_opt_val_8';
 
 var Screens_ThumbOptionSpecialDefPos = 6;
 var Screens_ThumbOptionSpecialDefPosElse = 7;
-var Screens_ThumbOptionTotalPosition = 8;
+var Screens_ThumbOptionTotalPosition = 9;
 
 function Screens_ThumbOptionStringSet(key) {
     Screens_ThumbUpdateGameInfoName = null;
@@ -3432,6 +3473,32 @@ function Screens_ThumbOptionStringSet(key) {
     Main_textContent(Screens_ThumbBlockOveWriteValue, Screens_NoYes[Screens_ThumbOptionPosXArrays[5]]);
     Main_textContent(Screens_ThumbLangValue, Screens_ThumbOptionLanguagesTitles[Screens_ThumbOptionPosXArrays[Screens_ThumbOptionSpecialDefPosElse]]);
     Main_textContent(Screens_ThumbGotoValue, Screens_ThumbOptionScreens[0]);
+
+    //Favorite row: game cells have no channel, the label reflects the current state
+    if (ScreenObj[key].screenType === 3) {
+        Main_AddClass('dialog_thumb_opt_setting_9', 'hideimp');
+    } else {
+        Main_RemoveClass('dialog_thumb_opt_setting_9', 'hideimp');
+
+        var favName = '';
+
+        if (ScreenObj[key].screenType === 2) {
+            favName = Screens_values_Play_data[4];
+        } else if (ScreenObj[key].screenType === 4) {
+            favName = Screens_values_Play_data[3];
+        } else if (Screens_values_Play_data[1]) {
+            favName = Main_A_includes_B(Screens_values_Play_data[1], STR_USER_HOSTED_BY)
+                ? Screens_values_Play_data[1].split(STR_USER_HOSTED_BY)[0]
+                : Screens_values_Play_data[1];
+        }
+
+        Main_textContent('dialog_thumb_opt_val_9', favName ? favName : STR_EMPTY);
+        Main_textContent('dialog_thumb_opt_setting_name_9', STR_FAVORITE_CHANNEL);
+
+        if (AddUser_IsUserSet() && Screens_isFavorite(Screens_BlockChannelGetId(key))) {
+            Main_textContent('dialog_thumb_opt_setting_name_9', STR_UNFAVORITE_CHANNEL);
+        }
+    }
 
     //Check if is blocked to allow reverting
     Main_textContent('dialog_thumb_opt_setting_name_3', STR_BLOCK_CHANNEL);
@@ -3614,8 +3681,10 @@ function Screens_ThumbOptionDialogKeyUpDown(key, current, adder) {
         return;
     }
 
+    //Past the last row stay on the current one: the last row (Favorite) can be hidden, so
+    //clamping onto it would select an option with no focus on it
     if (Screens_ThumbOptionPosY > Screens_ThumbOptionTotalPosition) {
-        Screens_ThumbOptionPosY = Screens_ThumbOptionTotalPosition;
+        Screens_ThumbOptionPosY = current;
         return;
     }
 
@@ -3691,7 +3760,10 @@ function Screens_ThumbOptionDialogHide(Update, key) {
         } else if (Screens_ThumbOptionPosY === 5) {
             Screens_SetBlockOverwrite(key);
         } else if (Screens_ThumbOptionPosY === 6) {
-            if (!ScreenObj[key].screenType) {
+            if (ScreenObj[key].screen === Main_HistorySaved) {
+                ScreenObj[Main_HistorySaved].histPosX[1] = Screens_ThumbOptionPosXArrays[Screens_ThumbOptionPosY];
+                Main_setItem(ScreenObj[Main_HistorySaved].histPosXName, JSON.stringify(ScreenObj[Main_HistorySaved].histPosX));
+            } else if (!ScreenObj[key].screenType) {
                 var index =
                     ScreenObj[key].screen === Main_HistoryLive && AddUser_UserIsSet() ? Main_history_Exist('live', Screens_values_Play_data[7]) : -1;
 
@@ -3715,6 +3787,8 @@ function Screens_ThumbOptionDialogHide(Update, key) {
             Screens_SetLang(key);
         } else if (Screens_ThumbOptionPosY === 8) {
             Screens_OpenScreen();
+        } else if (Screens_ThumbOptionPosY === 9) {
+            Screens_FavoriteChannel(key);
         }
     } else Screens_LoadPreview(key);
 
@@ -3813,6 +3887,85 @@ function Screens_BlockChannelGetName(key) {
     }
 
     return channelName;
+}
+
+function Screens_FavoritesSetDefaultObj() {
+    if (!Main_values_History_data[AddUser_UsernameArray[0].id].favorites) {
+        Main_values_History_data[AddUser_UsernameArray[0].id].favorites = {};
+    }
+}
+
+function Screens_isFavorite(channelId) {
+    return (
+        AddUser_UserIsSet() &&
+        !!channelId &&
+        !!Main_values_History_data[AddUser_UsernameArray[0].id].favorites &&
+        !!Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId]
+    );
+}
+
+function Screens_FavoriteChannel(key) {
+    if (!AddUser_IsUserSet()) {
+        Main_showWarningDialog(STR_FAVORITE_NO_USER, 2000);
+        return;
+    }
+
+    var channelId = Screens_BlockChannelGetId(key),
+        channelName = Screens_BlockChannelGetName(key);
+
+    if (!channelId) {
+        Main_showWarningDialog(STR_BLOCK_NO_CHANNEL, 2000);
+        return;
+    }
+
+    Screens_FavoritesSetDefaultObj();
+    channelId = channelId.toString();
+
+    if (Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId]) {
+        delete Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId];
+    } else {
+        Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId] = {};
+        Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].date = new Date().getTime();
+        Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data = [];
+        Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data[1] = channelId;
+
+        if (channelName) {
+            Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data[3] = channelName;
+        }
+    }
+
+    Main_setHistoryItem();
+
+    //Live now re-sorts favorites to the top, other screens just flip the star of the focused card
+    if (ScreenObj[key].screen === Main_UserLive) {
+        Main_ReloadScreen();
+    } else {
+        Screens_FavoriteUpdateBadge(key);
+    }
+}
+
+function Screens_FavoriteUpdateBadge(key) {
+    var div = Main_getElementById(ScreenObj[key].ids[2] + ScreenObj[key].posY + '_' + ScreenObj[key].posX),
+        icon = div ? div.querySelector('.stream_fav_icon') : null;
+
+    if (icon) {
+        if (Screens_isFavorite(Screens_BlockChannelGetId(key))) {
+            Main_RemoveClassWithEle(icon, 'hideimp');
+        } else {
+            Main_AddClassWithEle(icon, 'hideimp');
+        }
+    }
+}
+
+function Screens_OpenSavedVod(key) {
+    var id = ScreenObj[key].posY + '_' + ScreenObj[key].posX;
+
+    if (Main_ThumbOpenIsNull(id, ScreenObj[key].ids[0])) return;
+
+    Main_clearAllPlayerEvents();
+    Main_removeEventListener('keydown', ScreenObj[key].key_fun);
+
+    Main_OPenSavedVod(Main_history_GetById('saved', Screens_GetObj(key)[7]));
 }
 
 function Screens_BlockChannelUpdateInfo(id) {
@@ -4307,7 +4460,7 @@ function Screens_ThumbOptionSetArrowArray(key) {
     Screens_ThumbOptionLanguages = Settings_value.content_lang.apply_values;
     Screens_ThumbOptionLanguagesTitles = Settings_value.content_lang.values;
 
-    Screens_ThumbOptionArrays = ['', '', '', '', '', Screens_NoYes, Screens_YesNo, Screens_ThumbOptionLanguagesTitles, Screens_ThumbOptionScreens];
+    Screens_ThumbOptionArrays = ['', '', '', '', '', Screens_NoYes, Screens_YesNo, Screens_ThumbOptionLanguagesTitles, Screens_ThumbOptionScreens, ''];
 
     var historyType = Screens_ThumbOptionStringGetHistory(key);
 
@@ -4320,7 +4473,7 @@ function Screens_ThumbOptionSetArrowArray(key) {
         historyType = Main_getItemJson(ScreenObj[Main_HistoryVod].histPosXName, [0, 0, 0])[1];
     }
 
-    Screens_ThumbOptionPosXArrays = [0, 0, 0, 0, 0, Main_values.OverwriteBlock, historyType, Settings_Obj_default('content_lang'), 0];
+    Screens_ThumbOptionPosXArrays = [0, 0, 0, 0, 0, Main_values.OverwriteBlock, historyType, Settings_Obj_default('content_lang'), 0, 0];
 
     Screens_ThumbOptionGOTO = [
         Main_Live,

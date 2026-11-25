@@ -2083,6 +2083,7 @@ var Play_controlsFollow = temp_controls_pos++;
 var Play_controlsSpeed = temp_controls_pos++;
 var Play_controlsExternal = temp_controls_pos++;
 var Play_controlsRewind = temp_controls_pos++;
+var Play_controlsSave = temp_controls_pos++;
 var Play_controlsQuality = temp_controls_pos++;
 var Play_controlsQualityMini = temp_controls_pos++;
 var Play_controlsQualityMulti = temp_controls_pos++;
@@ -2497,6 +2498,43 @@ function Play_MakeControls() {
         },
         setLabel: function () {
             Main_textContent('controls_text_summary_' + this.position, STR_OPEN_REWIND_SUMMARY);
+        }
+    };
+
+    Play_controls[Play_controlsSave] = {
+        //save the live position to resume as VOD
+        ShowInLive: true,
+        ShowInVod: false,
+        ShowInClip: false,
+        ShowInPP: false,
+        ShowInMulti: false,
+        ShowInChat: false,
+        ShowInAudio: false,
+        ShowInAudioPP: false,
+        ShowInAudioMulti: false,
+        ShowInPreview: false,
+        ShowInStay: false,
+        icons: 'history',
+        offsetY: -2,
+        string: STR_SAVE_POSITION,
+        values: null,
+        defaultValue: null,
+        enterKey: function () {
+            if (!AddUser_IsUserSet()) {
+                Play_showWarningMiddleDialog(STR_FAVORITE_NO_USER, 3000);
+                return;
+            }
+
+            if (!Play_data.data || !Play_data.data[7]) {
+                Play_showWarningMiddleDialog(STR_BLOCK_NO_CHANNEL, 3000);
+                return;
+            }
+
+            Main_saved_Add(Play_data.data);
+            Play_showWarningMiddleDialog(STR_SAVED_POSITION_CONFIRM, 3000);
+        },
+        setLabel: function () {
+            Main_textContent('controls_text_summary_' + this.position, STR_SAVE_POSITION_SUMMARY);
         }
     };
 

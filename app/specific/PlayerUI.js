@@ -33,6 +33,7 @@ function PlayerUI_Groups() {
             Play_controlsSpeed,
             Play_controlsExternal,
             Play_controlsRewind,
+            Play_controlsSave,
             Play_controlsScreeOff,
             Play_controlsLowLatency,
             Play_controlsChapters

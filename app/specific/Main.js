@@ -34,6 +34,9 @@ var Main_ColorBadgeLive = 'd92626',
 var Main_ColorIndicatorVod = '00a94b',
     Main_ColorIndicatorHosting = 'FED000';
 
+//Favorite channel star: the hosting gold, a mark next to the channel name
+var Main_ColorBadgeFavorite = 'FED000';
+
 var Main_cursorYAddFocus = -1;
 
 var Main_Search = 0;
@@ -63,8 +66,9 @@ var Main_HistoryClip = 23;
 var Main_Password = 24;
 var Main_Blocked = 25;
 var Main_SearchVod = 26;
+var Main_HistorySaved = 27;
 
-var Main_History = [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip];
+var Main_History = [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip, Main_HistorySaved];
 
 var Main_GoBefore = '';
 var Main_values = {
@@ -639,6 +643,7 @@ function Main_SetStringsSecondary() {
     Main_textContent('dialog_thumb_opt_setting_name_6', STR_HISTORY_LIVE_DIS);
     Main_textContent('dialog_thumb_opt_setting_name_7', STR_CONTENT_LANG);
     Main_textContent('dialog_thumb_opt_setting_name_8', STR_GO_TO);
+    Main_textContent('dialog_thumb_opt_setting_name_9', STR_FAVORITE_CHANNEL);
 
     Main_innerHTML('dialog_multi_help_text', STR_CONTROLS_MULTI);
 
@@ -1769,6 +1774,74 @@ function Main_OPenAsVod_PreshutdownStream() {
     Play_StopStay();
 }
 
+var Main_OPenSavedVodEntry;
+
+//Issue #48: open a saved live position as its broadcast's VOD, resuming from the saved point.
+//The entry keeps the live history shape so Main_OPenAsVod reads the offset from date - created_at
+function Main_OPenSavedVod(entry) {
+    if (!entry || !entry.data || !entry.data[7]) {
+        Main_OPenSavedVodRestoreKeys();
+        return;
+    }
+
+    Main_values_Play_data = entry.data;
+    Play_data.data = Main_values_Play_data;
+
+    var isHosting = Main_A_includes_B(Play_data.data[1], STR_USER_HOSTED_BY);
+    Main_values.Play_isHost = isHosting;
+
+    if (isHosting) {
+        Play_data.DisplayNameHost = Play_data.data[1];
+        Play_data.data[1] = Play_data.data[15];
+    }
+
+    if (Play_PreviewId) UserLiveFeed_Hide();
+
+    if (entry.vodid) {
+        Main_OPenAsVod(entry);
+        return;
+    }
+
+    //The VOD id is not known yet, resolve it against the channel's latest archive
+    //(it usually publishes a few minutes after the stream started)
+    Main_OPenSavedVodEntry = entry;
+
+    BaseXmlHttpGet(
+        Main_helix_api + 'videos?first=1&user_id=' + entry.data[14] + '&type=archive&sort=time',
+        Main_OPenSavedVodEnd,
+        Main_OPenSavedVodFail,
+        null,
+        null,
+        true
+    );
+}
+
+function Main_OPenSavedVodEnd(response) {
+    var entry = Main_OPenSavedVodEntry;
+
+    response = JSON.parse(response);
+
+    if (response.data && response.data.length && response.data[0].stream_id.toString() === entry.id.toString()) {
+        entry.vodid = response.data[0].id;
+        Main_setHistoryItem();
+
+        Main_OPenAsVod(entry);
+    } else {
+        Main_OPenSavedVodFail();
+    }
+}
+
+function Main_OPenSavedVodFail() {
+    Main_showWarningDialog(STR_SAVED_VOD_NOT_YET, 3000);
+    Main_OPenSavedVodRestoreKeys();
+}
+
+//Screens_OpenSavedVod removed the Saved screen's key handler before opening, nothing
+//opened so give it back or the remote stays dead on the Saved list
+function Main_OPenSavedVodRestoreKeys() {
+    Main_addEventListener('keydown', ScreenObj[Main_HistorySaved].key_fun);
+}
+
 function Main_openStream() {
     Main_hideScene1DocAndCallBack(function () {
         Main_showScene2Doc();
@@ -2498,6 +2571,129 @@ function Main_history_Find_Vod_In_Live(id) {
     return -1;
 }
 
+function Main_SavedSetDefaultObj() {
+    if (!Main_values_History_data[AddUser_UsernameArray[0].id].saved) {
+        Main_values_History_data[AddUser_UsernameArray[0].id].saved = [];
+    }
+}
+
+//Issue #48: save the current live position, entries keep the live history shape so
+//Main_OPenAsVod resumes the broadcast's VOD from date - created_at
+function Main_saved_Add(Data) {
+    if (!AddUser_IsUserSet() || !Data || !Data[7] || ScreenObj[Main_HistorySaved].histPosX[1]) return;
+
+    Main_SavedSetDefaultObj();
+
+    var saved = Main_values_History_data[AddUser_UsernameArray[0].id].saved,
+        entry = Main_history_GetById('saved', Data[7]),
+        createdAt = new Date(Data[12]).getTime(),
+        now = new Date().getTime();
+
+    //created_at is the anchor of the resume offset, without it there is nothing to save
+    if (!createdAt || now <= createdAt) return;
+
+    if (entry) {
+        entry.data = Main_Slice(Data);
+        entry.date = now;
+        entry.game = Data[3];
+        entry.views = Data[13];
+        if (!entry.vodid && Play_RewindId[Data[7]]) entry.vodid = Play_RewindId[Data[7]];
+    } else {
+        //Limit size to 200, drop the oldest like Main_Set_history
+        if (saved.length > 199) {
+            saved.sort(function (a, b) {
+                return a.date < b.date ? -1 : 1;
+            });
+            saved.shift();
+        }
+
+        saved.push({
+            data: Main_Slice(Data),
+            date: now,
+            name: Data[6] ? Data[6].toLowerCase() : '',
+            game: Data[3],
+            id: Data[7],
+            views: Data[13],
+            created_at: createdAt,
+            watched: 0,
+            vodid: Play_RewindId[Data[7]],
+            forceVod: true
+        });
+    }
+
+    Main_setHistoryItem();
+}
+
+//While watching (or leaving) the stream keep the saved position at the live edge, so the
+//entry resumes where the user left and not where they pressed save. Updates existing
+//entries only, it never creates one
+function Main_saved_UpdateLive(Data) {
+    if (!AddUser_IsUserSet() || !Data || !Data[7] || !Main_values_History_data[AddUser_UsernameArray[0].id].saved) return;
+
+    var entry = Main_history_GetById('saved', Data[7]),
+        createdAt = new Date(Data[12]).getTime(),
+        now = new Date().getTime();
+
+    if (entry && createdAt && now > createdAt) {
+        entry.date = now;
+        entry.data = Main_Slice(Data);
+        Main_setHistoryItem();
+    }
+}
+
+//The VOD of a saved broadcast became known (the player learns it while watching), backfill
+//it so the saved list opens without resolving
+function Main_saved_UpdateVod(BroadcastID, vodId) {
+    if (!AddUser_IsUserSet() || !Main_values_History_data[AddUser_UsernameArray[0].id].saved) return;
+
+    var entry = Main_history_GetById('saved', BroadcastID);
+
+    if (entry && !entry.vodid) {
+        entry.vodid = vodId;
+        Main_setHistoryItem();
+    }
+}
+
+//Watching the VOD of a saved entry: keep its resume point in sync and drop it once nearly
+//finished, the same 300 seconds rule PlayVod_UpdateHistory uses for the VOD history
+function Main_saved_UpdateVodProgress(vodId, time) {
+    if (!AddUser_IsUserSet() || !Main_values_History_data[AddUser_UsernameArray[0].id].saved) return;
+
+    var saved = Main_values_History_data[AddUser_UsernameArray[0].id].saved,
+        i = 0,
+        len = saved.length,
+        entry,
+        duration,
+        changed = false;
+
+    vodId = vodId.toString();
+
+    for (i; i < len; i++) {
+        entry = saved[i];
+        if (!entry || !entry.vodid || entry.vodid.toString() !== vodId) continue;
+
+        duration = Main_saved_VodDuration(vodId);
+
+        if (duration && time > 0 && duration - 300 < time) {
+            saved.splice(i, 1);
+            i--;
+            len--;
+            changed = true;
+        } else if (time > 0) {
+            entry.date = new Date(entry.data[12]).getTime() + time * 1000;
+            changed = true;
+        }
+    }
+
+    if (changed) Main_setHistoryItem();
+}
+
+function Main_saved_VodDuration(vodId) {
+    var index = Main_history_Exist('vod', vodId);
+
+    return index > -1 ? Main_values_History_data[AddUser_UsernameArray[0].id].vod[index].data[11] : 0;
+}
+
 function Main_history_UpdateLiveVod(id, vod, vodimg) {
     if (!AddUser_IsUserSet() || ScreenObj[Main_HistoryLive].histPosX[1]) return;
 
@@ -2533,6 +2729,7 @@ function Main_history_UpdateVodClip(id, time, type) {
         //If this is live that becomes a VOD update the until to avoid confusion if playing it from live history
         if (isVod) {
             Main_history_UpdateLiveVodDate(time, ArrayPos.data[7]);
+            Main_saved_UpdateVodProgress(ArrayPos.data[7], time);
         }
 
         Main_setHistoryItem();

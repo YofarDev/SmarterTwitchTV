@@ -688,6 +688,18 @@
                 display: none;
             }
 
+            /* Favorite star: always in the markup so the options toggle can flip it live,
+             * hosting gold so it reads as a mark next to the channel name, not a badge. */
+            .stream_fav_icon {
+                font-size: 85%;
+                margin-left: 0.3ch;
+                vertical-align: middle;
+            }
+
+            .stream_fav_icon.hideimp {
+                display: none;
+            }
+
             .stream_info_channel_partner_icon {
                 display: inline-block;
                 font-size: 75%;
@@ -3975,6 +3987,17 @@
                             </div>
                         </div>
 
+                        <div id="dialog_thumb_opt_setting_9" class="hist_div">
+                            <div id="dialog_thumb_opt_setting_name_9" class="hist_name"></div>
+                            <div class="settings_arraw_div">
+                                <div id="dialog_thumb_opt_left_9" class="left" style="opacity: 0"></div>
+                            </div>
+                            <div id="dialog_thumb_opt_val_9" class="strokedeline hist_value"></div>
+                            <div class="settings_arraw_div">
+                                <div id="dialog_thumb_opt_right_9" class="right" style="opacity: 0"></div>
+                            </div>
+                        </div>
+
                         <div id="dialog_opt_text_end" class="exit_text"></div>
                     </div>
                 </div>
@@ -4226,6 +4249,9 @@
                     </div>
                     <div id="HistoryClip_scroll" class="screen_holder_switch hide">
                         <div id="stream_table_historyclip" class="streams_div"></div>
+                    </div>
+                    <div id="HistorySaved_scroll" class="screen_holder_switch hide">
+                        <div id="stream_table_historysaved" class="streams_div"></div>
                     </div>
 
                     <!-- Vod screens-->
