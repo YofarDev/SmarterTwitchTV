@@ -810,7 +810,7 @@ function UserLiveFeedobj_ShowCurrentUserAGame() {
     }
 
     UserLiveFeedobj_ShowFeedCheck(UserLiveFeedobj_UserAGamesPos, UserLiveFeed_obj[UserLiveFeedobj_UserAGamesPos].Game_changed);
-    Main_IconLoad('icon_feed_back', 'icon-arrow-left', STR_BACK_USER_GAMES + STR_USER + STR_SPACE_HTML + STR_GAMES);
+    Main_IconLoad('icon_feed_back', 'icon-arrow-left', STR_BACK_USER_GAMES + STR_UI.following + STR_UI.separator + STR_UI.categories);
     if (!Settings_Obj_default('hide_etc_help_text')) Main_RemoveClass('icon_feed_back', 'opacity_zero');
 }
 
@@ -1008,7 +1008,13 @@ function UserLiveFeedobj_SetBottomText(pos) {
 
     Main_AddClass('feed_end_' + pos, 'feed_end_name_focus');
 
-    Main_getElementById('feed_end_' + (UserLiveFeedobj_UserRecommendedPos - 1)).style.display = ScreensObj_RecommendedEnabled() ? '' : 'none';
+    //Signed out the switcher wraps before the followed rows (UserLiveFeed_KeyUpDown), so their
+    //names are not offered either; Recommended also follows its setting
+    var userSet = AddUser_UserIsSet();
+    for (i = UserLiveFeedobj_UserLivePos - 1; i < UserLiveFeedobj_MAX - 1; i++) {
+        Main_getElementById('feed_end_' + i).style.display =
+            userSet && (i !== UserLiveFeedobj_UserRecommendedPos - 1 || ScreensObj_RecommendedEnabled()) ? '' : 'none';
+    }
 
     len = UserLiveFeedobj_MAX - 2;
 
@@ -1016,8 +1022,10 @@ function UserLiveFeedobj_SetBottomText(pos) {
     Main_innerHTML('feed_end_2', Play_data.data[3] !== '' ? Play_data.data[3] : STR_NO_GAME);
     Main_innerHTML(
         'feed_end_' + (UserLiveFeedobj_UserGamesPos - 1),
-        UserLiveFeedobj_CurrentUserAGameEnable ? UserLiveFeedobj_CurrentUserAGameNameEnter : STR_USER + STR_SPACE_HTML + STR_GAMES
+        UserLiveFeedobj_CurrentUserAGameEnable ? UserLiveFeedobj_CurrentUserAGameNameEnter : STR_UI.following + STR_UI.separator + STR_UI.categories
     );
+
+    UserLiveFeedobj_ScrollStrip(pos);
 
     if (Settings_Obj_default('hide_etc_help_text') === 1) {
         Main_RemoveClass('feed_end', 'opacity_zero');
@@ -1030,6 +1038,20 @@ function UserLiveFeedobj_SetBottomText(pos) {
             UserLiveFeedobj_SetBottomTextId
         );
     }
+}
+
+/* The row names under the switcher read at the 24px floor inside the safe margins, so they can be
+ * wider than the screen: keep the focused name in view, a third of the way in. */
+function UserLiveFeedobj_ScrollStrip(pos) {
+    var strip = Main_getElementById('feed_end'),
+        item = Main_getElementById('feed_end_' + pos);
+    if (!strip || !item) return;
+    if (strip.scrollWidth <= strip.clientWidth) {
+        strip.scrollLeft = 0;
+        return;
+    }
+    var offset = item.getBoundingClientRect().left - strip.getBoundingClientRect().left + strip.scrollLeft;
+    strip.scrollLeft = Math.max(0, offset - strip.clientWidth / 3);
 }
 
 function UserLiveFeedobj_CreateSideFeed(id, data) {
@@ -1081,7 +1103,7 @@ function UserLiveFeedobj_CreateSideFeed(id, data) {
         UserLiveFeed_side_ids[11] +
         id +
         '" class="icon-' +
-        (!data[8] ? 'circle" style="color: red;' : 'refresh" style="') +
+        (!data[8] ? 'circle" style="color: #' + Main_ColorIndicatorLive + ';' : 'refresh" style="') +
         ' font-size: 55%; "></i><div id="' +
         UserLiveFeed_side_ids[12] +
         id +
@@ -1128,7 +1150,7 @@ function UserLiveFeedobj_CreatFeed(pos, y, id, data, Extra_when, Extra_vodimg, f
         ' live_icon strokedeline' +
         (force_VOD ? ' hideimp' : '') +
         '" style="color: ' +
-        (data[8] ? '#FFFFFF' : 'red') +
+        (data[8] ? '#FFFFFF' : '#' + Main_ColorIndicatorLive) +
         ';"></i> ' +
         (Extra_vodimg || force_VOD
             ? '<div class="vodicon_text ' + (force_VOD ? '' : 'hideimp') + '" style="background: #' + Main_ColorBadgeVod + ';">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>&nbsp;'

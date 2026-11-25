@@ -215,7 +215,7 @@ function ChannelContent_setFollow() {
     if (AddCode_IsFollowing) {
         Main_innerHTML(
             'channel_content_titley_2',
-            '<i class="icon-heart" style="color: #7635fc; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOWING
+            '<i class="icon-heart" style="color: ' + SettingsColor_Accent + '; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOWING
         );
         Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', STR_FOLLOWING);
     } else {
@@ -224,9 +224,9 @@ function ChannelContent_setFollow() {
             '<i class="icon-heart-o stream_channel_follow_icon"></i>' +
                 STR_SPACE_HTML +
                 STR_SPACE_HTML +
-                (AddUser_UserIsSet() ? STR_FOLLOW : STR_NOKEY)
+                (AddUser_UserIsSet() ? STR_FOLLOW : STR_SIGN_IN_TO_FOLLOW)
         );
-        Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', AddUser_UserIsSet() ? STR_FOLLOW : STR_NOKEY);
+        Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', AddUser_UserIsSet() ? STR_FOLLOW : STR_SIGN_IN_TO_FOLLOW);
     }
 }
 
@@ -315,7 +315,7 @@ function ChannelContent_createCell(valuesArray) {
             '<i class="icon-' +
             (valuesArray[8] ? 'refresh' : 'circle') +
             ' live_icon strokedeline" style="color: ' +
-            (valuesArray[8] ? '#FFFFFF' : ishosting ? '#FED000' : 'red') +
+            (valuesArray[8] ? '#FFFFFF' : ishosting ? '#' + Main_ColorIndicatorHosting : '#' + Main_ColorIndicatorLive) +
             ';"></i> ' +
             valuesArray[1] +
             '</div><div class="stream_info_live" style="width:' +
@@ -333,12 +333,12 @@ function ChannelContent_createCell(valuesArray) {
             Main_ChannelContent +
             ChannelContent_Ids[1] +
             '" >' +
-            STR_SINCE +
-            valuesArray[11] +
+            //Same compact scan line as the grid cards: 'Live for 7h 19m · 21.1K viewers'
+            STR_UI.liveFor +
+            Main_formatLiveDuration(valuesArray[12]) +
             '</span>' +
-            STR_SPACE_HTML +
-            STR_FOR +
-            valuesArray[4] +
+            STR_UI.separator +
+            Main_GetCompactViewerStrings(valuesArray[13]) +
             '</div></div></div>'
     );
 }
@@ -808,7 +808,7 @@ function ChannelContent_UpdateSince(key) {
 
     Main_textContent(
         Main_ChannelContent + ChannelContent_Ids[1],
-        STR_SINCE + Play_streamLiveAtWitDate(new Date().getTime(), ChannelContent_DataObj[12])
+        STR_UI.liveFor + Main_formatLiveDuration(ChannelContent_DataObj[12])
     );
 
     ChannelContent_UpdateSinceId = Main_setTimeout(

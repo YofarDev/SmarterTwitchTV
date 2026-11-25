@@ -904,7 +904,43 @@
         STR_REMOTE_CONTROLS_LEGACY,
         STR_REMOTE_CONTROLS_DIRECT,
         STR_HIDE_LIVE_SEEK_BAR,
-        STR_HIDE_LIVE_SEEK_BAR_SUMMARY;
+        STR_HIDE_LIVE_SEEK_BAR_SUMMARY,
+        STR_LIBRARY_WELCOME_TITLE,
+        STR_LIBRARY_WELCOME_COPY,
+        STR_SIGN_IN_TO_FOLLOW,
+        STR_SEARCH_TYPE_FIRST,
+        STR_SEARCH_RESULTS_FOR,
+        STR_ADD_USER_TITLE,
+        STR_ADD_USER_STEP_SCAN,
+        STR_ADD_USER_STEP_CODE,
+        STR_ADD_USER_WAITING,
+        STR_ADD_USER_NEW_CODE,
+        STR_ADD_USER_RETRY,
+        STR_ABOUT_UPSTREAM,
+        STR_VIEW_ONE,
+        STR_ADD_USER_HELP,
+        STR_REMOTE_BASICS,
+        STR_REMOTE_BROWSING,
+        STR_REMOTE_WATCHING,
+        STR_REMOTE_HOLD_OK,
+        STR_REMOTE_MOVE,
+        STR_REMOTE_OPEN,
+        STR_REMOTE_OPTIONS,
+        STR_REMOTE_TABS,
+        STR_REMOTE_MENU,
+        STR_REMOTE_BACK,
+        STR_REMOTE_PLAYER_BAR,
+        STR_REMOTE_PLAYER_FEED,
+        STR_REMOTE_PLAYER_CHAT,
+        STR_REMOTE_PLAYER_CLOSE,
+        STR_SETTINGS_GENERAL,
+        STR_SETTINGS_PLAYBACK,
+        STR_SETTINGS_INTERFACE,
+        STR_SETTINGS_APP,
+        STR_SETTINGS_ADVANCED,
+        STR_SETTINGS_ADVANCED_SUMMARY,
+        STR_SETTINGS_SHOW,
+        STR_SETTINGS_HIDE;
 
     // English defaults are loaded before every selected translation.
     var STR_UI;
@@ -929,7 +965,9 @@
      */
 
     // Bellow here are the all untranslatable string,they are a combination of strings and html code use by pats of the code
-    var LINK_COLOR = '#328df5';
+    //Addresses in dialogs (About, sync codes): primary text, not an off-palette blue; a TV cannot open
+    //them, they are read and typed on another device
+    var LINK_COLOR = '#f5f1fa';
     var STR_BR = '<br>';
     var STR_SPACE_HTML = '&nbsp;';
     var STR_SPACE = ' ';
@@ -939,7 +977,8 @@
     var STR_DIV_MIDLE_LEFT = '<div style="text-align: left;">';
     var STR_DIV_LINK = '<div style="text-align: center; width: 100%; display: inline-block; color: ' + LINK_COLOR + ';">';
     var STR_SPAN_LINK = '<span style="color: ' + LINK_COLOR + ';">';
-    var STR_RED_DIV = '<div class="class_bold" style="text-align: center; width: 100%; display: inline-block; color: #FF0000; font-size: 110%;">';
+    //#ff4d4d is DESIGN.md Live Red (Main_ColorIndicatorLive loads after the language files)
+    var STR_RED_DIV = '<div class="class_bold" style="text-align: center; width: 100%; display: inline-block; color: #ff4d4d; font-size: 110%;">';
     var STR_CONTROL_KEY = '';
     var STR_SEARCH_KEY = '';
     var STR_ABOUT_KEY = '';
@@ -1036,6 +1075,7 @@
         STR_CONTENT = STR_SPACE + STR_CONTENT;
         STR_VIEWS = STR_SPACE + STR_VIEWS;
         STR_VIEW = STR_SPACE + STR_VIEW;
+        STR_VIEW_ONE = STR_SPACE + STR_VIEW_ONE;
         STR_LIVE_CHANNELS = STR_SPACE + STR_LIVE_CHANNELS;
         STR_LIVE_GAMES = STR_SPACE + STR_LIVE_GAMES;
         STR_USER_CHANNEL = STR_SPACE + STR_USER_CHANNEL;
@@ -1097,12 +1137,12 @@
         STR_CONTROLS_MAIN_3 = STR_CONTROLS_MAIN_3 + STR_GUIDE + STR_GUIDE_EXTRA + STR_GUIDE_EXTRA2;
         STR_GOBACK = STR_GOBACK_START;
         STR_PAYPAL =
-            '<div style="vertical-align: middle;"><div class="class_bold" style="vertical-align: middle; display: inline-block; font-size: 120%;"><img style="vertical-align: middle; display: inline-block; width: 4%;" alt="" src="https://fgl27.github.io/SmartTwitchTV/release/githubio/images/paypal.png">' +
-            STR_SPACE_HTML +
+            //QR codes are drawn locally when About opens (Main_DrawAboutQrs): no image fetched from another domain
+            '<div style="vertical-align: middle;"><div class="class_bold" style="vertical-align: middle; display: inline-block; font-size: 120%;">' +
             STR_PAYPAL_SUMMARY +
             STR_BR +
             STR_SPACE_HTML +
-            '<img style="vertical-align: middle; display: inline-block; width: 10.5%;" alt="" src="https://fgl27.github.io/SmartTwitchTV/screenshot/donoqr.png">' +
+            '<canvas id="about_qr_paypal" class="about_qr" width="400" height="400" aria-hidden="true"></canvas>' +
             '<div style="display: inline-block; color: ' +
             LINK_COLOR +
             ';font-size: 2.7vh;text-align: center; font-family: Roboto;">' +
@@ -1113,8 +1153,7 @@
             '</div></div></div>';
 
         STR_BITCOIN =
-            '<div style="vertical-align: middle;"><div class="class_bold" style="vertical-align: middle; display: inline-block; font-size: 120%;"><img style="vertical-align: middle; display: inline-block; width: 4%;" alt="" src="https://fgl27.github.io/SmartTwitchTV/release/githubio/images/bitcoin.png">' +
-            STR_SPACE_HTML +
+            '<div style="vertical-align: middle;"><div class="class_bold" style="vertical-align: middle; display: inline-block; font-size: 120%;">' +
             STR_BITCOIN_SUMMARY +
             STR_BR +
             STR_SPACE_HTML +
@@ -1123,7 +1162,7 @@
             ';font-size: 2.7vh;text-align: center; font-family: Roboto;">' +
             STR_BITCOIN_WALLET +
             STR_SPACE_HTML +
-            '</div><img style="vertical-align: middle; display: inline-block; width: 10.5%;" alt="" src="https://fgl27.github.io/SmartTwitchTV/screenshot/chart.png"></div></div>';
+            '</div><canvas id="about_qr_bitcoin" class="about_qr" width="400" height="400" aria-hidden="true"></canvas></div></div>';
 
         STR_PIX =
             '<div style="vertical-align: middle;"><div class="class_bold" style="vertical-align: middle; display: inline-block; font-size: 120%;">' +
@@ -1372,8 +1411,6 @@
             STR_ABOUT_INFO_2 +
             (Main_IsOn_OSInterface ? '' : STR_BR + STR_RED_DIV + STR_ABOUT_INFO_2_SOURCE + '</div>') +
             STR_CONTACT +
-            STR_PAYPAL +
-            STR_BITCOIN +
             STR_BR +
             STR_DIV_TITLE +
             STR_ABOUT_INFO_18 +
@@ -1399,6 +1436,15 @@
             DefaultMakeLink('https://tinyurl.com/sttvdependency') +
             '</div>' +
             STR_BR +
+            STR_BR +
+            //The donation links are the original SmartTwitchTV author's: a closing section that says so
+            '<div class="about_upstream">' +
+            STR_DIV_TITLE +
+            STR_ABOUT_UPSTREAM +
+            '</div>' +
+            STR_PAYPAL +
+            STR_BITCOIN +
+            '</div>' +
             STR_BR +
             STR_DIV_TITLE +
             STR_CLOSE_THIS +
@@ -1560,8 +1606,8 @@
         STR_SEARCH_RESULT_EMPTY = 'No search results found';
         STR_SWITCH = 'Switch screen';
         STR_SWITCH_USER = 'Switch user screen';
-        STR_SWITCH_VOD = 'Switch: VODs or highlights';
-        STR_SWITCH_CLIP = 'Switch: Period (24h, 7d, 30d, all)';
+        STR_SWITCH_VOD = 'VODs or highlights';
+        STR_SWITCH_CLIP = 'Change period';
         STR_GO_TO = 'Go to screen';
         STR_USER = 'User';
         STR_LIVE = 'Live';
@@ -1584,7 +1630,7 @@
         STR_CHECK_HOST = ', checking host';
         STR_IS_SUB_ONLY = 'This video is only available to subscribers';
         STR_IS_SUB_ONLY_ERROR = 'is sub-only content.';
-        STR_NOKEY_GENERAL_WARN = ', navigate to the side panel (Top option) Add User or User: Switch, add, key, press enter on the user';
+        STR_NOKEY_GENERAL_WARN = ' Open Account in the menu.';
         STR_REFRESH_PROBLEM = 'Connection failed or no content available. Try refreshing';
         STR_REFRESH_PROBLEM_ENTER = 'Failed to connect or no content available. Try refreshing.';
         STR_REFRESH_PROBLEM_ENTER_LANG =
@@ -1599,12 +1645,13 @@
         STR_STREAM_ON = 'Streamed';
         STR_DURATION = 'Duration';
         STR_VIEW = 'View';
-        STR_VIEWS = 'Views';
+        STR_VIEWS = 'views';
+        STR_VIEW_ONE = 'view';
         STR_VIEWER = 'viewer';
         STR_VIEWERS = 'viewers';
-        STR_EXIT_AGAIN = 'Click again to exit';
-        STR_EXIT_AGAIN_PICTURE = 'Click again to exit picture-in-picture mode';
-        STR_EXIT_AGAIN_MULTI = 'Click again to exit multistream mode';
+        STR_EXIT_AGAIN = 'Press again to exit';
+        STR_EXIT_AGAIN_PICTURE = 'Press again to exit picture-in-picture mode';
+        STR_EXIT_AGAIN_MULTI = 'Press again to exit multistream mode';
         STR_EXIT_MESSAGE = 'Are you sure you want to exit Smarter Purple TV?';
         STR_EXIT = 'Exit';
         STR_CHANGELOG = 'Changelog';
@@ -1654,7 +1701,7 @@
         STR_CLIP_MONTH = '30d';
         STR_CLIP_ALL = 'all';
         STR_JUMP_TIME = 'Jumping';
-        STR_JUMP_TIME_CLICK_AGAIN = 'Click again to jump';
+        STR_JUMP_TIME_CLICK_AGAIN = 'Press again to jump';
         STR_JUMP_T0 = 'to';
         STR_JUMP_CANCEL = 'Jump Canceled';
         STR_JUMP_TIME_BIG = ', jump time bigger than duration';
@@ -1730,7 +1777,7 @@
         STR_NOKEY_WARN = 'You must set a user to follow or unfollow channels.';
         STR_FOLLOW_ISSUE =
             'Third-party apps can no longer follow or unfollow channels. The button will only appear if you are already following a channel.';
-        STR_NOKUSER_WARN = 'You need to set a user to view followed content.';
+        STR_NOKUSER_WARN = 'Sign in to see the channels you follow.';
         STR_RESET = 'Restart the';
         STR_CLIP = 'Clip';
         STR_CHANNEL_CONT = 'Channel content';
@@ -1800,7 +1847,7 @@
         STR_RECENT = ', Most recent';
         STR_VIWES = ', Most views';
         STR_NOKEY_VIDEO_WARN = 'Add a user to access followed videos.';
-        STR_SWITCH_TYPE = 'Switch: Most recent or views';
+        STR_SWITCH_TYPE = 'Newest or most viewed';
         STR_ENABLE = 'Enable';
         STR_ENABLED = 'Enabled';
         STR_DISABLE = 'Disable';
@@ -1932,7 +1979,7 @@
             "Change audio source: Choose the 'Audio source' option at the bottom of the player. If in 50/50 or multistream, use left/right D-pad. If in picture in picture, use previous/next track media keys";
         STR_PICTURE_CONTROLS3 = 'Change audio source for all videos: Hold down D-pad.';
         STR_PICTURE_CONTROLS8 =
-            "Player restart: Choose the 'Player restart' option at the bottom of the player. This will only restart the players, which is useful fpr syncing the player and the chat. This will not sync one player's content with another's";
+            "Player restart: Choose the 'Player restart' option at the bottom of the player. This will only restart the players, which is useful for syncing the player and the chat. This will not sync one player's content with another's";
         STR_PICTURE_CONTROLS9 =
             "Manually sync players: The workaround is to choose the 'Speed' option at the bottom of the player to slow down the stream that is in front or vice versa. Only works for picture in picture mode";
         STR_PICTURE_CONTROLS10 = "Picture in picture video quality: Check the in-app '" + STR_PLAYER_BITRATE + "' settings";
@@ -2011,7 +2058,7 @@
         STR_WARNINGS = 'Warnings';
         STR_WELCOME = 'Welcome to';
         STR_WELCOME_SUMMARY =
-            'This application has lots and lots of features. Check the app settings and controls to understand how to use it. In doubt, check the Play Store demonstration video, if still unsure, use the contact info.';
+            'Controls, at the bottom of the menu, shows what each remote key does. Settings has the rest; for anything else, use the contact info below.';
         STR_WARNING_PHONE = 'Cellphones warning';
         STR_WARNING_PHONE_SUMMARY =
             "This app is designed to be used mainly on TVs, the support for other devices is limited and may never receive a better support. If you don't have a keyboard or a D-pad + enter and return controller (ESC works as a return on a computer), use the virtual on-screen keys to navigate (only visible on phone/tablet devices). In settings you can change the position and the opacity of the virtual D-pad, click anywhere on the screen to show the virtual D-pad. When it's hidden, it doesn't work.";
@@ -2053,7 +2100,7 @@
         STR_DELETE_SURE = 'Are you sure you want to delete all';
         STR_CREATED_NEWEST = 'Created / Uptime newest';
         STR_CREATED_OLDEST = 'Created / Uptime Oldest';
-        STR_THUMB_OPTIONS = 'Thumbnail Options';
+        STR_THUMB_OPTIONS = 'Options';
         STR_HISTORY_LIVE_DIS = 'Enable live history';
         STR_HISTORY_VOD_DIS = 'Enable VOD history';
         STR_HISTORY_CLIP_DIS = 'Enable clip history';
@@ -2440,8 +2487,8 @@
         STR_FAVORITE_NO_USER = 'Add a user first before being able to favorite';
         STR_SAVED = 'Saved';
         STR_SAVE_POSITION = 'Save position';
-        STR_SAVE_POSITION_SUMMARY = 'Save the current live position to resume this stream later from History - Saved';
-        STR_SAVED_POSITION_CONFIRM = 'Position saved, resume later from History - Saved';
+        STR_SAVE_POSITION_SUMMARY = 'Resume this stream later from Library › Saved';
+        STR_SAVED_POSITION_CONFIRM = 'Position saved. Resume it from Library › Saved';
         STR_SAVED_VOD_NOT_YET = 'The VOD of this stream is not available yet, try again later';
         STR_HISTORY_SAVED_DIS = 'Enable saved stream list';
         STR_BLOCK_OVERWRITE = 'Show blocked';
@@ -2565,6 +2612,49 @@
         STR_BACKUP_ENABLE_SUMMARY = 'If set to YES the app will keep a backup of all user info ' + STR_BACKUP_USER_INFO;
 
         STR_BACKUP_SYNC_ENABLE = 'Sync across devices';
+        //Signed-out Library panel and the follow buttons of channel and category pages without an account
+        STR_LIBRARY_WELCOME_TITLE = 'Pick up where you left off';
+        STR_LIBRARY_WELCOME_COPY = 'Add an account to keep your watch history, or browse live channels without one.';
+        STR_SIGN_IN_TO_FOLLOW = 'Sign in to follow';
+        STR_SEARCH_TYPE_FIRST = 'Type something to search first';
+        //Search results heading: keep %x, it is replaced by the searched text
+        STR_SEARCH_RESULTS_FOR = 'Results for “%x”';
+        //Account sign-in panel: keep %site, it is replaced by the activation address (twitch.tv/activate)
+        STR_ADD_USER_TITLE = 'Sign in with your phone';
+        STR_ADD_USER_STEP_SCAN = 'Scan the QR code, or go to %site';
+        STR_ADD_USER_STEP_CODE = 'Enter this code';
+        STR_ADD_USER_WAITING = 'Waiting for you to sign in…';
+        STR_ADD_USER_NEW_CODE = 'That code expired, so here is a new one. Waiting for you to sign in…';
+        STR_ADD_USER_RETRY = 'Can’t reach Twitch right now. Trying again…';
+        //About: heading over the donation links, which belong to the original app's author
+        STR_ABOUT_UPSTREAM = 'Support fgl27, author of the original SmartTwitchTV';
+        //Footer hint on the sign-in panel: keep {left} and {back}, they are drawn as remote key glyphs
+        STR_ADD_USER_HELP = '{left} Navigation    {back} Return';
+        //Controls dialog ('Remote basics'): one label per remote key; STR_REMOTE_HOLD_OK keeps {ok}
+        STR_REMOTE_BASICS = 'Remote basics';
+        STR_REMOTE_BROWSING = 'Browsing';
+        STR_REMOTE_WATCHING = 'Watching';
+        STR_REMOTE_HOLD_OK = 'Hold {ok}';
+        STR_REMOTE_MOVE = 'Move between cards';
+        STR_REMOTE_OPEN = 'Watch or open';
+        STR_REMOTE_OPTIONS = 'Options for the card';
+        STR_REMOTE_TABS = 'Tabs, from the top row';
+        STR_REMOTE_MENU = 'Menu, from the first card';
+        STR_REMOTE_BACK = 'Go back';
+        STR_REMOTE_PLAYER_BAR = 'Show the player bar';
+        STR_REMOTE_PLAYER_FEED = 'Live channels row';
+        STR_REMOTE_PLAYER_CHAT = 'Chat on or off';
+        STR_REMOTE_PLAYER_CLOSE = 'Close the video (press twice)';
+        //Settings groups; the Advanced row folds the expert options (Show/Hide is its value)
+        STR_SETTINGS_GENERAL = 'General';
+        STR_SETTINGS_PLAYBACK = 'Playback';
+        STR_SETTINGS_INTERFACE = 'Interface';
+        STR_SETTINGS_APP = 'Sync and updates';
+        STR_SETTINGS_ADVANCED = 'Advanced';
+        STR_SETTINGS_ADVANCED_SUMMARY = 'Codecs, quality and bitrate limits, warnings and diagnostics';
+        STR_SETTINGS_SHOW = 'Show';
+        STR_SETTINGS_HIDE = 'Hide';
+
         STR_BACKUP_SYNC_ENABLE_SUMMARY =
             "Enabling this will add a slight delay to the application's startup process, and is unnecessary if you are using the app in a single device. The app will sync all enabled options below between this device and others using the same Google Drive account. To switch devices and keep watching where you left off, minimize the app on the current device by pressing the Home key. Then, make sure the app is fully closed on the other device before opening it.";
     }
@@ -8613,8 +8703,22 @@
         publishVersionCode: 405, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/405/SmarterPurpleTV_3_0_405.apk',
         WebVersion: 'November 25 2026',
-        WebTag: 805, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 806, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 25 2026 (Web 806)',
+                changes: [
+                    'Design: a full interface pass — a bolder focus ring that reads on any thumbnail, larger card text, category cards that lead with the game name, and the Options pill no longer covering names',
+                    'New: signing in shows a large code and a QR code to scan with your phone; an expired code is replaced in place and a network error retries instead of leaving the screen',
+                    'New: Settings are grouped (General, Playback, Interface, Sync and updates) with expert options behind Advanced; each row shows its description only when focused',
+                    'New: Controls is now a one-screen Remote basics page; About, Welcome, card Options, exit and Settings dialogs use the same readable panel',
+                    'Improvement: search results show what you searched for, OK in the search field searches right away, and the type buttons match the result tabs',
+                    'Improvement: signed out, Following and Library open the sign-in panel instead of empty or failing screens, and tabs that lead nowhere are hidden',
+                    'Improvement: video, clip and channel cards use the compact "Nov 18 · 729.9K views" / "Live for 7h 24m · 46.7K viewers" lines, and grids with a period or type switch show the current choice next to the tabs',
+                    'Improvement: light and custom color styles now theme every panel, dialog and focused row',
+                    'Accessibility: TalkBack reads Settings rows with their value, dialogs are announced, and the page language follows the app language'
+                ]
+            },
             {
                 title: 'November 25 2026 (Web 805)',
                 changes: [
@@ -9712,18 +9816,9 @@
 
         if (resultObj.status === 200) {
             var data = JSON.parse(resultObj.responseText);
-            var codeDiv = STR_BR + STR_BR + data.user_code + STR_BR + STR_BR;
-
-            var urlDiv;
-            if (Main_IsOn_OSInterface) {
-                urlDiv = '<div style="color: ' + LINK_COLOR + '; text-decoration:none;">' + data.verification_uri + '</div>';
-            } else {
-                urlDiv = STR_DIV_LINK + DefaultMakeLink(data.verification_uri) + '</div>';
-            }
 
             AddUser_DeviceCode = data.device_code;
-
-            Main_innerHTML('add_user_text', STR_ADD_USER_TEXT.replace('%site', urlDiv).replace('%code', codeDiv));
+            AddUser_ShowCode(data.user_code, data.verification_uri);
             Main_ShowElement('add_user_text_holder');
             Main_HideLoadDialog();
             AddUser_getCodeCheck(AddUser_DeviceCodeTimeout);
@@ -9732,33 +9827,82 @@
         }
     }
 
+    /* Device sign-in panel: numbered steps, the code as large key caps and a QR of the activation URL
+     * (Twitch's verification_uri already carries the code, so scanning skips typing). The site is plain
+     * text, a TV cannot open links. QR drawn locally by the vendored generator, as phone chat does. */
+    function AddUser_ShowCode(code, uri) {
+        var site = String(uri || '')
+                .replace(/^https?:\/\/(www\.)?/, '')
+                .split('?')[0],
+            canvas = Main_getElementById('add_user_qr');
+
+        code = String(code || '');
+        Main_textContent('add_user_title', STR_ADD_USER_TITLE);
+        Main_textContent('add_user_step1', STR_ADD_USER_STEP_SCAN.replace('%site', site));
+        Main_textContent('add_user_step2', STR_ADD_USER_STEP_CODE);
+        //An 8 letter code reads as two groups of four
+        Main_textContent('add_user_code', code.length === 8 ? code.substr(0, 4) + ' ' + code.substr(4) : code);
+        Main_textContent('add_user_text_counter', AddUser_CodeRenewed ? STR_ADD_USER_NEW_CODE : STR_ADD_USER_WAITING);
+        AddUser_CodeRenewed = false;
+
+        if (canvas && uri && PhoneChat_IsQrLibraryAvailable()) {
+            try {
+                PhoneChat_DrawQr(canvas, uri);
+                Main_RemoveClass('add_user_qr', 'hide');
+            } catch (e) {
+                Main_AddClass('add_user_qr', 'hide');
+            }
+        } else Main_AddClass('add_user_qr', 'hide');
+    }
+
     // function AddUser_insertString(str, index, value) {
     //     return str.substr(0, index) + value + str.substr(index);
     // }
 
+    /* A failed request never throws the user out of sign-in: the panel stays, its status line says what
+     * happened and the flow retries by itself (polling again while the code is still valid, a new code
+     * otherwise). Back and the rail stay the way out. */
     var AddUser_getCodeErrorId;
+    var AddUser_RetryDelay = 5000;
     function AddUser_getCodeError() {
         //Also the requests' error callback, so it can land after leaving: the error is Add User's, not the next screen's
         if (!AddUser_IsInUserScreen()) return;
 
         Main_HideLoadDialog();
-        Main_showWarningDialog(STR_ADD_ERROR, 7500, true);
+        if (!Main_isElementShowing('add_user_text_holder')) {
+            //No code on screen yet: show the panel with its title and the status alone
+            Main_textContent('add_user_title', STR_ADD_USER_TITLE);
+            Main_textContent('add_user_step1', '');
+            Main_textContent('add_user_step2', '');
+            Main_textContent('add_user_code', '');
+            Main_AddClass('add_user_qr', 'hide');
+            Main_ShowElement('add_user_text_holder');
+        }
+        Main_textContent('add_user_text_counter', STR_ADD_USER_RETRY);
         AddUser_getCodeErrorId = Main_setTimeout(
             function () {
-                if (AddUser_IsInUserScreen()) AddUser_handleKeyBack();
+                if (!AddUser_IsInUserScreen()) return;
+                if (AddUser_DeviceCode) AddUser_getDeviceCode();
+                else AddUser_getCode();
             },
-            3000,
+            AddUser_RetryDelay,
             AddUser_getCodeErrorId
         );
+    }
+
+    //The code ran out (or was refused): drop it and fetch a new one in place, saying so on the status line
+    var AddUser_CodeRenewed = false;
+    function AddUser_RenewCode() {
+        AddUser_CodeRenewed = true;
+        AddUser_getCode();
     }
 
     var AddUser_getCodeCheckId;
     function AddUser_getCodeCheck(counter) {
         if (!AddUser_IsInUserScreen()) return;
 
+        //The status line stays a calm 'Waiting for you to sign in…': a per-second countdown was noise
         if (counter) {
-            Main_textContent('add_user_text_counter', STR_ADD_USER_TEXT_COUNTER.replace('%d', counter));
-
             AddUser_getCodeCheckId = Main_setTimeout(
                 function () {
                     AddUser_getCodeCheck(counter - 1);
@@ -9767,7 +9911,6 @@
                 AddUser_getCodeCheckId
             );
         } else {
-            Main_textContent('add_user_text_counter', STR_ADD_USER_TEXT_COUNTER_NOW);
             AddUser_getDeviceCode();
         }
     }
@@ -9799,10 +9942,10 @@
             AddUser_getUserToken();
         } else if (resultObj.status === 400) {
             data = JSON.parse(resultObj.responseText);
-            if (Main_A_includes_B(data.message, 'authorization_pending')) {
+            if (Main_A_includes_B(data.message, 'authorization_pending') || Main_A_includes_B(data.message, 'slow_down')) {
                 AddUser_getCodeCheck(AddUser_DeviceCodeTimeout);
             } else {
-                AddUser_getCodeError();
+                AddUser_RenewCode();
             }
         } else {
             AddUser_getCodeError();
@@ -12038,15 +12181,15 @@
                 OnDuploClick = div;
             } else if (Main_A_includes_B(id, 'chanel_button')) {
                 Search_cursorY = 1;
-                Search_cursorX = 0;
+                Search_cursorX = 1;
                 Search_KeyEnter();
             } else if (Main_A_includes_B(id, 'game_button')) {
                 Search_cursorY = 1;
-                Search_cursorX = 1;
+                Search_cursorX = 2;
                 Search_KeyEnter();
             } else if (Main_A_includes_B(id, 'live_button')) {
                 Search_cursorY = 1;
-                Search_cursorX = 2;
+                Search_cursorX = 0;
                 Search_KeyEnter();
             } else if (Main_A_includes_B(id, 'password_view')) {
                 Password_cursorY = 1;
@@ -12990,7 +13133,12 @@
         if (AddCode_IsFollowing) {
             Main_innerHTML(
                 'channel_content_titley_2',
-                '<i class="icon-heart" style="color: #7635fc; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FOLLOWING
+                '<i class="icon-heart" style="color: ' +
+                    SettingsColor_Accent +
+                    '; font-size: 100%;"></i>' +
+                    STR_SPACE_HTML +
+                    STR_SPACE_HTML +
+                    STR_FOLLOWING
             );
             Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', STR_FOLLOWING);
         } else {
@@ -12999,9 +13147,9 @@
                 '<i class="icon-heart-o stream_channel_follow_icon"></i>' +
                     STR_SPACE_HTML +
                     STR_SPACE_HTML +
-                    (AddUser_UserIsSet() ? STR_FOLLOW : STR_NOKEY)
+                    (AddUser_UserIsSet() ? STR_FOLLOW : STR_SIGN_IN_TO_FOLLOW)
             );
-            Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', AddUser_UserIsSet() ? STR_FOLLOW : STR_NOKEY);
+            Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', AddUser_UserIsSet() ? STR_FOLLOW : STR_SIGN_IN_TO_FOLLOW);
         }
     }
 
@@ -13091,7 +13239,7 @@
                 '<i class="icon-' +
                 (valuesArray[8] ? 'refresh' : 'circle') +
                 ' live_icon strokedeline" style="color: ' +
-                (valuesArray[8] ? '#FFFFFF' : ishosting ? '#FED000' : 'red') +
+                (valuesArray[8] ? '#FFFFFF' : ishosting ? '#' + Main_ColorIndicatorHosting : '#' + Main_ColorIndicatorLive) +
                 ';"></i> ' +
                 valuesArray[1] +
                 '</div><div class="stream_info_live" style="width:' +
@@ -13109,12 +13257,12 @@
                 Main_ChannelContent +
                 ChannelContent_Ids[1] +
                 '" >' +
-                STR_SINCE +
-                valuesArray[11] +
+                //Same compact scan line as the grid cards: 'Live for 7h 19m · 21.1K viewers'
+                STR_UI.liveFor +
+                Main_formatLiveDuration(valuesArray[12]) +
                 '</span>' +
-                STR_SPACE_HTML +
-                STR_FOR +
-                valuesArray[4] +
+                STR_UI.separator +
+                Main_GetCompactViewerStrings(valuesArray[13]) +
                 '</div></div></div>'
         );
     }
@@ -13580,10 +13728,7 @@
             return;
         }
 
-        Main_textContent(
-            Main_ChannelContent + ChannelContent_Ids[1],
-            STR_SINCE + Play_streamLiveAtWitDate(new Date().getTime(), ChannelContent_DataObj[12])
-        );
+        Main_textContent(Main_ChannelContent + ChannelContent_Ids[1], STR_UI.liveFor + Main_formatLiveDuration(ChannelContent_DataObj[12]));
 
         ChannelContent_UpdateSinceId = Main_setTimeout(
             function () {
@@ -19068,7 +19213,9 @@
     //State indicator dots (DESIGN.md: VOD Dot Green, Hosting Yellow) — the brighter
     //indicator hues of their badge colors; dots are marks, not text surfaces.
     var Main_ColorIndicatorVod = '00a94b',
-        Main_ColorIndicatorHosting = 'FED000';
+        Main_ColorIndicatorHosting = 'FED000',
+        //Live Red (DESIGN.md): the live dot, and the app's one alert red (update notices)
+        Main_ColorIndicatorLive = 'ff4d4d';
 
     //Favorite channel star: the hosting gold, a mark next to the channel name
     var Main_ColorBadgeFavorite = 'FED000';
@@ -19608,6 +19755,50 @@
         Main_Changelog();
     }
 
+    /* Controls is one 'Remote basics' screen: what each remote key does while browsing and while
+     * watching, drawn with the footer's key glyphs. The player opens it with Watching first. */
+    function Main_RemoteBasicsHtml(fromPlayer) {
+        var browse = [
+                ['{up}{down}{left}{right}', STR_REMOTE_MOVE],
+                ['{ok}', STR_REMOTE_OPEN],
+                [STR_REMOTE_HOLD_OK, STR_REMOTE_OPTIONS],
+                ['{up}', STR_REMOTE_TABS],
+                ['{left}', STR_REMOTE_MENU],
+                ['{back}', STR_REMOTE_BACK]
+            ],
+            watch = [
+                ['{ok}', STR_REMOTE_PLAYER_BAR],
+                ['{up}', STR_REMOTE_PLAYER_FEED],
+                ['{down}', STR_REMOTE_PLAYER_CHAT],
+                ['{back}', STR_REMOTE_PLAYER_CLOSE]
+            ],
+            section = function (title, rows) {
+                var html = '<div class="remote_section"><div class="remote_section_title">' + Screens_AriaEscape(title) + '</div>',
+                    i;
+                for (i = 0; i < rows.length; i++) {
+                    html +=
+                        '<div class="remote_row"><span class="remote_keys">' +
+                        Navigation_KeyHintHtml(rows[i][0]) +
+                        '</span><span class="remote_label">' +
+                        Screens_AriaEscape(rows[i][1]) +
+                        '</span></div>';
+                }
+                return html + '</div>';
+            };
+
+        return (
+            '<div class="remote_title">' +
+            Screens_AriaEscape(STR_REMOTE_BASICS) +
+            '</div><div class="remote_columns">' +
+            (fromPlayer
+                ? section(STR_REMOTE_WATCHING, watch) + section(STR_REMOTE_BROWSING, browse)
+                : section(STR_REMOTE_BROWSING, browse) + section(STR_REMOTE_WATCHING, watch)) +
+            '</div><div class="remote_close">' +
+            Screens_AriaEscape(STR_CLOSE_THIS) +
+            '</div>'
+        );
+    }
+
     function Main_SetStringsSecondary() {
         Main_textContent('play_dialog_exit_text', STR_EXIT_AGAIN);
 
@@ -19618,7 +19809,7 @@
         Main_textContent('password_help', STR_MATURE_HELP_SET_PASS);
 
         Main_textContent('chanel_button', STR_CHANNELS);
-        Main_textContent('game_button', STR_GAMES);
+        Main_textContent('game_button', STR_UI.categories);
         Main_textContent('live_button', STR_LIVE);
         Main_textContent('vod_button', STR_VIDEOS);
         Main_textContent('exit_app_cancel', STR_CANCEL);
@@ -19628,8 +19819,13 @@
         Main_textContent('exit_app_minimize', STR_MINIMIZE);
         Main_textContent('main_dialog_exit_text', STR_EXIT_MESSAGE);
 
-        Main_innerHTML('dialog_controls_text', '<p>' + Navigation_KeyHintHtml(STR_UI.browseHelp) + '</p>' + STR_CONTROLS_MAIN_0);
-        Main_innerHTML('dialog_controls_player_text', '<p>' + Navigation_KeyHintHtml(STR_UI.playerHelp) + '</p>' + STR_CONTROLS_PLAYER_0);
+        Main_innerHTML('dialog_controls_text', Main_RemoteBasicsHtml(false));
+        Main_innerHTML('dialog_controls_player_text', Main_RemoteBasicsHtml(true));
+        //Dialog names for screen readers, translated with the rest of the strings
+        Main_getElementById('dialog_controls').setAttribute('aria-label', STR_REMOTE_BASICS);
+        Main_getElementById('dialog_controls_player').setAttribute('aria-label', STR_REMOTE_BASICS);
+        Main_getElementById('dialog_about').setAttribute('aria-label', STR_ABOUT);
+        Main_getElementById('search_input').setAttribute('aria-label', STR_SEARCH);
         Main_textContent('side_panel_warn_text', STR_NO + STR_LIVE_CHANNELS);
         Main_textContent('side_panel_movel_top_text', STR_LIVE_FEED);
 
@@ -19707,11 +19903,13 @@
 
         Main_innerHTML('feed_end_1', STR_FEATURED);
         Main_innerHTML('feed_end_3', STR_LIVE);
-        Main_innerHTML('feed_end_4', STR_USER + STR_SPACE_HTML + STR_LIVE);
+        //The player's channel switcher names its rows with the shell's own destinations
+        //(Following, Library), not the old 'User Live' / 'Live History' vocabulary
+        Main_innerHTML('feed_end_4', STR_UI.following);
         Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserRecommendedPos - 1), STR_UI.recommended);
-        Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserHistoryPos - 1), STR_LIVE + STR_SPACE_HTML + STR_HISTORY);
-        Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodPos - 2), STR_USER + STR_SPACE_HTML + 'VOD');
-        Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodHistoryPos - 2), 'VOD ' + STR_HISTORY);
+        Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserHistoryPos - 1), STR_UI.library + STR_UI.separator + STR_LIVE);
+        Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodPos - 2), STR_UI.following + STR_UI.separator + STR_VIDEOS);
+        Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodHistoryPos - 2), STR_UI.library + STR_UI.separator + STR_VIDEOS);
         Main_innerHTML('icon_feed_back', STR_SPACE_HTML);
     }
 
@@ -19905,10 +20103,46 @@
         Main_HideControlsDialog();
         Main_AboutDialogUpdateTime();
         Main_ShowElementWithEle(Main_about_dialog_div);
+        Main_DrawAboutQrs();
+        Main_DialogTakeFocus(Main_about_dialog_div);
+    }
+
+    //Donation QR codes, drawn with the vendored generator the sign-in and phone chat QRs use
+    function Main_DrawAboutQrs() {
+        var codes = [
+                ['about_qr_paypal', 'http://tiny.cc/donatetofgl27'],
+                ['about_qr_bitcoin', 'bitcoin:' + STR_BITCOIN_WALLET]
+            ],
+            canvas,
+            i;
+        if (!PhoneChat_IsQrLibraryAvailable()) return;
+        for (i = 0; i < codes.length; i++) {
+            canvas = Main_getElementById(codes[i][0]);
+            if (canvas && !canvas.getAttribute('data-drawn')) {
+                PhoneChat_DrawQr(canvas, codes[i][1]);
+                canvas.setAttribute('data-drawn', '1');
+            }
+        }
+    }
+
+    /* Dialogs without focusable rows take the DOM focus themselves so TalkBack announces them;
+     * key handling stays with the listeners, the focus is only for assistive tech. */
+    function Main_DialogTakeFocus(dialog) {
+        if (!dialog) return;
+        try {
+            dialog.focus({preventScroll: true});
+        } catch (e) {
+            dialog.focus();
+        }
+    }
+
+    function Main_DialogReleaseFocus(dialog) {
+        if (dialog && document.activeElement === dialog) dialog.blur();
     }
 
     function Main_HideAboutDialog() {
         Main_HideElementWithEle(Main_about_dialog_div);
+        Main_DialogReleaseFocus(Main_about_dialog_div);
     }
 
     function Main_isAboutDialogVisible() {
@@ -19977,10 +20211,12 @@
         Main_addEventListener('keydown', addEventListener);
         Main_HideAboutDialog();
         Main_ShowElement('dialog_controls');
+        Main_DialogTakeFocus(Main_getElementById('dialog_controls'));
     }
 
     function Main_HideControlsDialog() {
         Main_HideElement('dialog_controls');
+        Main_DialogReleaseFocus(Main_getElementById('dialog_controls'));
     }
 
     function Main_isControlsDialogVisible() {
@@ -20033,7 +20269,8 @@
     }
 
     function Main_GetViewsStrings(value) {
-        return value === 1 ? STR_VIEW : STR_VIEWS;
+        //STR_VIEW is also the password dialog's 'View' button, so the count word has its own string
+        return parseInt(value, 10) === 1 ? STR_VIEW_ONE : STR_VIEWS;
     }
 
     // function Main_videoqualitylang(video_height, average_fps, language) {
@@ -20301,7 +20538,11 @@
             'label_update',
             '<div style="vertical-align: middle; display: inline-block;"><i class="icon-' +
                 (web ? 'globe' : 'play-1') +
-                '" style="color: #ff2121;"></i></div><div style="vertical-align: middle; display: inline-block; color: #ff2121">' +
+                '" style="color: #' +
+                Main_ColorIndicatorLive +
+                ';"></i></div><div style="vertical-align: middle; display: inline-block; color: #' +
+                Main_ColorIndicatorLive +
+                '">' +
                 STR_SPACE_HTML +
                 (web ? STR_WEB_UPDATE_AVAILABLE : STR_UPDATE_AVAILABLE) +
                 STR_UPDATE_CHECK_SIDE +
@@ -20469,7 +20710,7 @@
     function Main_UpdateDialogTitle() {
         var innerHtml =
                 '<div class="about_text_title" ' +
-                (Main_HasUpdate ? ' style="color: #ff2121;"' : '') +
+                (Main_HasUpdate ? ' style="color: #' + Main_ColorIndicatorLive + ';"' : '') +
                 '>' +
                 (Main_HasUpdate ? (Main_IsWebupdate ? STR_WEB_UPDATE_AVAILABLE : STR_UPDATE_AVAILABLE) : STR_UPDATE_CHANGELOG) +
                 STR_BR +
@@ -23167,6 +23408,43 @@
         return [];
     }
 
+    /* Tabs show only where every tab leads somewhere: not in Settings, not on the signed-out onboarding
+     * panel, and not on Account without an account (Add user is the only thing it can do there). */
+    function Navigation_TabsVisible() {
+        if (Settings_isVisible() || Navigation_Onboarding) return false;
+        return !(Navigation_State.destination === 'account' && !AddUser_IsUserSet());
+    }
+
+    //The search form has nothing to reload; Refresh appears once there are results
+    function Navigation_RefreshVisible() {
+        return Navigation_TabsVisible() && Main_values.Main_Go !== Main_Search;
+    }
+
+    /* The heading names what is on screen: a category's own screens carry the category name and search
+     * results restate the query; everything else is its destination's label. */
+    function Navigation_Heading(screen, route, labels, routes) {
+        if (!route && Navigation_IsCategoryScreen(screen) && Main_values.Main_gameSelected) return Main_values.Main_gameSelected;
+        if (route && route.destination === 'search' && screen !== Main_Search && Main_values.Search_data)
+            return STR_SEARCH_RESULTS_FOR.replace('%x', Main_values.Search_data);
+        return labels[
+            routes
+                .map(function (item) {
+                    return item.id;
+                })
+                .indexOf(Navigation_State.destination)
+        ];
+    }
+
+    //Following and Library need an account; signed out they show the onboarding panel instead
+    function Navigation_IsAccountDestination(destination) {
+        return destination === 'following' || destination === 'library';
+    }
+
+    //A category's own screens (its live list, videos and clips) are named after the category
+    function Navigation_IsCategoryScreen(screen) {
+        return screen === Main_aGame || screen === Main_AGameVod || screen === Main_AGameClip;
+    }
+
     function Navigation_Button(parent, id, label, callback, icon) {
         var button = document.createElement('button'),
             span = document.createElement('span');
@@ -23216,6 +23494,7 @@
         else if (Navigation_Region === 'recovery') hint = STR_UI.recoveryHelp;
         else if (screen === Main_Search) hint = STR_UI.searchHelp;
         else if (screen === Main_ChannelContent) hint = STR_UI.channelHelp;
+        else if (screen === Main_addUser) hint = STR_ADD_USER_HELP;
         else if (Settings_isVisible()) hint = STR_UI.settingsNavHelp;
         else if (ScreenObj[screen] && ScreenObj[screen].posSub === Screens_SubActions) hint = STR_UI.actionsHelp;
         else if (Screens_DirectInputMode()) hint = STR_UI.browseHelpDirect;
@@ -23262,6 +23541,11 @@
         if (route && !Navigation_Onboarding) {
             Navigation_State.destination = route.destination;
             Navigation_State.tab = screen === Main_Blocked ? 3 : route.tab;
+        } else if (!route && !Navigation_Onboarding && !AddUser_IsUserSet() && Navigation_IsAccountDestination(Navigation_State.destination)) {
+            //A detail screen restored at launch inherits the default 'following' origin; signed out that
+            //origin's tabs lead nowhere, so the screen belongs to Browse
+            Navigation_State.destination = 'browse';
+            Navigation_State.tab = Navigation_IsCategoryScreen(screen) ? 2 : 0;
         }
         if (Settings_isVisible()) {
             Navigation_State.destination = 'settings';
@@ -23278,16 +23562,7 @@
             //rail never claims you are somewhere you are not
             if ((route || Settings_isVisible()) && routes[i].id === Navigation_State.destination) button.setAttribute('aria-current', 'page');
         }
-        Main_textContent(
-            'navigation-heading',
-            labels[
-                routes
-                    .map(function (item) {
-                        return item.id;
-                    })
-                    .indexOf(Navigation_State.destination)
-            ]
-        );
+        Main_textContent('navigation-heading', Navigation_Heading(screen, route, labels, routes));
         Main_textContent(
             'navigation-account',
             AddUser_UsernameArray[0] ? AddUser_UsernameArray[0].display_name || AddUser_UsernameArray[0].name : STR_UI.noAccount
@@ -23313,16 +23588,19 @@
             live = Boolean(obj && obj.screenType === 0 && !obj.isHistory && !Settings_isVisible());
         if (live && !Navigation_Onboarding) Main_AddClass('scene1', 'navigation-live');
         else Main_RemoveClass('scene1', 'navigation-live');
+        //A category's live list: every card plays the same game, so the cards drop that line
+        if (live && !Navigation_Onboarding && screen === Main_aGame) Main_AddClass('scene1', 'navigation-game');
+        else Main_RemoveClass('scene1', 'navigation-game');
         Main_ShowElement('navigation-shell');
-        if (Settings_isVisible()) {
-            Main_AddClass('scene1', 'navigation-settings');
-            Main_HideElement('navigation-tabs');
-            Main_HideElement('navigation-refresh');
-        } else {
-            Main_RemoveClass('scene1', 'navigation-settings');
-            Main_ShowElement('navigation-tabs');
-            Main_ShowElement('navigation-refresh');
-        }
+        if (Settings_isVisible()) Main_AddClass('scene1', 'navigation-settings');
+        else Main_RemoveClass('scene1', 'navigation-settings');
+        if (Navigation_TabsVisible()) Main_ShowElement('navigation-tabs');
+        else Main_HideElement('navigation-tabs');
+        if (Navigation_RefreshVisible()) Main_ShowElement('navigation-refresh');
+        else Main_HideElement('navigation-refresh');
+        //The onboarding panel has no grid, so grid-only chrome (the position counter) hides with it
+        if (Navigation_Onboarding) Main_AddClass('scene1', 'navigation-onboarding-open');
+        else Main_RemoveClass('scene1', 'navigation-onboarding-open');
         Main_textContent('navigation-about', STR_ABOUT);
         Main_textContent('navigation-help', STR_CONTROLS);
         Main_textContent('navigation-updates', STR_UPDATE_CHANGELOG);
@@ -23390,6 +23668,7 @@
         if (Navigation_Region) Navigation_Close(false);
         Navigation_Callback = callback || (ScreenObj[Main_values.Main_Go] && ScreenObj[Main_values.Main_Go].key_fun);
         Navigation_Region = region || 'rail';
+        if (Navigation_Region === 'tabs' && !Navigation_TabsVisible()) Navigation_Region = 'rail';
         Navigation_Position = Navigation_Region === 'tabs' ? Navigation_State.tab : 0;
         if (Navigation_Region === 'rail') {
             var routes = Navigation_Destinations();
@@ -23492,15 +23771,13 @@
                     return true;
                 }
             } else if (code === KEY_LEFT || code === KEY_3) {
+                // Signed out there is no followed panel to open: Left stays on the rail (the screen's edge)
+                // instead of showing a warning about it.
+                if (!AddUser_UserHasToken()) return true;
                 Navigation_Close(false);
-                if (AddUser_UserHasToken()) {
-                    // The followed panel returns to the rail with this screen's keys (Right or Back).
-                    Sidepannel_Callback = Navigation_Callback;
-                    Sidepannel_StartFeed();
-                } else {
-                    Sidepannel_ShowNoUserWarning();
-                    Navigation_Open(Navigation_Callback);
-                }
+                // The followed panel returns to the rail with this screen's keys (Right or Back).
+                Sidepannel_Callback = Navigation_Callback;
+                Sidepannel_StartFeed();
                 return true;
             }
         } else if (Navigation_Region === 'tabs') {
@@ -23509,7 +23786,10 @@
                 return true;
             }
             if (code === KEY_LEFT || code === KEY_RIGHT)
-                Navigation_Position = Math.max(0, Math.min(tabs.length, Navigation_Position + (code === KEY_LEFT ? -1 : 1)));
+                Navigation_Position = Math.max(
+                    0,
+                    Math.min(Navigation_RefreshVisible() ? tabs.length : tabs.length - 1, Navigation_Position + (code === KEY_LEFT ? -1 : 1))
+                );
             else if (code === KEY_DOWN) {
                 if (Navigation_Onboarding) {
                     Navigation_Region = 'recovery';
@@ -23525,10 +23805,6 @@
                 Navigation_Region = 'rail';
                 Main_AddClass('navigation-rail', 'navigation-expanded');
             } else if (code === KEY_LEFT || code === KEY_RIGHT) Navigation_Position = code === KEY_LEFT ? 0 : 1;
-            else if (code === KEY_UP) {
-                Navigation_Region = 'tabs';
-                Navigation_Position = 0;
-            }
         }
         // Inline region switches (recovery/rail/tabs) re-resolve the detail band and the footer hint.
         Navigation_UpdateDetails(Main_values.Main_Go);
@@ -23576,6 +23852,10 @@
 
     function Navigation_ActivateTab(tab) {
         if (Navigation_Onboarding) return;
+        if (Navigation_IsAccountDestination(Navigation_State.destination) && !AddUser_IsUserSet()) {
+            Navigation_ShowOnboarding(Navigation_State.destination);
+            return;
+        }
         if (Navigation_State.destination === 'search' && tab && !Main_values.Search_data) {
             Navigation_Go(Main_Search);
             return;
@@ -23665,12 +23945,16 @@
     }
 
     function Navigation_ShowOnboarding(destination) {
-        Main_ExitCurrent(Main_values.Main_Go);
+        //Exit like Navigation_Go does: Add user, Search and Settings are not ScreenObj screens, and
+        //Main_ExitCurrent alone left the sign-in panel (and its code polling) running behind the panel
+        Navigation_ExitCurrent();
+        //A late code response checks Main_Go to know it is still wanted: never leave it on Add user here
+        if (Main_values.Main_Go === Main_addUser) Main_values.Main_Go = Main_Live;
         Navigation_Onboarding = true;
         Navigation_State.destination = destination || 'following';
         Navigation_State.tab = 0;
-        Main_textContent('navigation-welcome-title', STR_UI.welcomeTitle);
-        Main_textContent('navigation-welcome-copy', STR_UI.welcomeCopy);
+        Main_textContent('navigation-welcome-title', destination === 'library' ? STR_LIBRARY_WELCOME_TITLE : STR_UI.welcomeTitle);
+        Main_textContent('navigation-welcome-copy', destination === 'library' ? STR_LIBRARY_WELCOME_COPY : STR_UI.welcomeCopy);
         Main_textContent('navigation-recovery-0', STR_USER_ADD);
         Main_textContent('navigation-recovery-1', STR_UI.browse);
         Main_getElementById('navigation-recovery-0').onclick = Navigation_Go.bind(null, Main_addUser);
@@ -34513,10 +34797,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_removeEventListener('keydown', removeEventListener);
         Main_addEventListener('keydown', Play_handleKeyControls);
         Main_ShowElement('dialog_controls_player');
+        Main_DialogTakeFocus(Main_getElementById('dialog_controls_player'));
     }
 
     function Play_HideControlsDialog() {
         Main_HideElement('dialog_controls_player');
+        Main_DialogReleaseFocus(Main_getElementById('dialog_controls_player'));
         Main_removeEventListener('keydown', Play_handleKeyControls);
         Main_addEventListener('keydown', Play_controlsEventListener);
     }
@@ -39497,7 +39783,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
     function PlayerUI_Groups() {
         return {
-            chat: [Play_controlsPhoneChat, Play_controlsChat, Play_controlsChatSend, Play_controlsChatSettings],
+            //Show chat is the everyday action, so it leads; chat on the phone follows it
+            chat: [Play_controlsChat, Play_controlsPhoneChat, Play_controlsChatSend, Play_controlsChatSettings],
             quality: [Play_controlsQuality, Play_controlsQualityMini, Play_controlsQualityMulti],
             layout: [Play_controlsChatSide, Play_MultiStream],
             content: [
@@ -41013,7 +41300,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             id +
             '" class="stream_info_channel_name">' +
             (valuesArray[5]
-                ? '<i class="icon-circle channel_live_icon strokedeline" style="color: red;"></i><span class="stream_live_badge">' +
+                ? '<i class="icon-circle channel_live_icon strokedeline" style="color: #' +
+                  Main_ColorIndicatorLive +
+                  ';"></i><span class="stream_live_badge">' +
                   STR_LIVE +
                   '</span>'
                 : '') +
@@ -41116,11 +41405,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             playing +
             '</div>' +
             '<div style="line-height: 1.3ch;"><div class="stream_info_live" style="width: auto; display: inline-block;">' +
-            STR_CREATED_AT +
+            //Compact scan line like the live cards: 'Nov 18, 2026 · 729.8K views'
             valuesArray[16] +
-            ',' +
-            STR_SPACE_HTML +
-            valuesArray[14] +
+            STR_UI.separator +
+            Main_formatCompactViewers(valuesArray[13]) +
             Main_GetViewsStrings(valuesArray[13]) +
             '</div></div>' +
             (Extra_when
@@ -41192,14 +41480,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             valuesArray[10] +
             '</div>' +
             '<div class="stream_info_live">' +
-            (valuesArray[3] !== '' && valuesArray[3] !== null ? STR_STARTED + STR_PLAYING + valuesArray[3] : '') +
+            (valuesArray[3] !== '' && valuesArray[3] !== null ? STR_PLAYING + valuesArray[3] : '') +
             '</div>' +
             '<div style="line-height: 1.3ch;"><div class="stream_info_live" style="width: auto; display: inline-block;">' +
-            STR_STREAM_ON +
+            //Compact scan line like the live cards: 'Nov 18, 2026 · 22.7M views'
             valuesArray[2] +
-            ',' +
-            STR_SPACE_HTML +
-            valuesArray[4] +
+            STR_UI.separator +
+            Main_formatCompactViewers(valuesArray[13]) +
             Main_GetViewsStrings(valuesArray[13]) +
             '</div></div>' +
             (Extra_when
@@ -41259,7 +41546,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             ' live_icon strokedeline' +
             (force_VOD ? ' hideimp' : '') +
             '" style="color: ' +
-            (valuesArray[8] ? '#FFFFFF' : ishosting ? '#' + Main_ColorIndicatorHosting : 'red') +
+            (valuesArray[8] ? '#FFFFFF' : ishosting ? '#' + Main_ColorIndicatorHosting : '#' + Main_ColorIndicatorLive) +
             ';"></i> ' +
             (Extra_vodimg || force_VOD
                 ? '<div class="vodicon_text ' +
@@ -41293,7 +41580,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             '" >' +
             Main_ReplaceLargeFont(twemoji.parse(valuesArray[2])) +
             '</div>' +
-            '<div class="stream_info_live" id="' +
+            '<div class="stream_info_live stream_info_live_game" id="' +
             idArray[12] +
             id +
             '" >' +
@@ -43107,7 +43394,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
     function Screens_histStart(key, click) {
         ScreenObj[key].sethistDialog();
-        Main_textContent('dialog_hist_text_end', click ? STR_THUMB_OPTIONS_CLICK : STR_THUMB_OPTIONS_KEY);
+        if (click) Main_textContent('dialog_hist_text_end', STR_THUMB_OPTIONS_CLICK);
+        else Main_innerHTML('dialog_hist_text_end', Navigation_KeyHintHtml(STR_UI.playerHelp));
         Main_ShowElement('dialog_hist_setting');
         Main_removeEventListener('keydown', ScreenObj[key].key_fun);
         Main_addEventListener('keydown', ScreenObj[key].key_hist);
@@ -43589,7 +43877,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         Main_removeEventListener('keydown', ScreenObj[key].key_fun);
         Main_addEventListener('keydown', ScreenObj[key].key_thumb);
-        Main_textContent('dialog_opt_text_end', click ? STR_THUMB_OPTIONS_CLICK : STR_THUMB_OPTIONS_KEY);
+        //Remote users get the same key-glyph hint as the player drawers, not a sentence
+        if (click) Main_textContent('dialog_opt_text_end', STR_THUMB_OPTIONS_CLICK);
+        else Main_innerHTML('dialog_opt_text_end', Navigation_KeyHintHtml(STR_UI.playerHelp));
 
         Main_ShowElementWithEle(Screens_dialog_thumb_div);
     }
@@ -43632,7 +43922,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             Main_textContent(Screens_ThumbFollowCheckName, STR_NOKEY + STR_CANT_FOLLOW);
         }
 
-        Main_textContent('dialog_thumb_opt_val_2', '...');
+        //'...' is the follow check in progress; signed out the row's name already says what to do
+        Main_textContent('dialog_thumb_opt_val_2', AddUser_UserIsSet() ? '...' : '');
 
         if (ScreenObj[key].screenType < 2) {
             Main_values.Play_isHost = Main_A_includes_B(Screens_values_Play_data[1], STR_USER_HOSTED_BY);
@@ -43812,7 +44103,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_textContent(Screens_ThumbFollowCheckName, name);
 
         if (FollowState) {
-            Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart', STR_FOLLOWING, '#7635fc');
+            Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart', STR_FOLLOWING, SettingsColor_Accent);
         } else {
             Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart-o', STR_FOLLOW);
         }
@@ -44719,9 +45010,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         )
             return;
 
+        //A screen that never loaded has lastRefresh 0: say nothing rather than 'refreshed 20782d ago'
         Main_innerHTML(
             'label_last_refresh',
-            STR_SPACE_HTML + '(' + STR_LAST_REFRESH + Play_timeDay(new Date().getTime() - ScreenObj[key].lastRefresh) + ')'
+            ScreenObj[key].lastRefresh
+                ? STR_SPACE_HTML + '(' + STR_LAST_REFRESH + Play_timeDay(new Date().getTime() - ScreenObj[key].lastRefresh) + ')'
+                : ''
         );
     }
 
@@ -44909,7 +45203,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (AGame_following) {
             Main_innerHTML(
                 ScreenObj[Main_aGame].ids[2] + '-1_2',
-                '<i class="icon-heart" style="color: #7635fc; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE + STR_FOLLOWING
+                '<i class="icon-heart" style="color: ' +
+                    SettingsColor_Accent +
+                    '; font-size: 100%;"></i>' +
+                    STR_SPACE_HTML +
+                    STR_SPACE +
+                    STR_FOLLOWING
             );
         } else {
             Main_innerHTML(
@@ -44917,7 +45216,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 '<i class="icon-heart-o" style="color: #FFFFFF; font-size: 100%; "></i>' +
                     STR_SPACE_HTML +
                     STR_SPACE_HTML +
-                    (AddUser_UserIsSet() ? STR_FOLLOW : STR_NOKEY)
+                    (AddUser_UserIsSet() ? STR_FOLLOW : STR_SIGN_IN_TO_FOLLOW)
             );
         }
     }
@@ -45822,14 +46121,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                                 [
                                     game.boxArtURL ? game.boxArtURL.replace('{width}x{height}', Main_GameSize) : '', //0
                                     game.displayName, //1
-                                    (cell.channelsCount ? Main_formatNumber(cell.channelsCount) : 0) +
-                                        STR_SPACE_HTML +
-                                        STR_CHANNELS +
-                                        STR_BR +
-                                        STR_FOR +
-                                        (cell.viewersCount ? Main_formatNumber(cell.viewersCount) : 0) +
-                                        STR_SPACE_HTML +
-                                        Main_GetViewerStrings(cell.viewersCount ? cell.viewersCount : 0), //2
+                                    //One compact line ('299.3K viewers') so the game name can lead the card
+                                    Main_GetCompactViewerStrings(cell.viewersCount ? cell.viewersCount : 0), //2
                                     id_cell //3
                                 ],
                                 this.screen
@@ -45843,16 +46136,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                                 [
                                     game.box && game.box.template ? game.box.template.replace('{width}x{height}', Main_GameSize) : '', //0
                                     game.name, //1
-                                    hasLive
-                                        ? Main_formatNumber(cell.channels) +
-                                          STR_SPACE_HTML +
-                                          STR_CHANNELS +
-                                          STR_BR +
-                                          STR_FOR +
-                                          Main_formatNumber(cell.viewers) +
-                                          STR_SPACE_HTML +
-                                          Main_GetViewerStrings(cell.viewers)
-                                        : '', //2
+                                    hasLive ? Main_GetCompactViewerStrings(cell.viewers) : '', //2
                                     game._id //3
                                 ],
                                 this.screen
@@ -48270,6 +48554,22 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         //Detail screens (channel, game, VOD) have no destination of their own; the shell heading shows
         //the screen-set label so the chrome names what is actually on screen instead of the origin
         if (!Navigation_Route(Main_values.Main_Go)) Main_textContent('navigation-heading', text);
+        //Screens with switches (period, VODs/highlights, sort) show their current choice as a chip next
+        //to the tabs: the switch row only names the action, the shell hides the legacy label holding it
+        var obj = ScreenObj[Main_values.Main_Go],
+            route = Navigation_Route(Main_values.Main_Go);
+        Main_textContent(
+            'navigation-filter',
+            //search results carry the query here, which the heading already shows
+            small_text && obj && obj.SwitchesIcons && !(route && route.destination === 'search')
+                ? String(small_text)
+                      .replace(/&nbsp;/g, ' ')
+                      .replace(/<[^>]*>/g, '')
+                      .replace(/^\s*,\s*/, '')
+                      .replace(/\s*,\s*/g, STR_UI.separator)
+                      .replace(/^\s+|\s+$/g, '')
+                : ''
+        );
     }
 
     function ScreensObj_LiveQueryCellArray(cell) {
@@ -48849,7 +49149,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             Search_Session.origin = originScreen;
             Search_Session.draft = '';
             Search_Session.submitted = '';
-            Search_Session.type = 0;
+            Search_Session.type = 1; // Channels
         }
         Main_values.Main_BeforeSearch = Search_Session.origin;
         Main_values.Search_isSearching = false;
@@ -48875,7 +49175,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             Search_cursorX = Search_Session.type;
         } else {
             Main_SearchInput.value = '';
-            Search_cursorX = 0;
+            Search_cursorX = 1; // Channels
         }
         Main_ShowElement('search_scroll');
         Search_cursorY = 0;
@@ -48905,27 +49205,25 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     function Search_loadData() {
         Search_exit();
         Main_ready(function () {
-            // Explicit result-type mapping: form button order differs from the shell's result-tab order.
-            if (!Search_cursorX) {
-                Screens_init(Main_SearchChannels);
-            } else if (Search_cursorX === 1) {
-                Screens_init(Main_SearchGames);
-            } else if (Search_cursorX === 2) {
-                Screens_init(Main_SearchLive);
-            } else if (Search_cursorX === 3) {
-                Screens_init(Main_SearchVod);
-            }
+            // The form buttons use the result tabs' order and names (Live, Channels, Categories, Videos),
+            // so type N is result tab N + 1 and the two selectors read as one.
+            var screens = [Main_SearchLive, Main_SearchChannels, Main_SearchGames, Main_SearchVod];
+            if (screens[Search_cursorX] !== undefined) Screens_init(screens[Search_cursorX]);
         });
     }
 
-    var Search_buttonIds = ['chanel_button', 'game_button', 'live_button', 'vod_button'];
+    var Search_buttonIds = ['live_button', 'chanel_button', 'game_button', 'vod_button'];
     function Search_refreshInputFocusTools() {
         var i = 0,
             len = Search_buttonIds.length;
 
         for (i; i < len; i++) {
             Main_RemoveClass(Search_buttonIds[i], 'button_search_focused');
+            Main_RemoveClass(Search_buttonIds[i], 'button_search_selected');
         }
+
+        //The chosen result type stays marked while the field has focus, so OK there searches it
+        Main_AddClass(Search_buttonIds[Search_cursorX], 'button_search_selected');
 
         if (Search_cursorY) {
             Main_AddClass(Search_buttonIds[Search_cursorX], 'button_search_focused');
@@ -48997,10 +49295,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         } else {
             if (Main_SearchInput.value !== '' && Main_SearchInput.value !== null) {
                 if (Main_SearchInput.value.replace(/\s/g, '') === '') {
-                    Main_showWarningDialog(STR_SEARCH_EMPTY);
-                    Main_setTimeout(function () {
-                        Main_HideWarningDialog();
-                    }, 1000);
+                    Search_EmptyWarning();
                     return;
                 }
                 // The submitted query only reaches loaders after validation; the draft stays editable.
@@ -49009,13 +49304,15 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 Search_Session.type = Search_cursorX;
                 Main_values.Search_data = Main_SearchInput.value;
                 Search_loadData();
-            } else {
-                Main_showWarningDialog(STR_SEARCH_EMPTY);
-                Main_setTimeout(function () {
-                    Main_HideWarningDialog();
-                }, 1000);
-            }
+            } else Search_EmptyWarning();
         }
+    }
+
+    function Search_EmptyWarning() {
+        Main_showWarningDialog(STR_SEARCH_TYPE_FIRST);
+        Main_setTimeout(function () {
+            Main_HideWarningDialog();
+        }, 2000);
     }
 
     var Search_inputFocusId;
@@ -49026,6 +49323,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_removeEventListener('keydown', Search_handleKeyDown);
         Main_addEventListener('keydown', Search_KeyboardEvent);
         Main_SearchInput.placeholder = STR_PLACEHOLDER_SEARCH;
+        //Focus shows at once (Instant Focus); only the real focus, which opens the TV keyboard, waits
+        Main_AddClass('search_input', 'input_class_focus');
 
         Search_inputFocusId = Main_setTimeout(
             function () {
@@ -49046,6 +49345,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         OSInterface_AvoidClicks(false);
         Main_SearchInput.blur();
         Search_removeEventListener();
+        Main_RemoveClass('search_input', 'input_class_focus');
         Main_removeEventListener('keydown', Search_KeyboardEvent);
 
         if (EnaKeydown) Main_addEventListener('keydown', Search_handleKeyDown);
@@ -49077,6 +49377,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 }
                 break;
             case KEY_KEYBOARD_DONE:
+                //OK / keyboard Done searches the marked type right away; an empty field says why not
+                Search_KeyboardDismiss();
+                if (Main_SearchInput.value.replace(/\s/g, '')) Search_KeyEnter();
+                else Search_EmptyWarning();
+                break;
             case KEY_DOWN:
                 Search_KeyboardDismiss();
                 break;
@@ -49649,6 +49954,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             set_values: [''],
             defaultValue: 1
         },
+        advanced_opt: {
+            values: ['None'],
+            set_values: [''],
+            defaultValue: 1
+        },
         vod_seek: {
             values: ['None'],
             set_values: [''],
@@ -50089,6 +50399,17 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         return Main_isElementShowing('settings_holder');
     }
 
+    //The Advanced group is folded by default; opening it adds its rows to the list in place
+    var Settings_AdvancedOpen = false;
+
+    function Settings_ToggleAdvanced() {
+        Settings_RemoveInputFocus();
+        Settings_AdvancedOpen = !Settings_AdvancedOpen;
+        Settings_SetSettings();
+        Settings_cursorY = Settings_value_keys.indexOf('advanced_opt');
+        Settings_inputFocus(Settings_cursorY);
+    }
+
     // The order in Settings_SetSettings is the display order
     function Settings_SetSettings() {
         var div = '',
@@ -50097,8 +50418,16 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             dis_ena = [STR_DISABLED, STR_ENABLED];
 
         Settings_value_keys = [];
+        Settings_FocusEdgeCache = {}; //font size may have changed (font offset setting)
 
-        //Individual settings
+        /* Grouped list (Web 804): everyday options first in General / Playback / Interface / Sync and
+         * updates; expert rows (codecs, bitrate limits, warnings, diagnostics) sit behind the Advanced
+         * row and only join the list while it is open. Keys, values and saved preferences are unchanged. */
+        div += Settings_DivTitle('general', STR_SETTINGS_GENERAL);
+
+        key = 'app_lang';
+        div += Settings_Content(key, Settings_value[key].values, STR_APP_LANG, STR_APP_LANG_SUMMARY);
+
         Settings_value.content_lang.values[0] = STR_LANG_ALL;
         key = 'content_lang';
         div += Settings_Content(key, Settings_value[key].values, STR_CONTENT_LANG, STR_CONTENT_LANG_SUMMARY);
@@ -50106,29 +50435,6 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         key = 'loadAll_lang';
         div += Settings_Content(key, array_no_yes, STR_LOAD_ALL_LANG, STR_LOAD_ALL_LANG_SUMMARY);
 
-        key = 'app_lang';
-        div += Settings_Content(key, Settings_value[key].values, STR_APP_LANG, STR_APP_LANG_SUMMARY);
-
-        //Dialog settings
-        div += Settings_Content('backup_sync', [STR_ENTER_TO_OPEN], STR_BACKUP_SYNC, null);
-        div += Settings_Content('chat_opt', [STR_ENTER_TO_OPEN], STR_CHAT_OPTIONS, null);
-        div += Settings_Content('ui_opt', [STR_ENTER_TO_OPEN], STR_UI_SETTINGS, null);
-        div += Settings_Content('custom_opt', [STR_ENTER_TO_OPEN], STR_GENERAL_CUSTOM, null);
-        div += Settings_Content('livenotification_opt', [STR_ENTER_TO_OPEN], STR_NOTIFICATION_OPT, null);
-        div += Settings_Content('update_settings', [STR_ENTER_TO_OPEN], STR_UPDATE_OPT, null);
-        div += Settings_Content('warnings_opt', [STR_ENTER_TO_OPEN], STR_WARNINGS, null);
-
-        if (!Main_isTV || !Main_IsOn_OSInterface) {
-            div += Settings_Content('dpad_opt', [STR_ENTER_TO_OPEN], STR_DPAD_OPT, null);
-        }
-
-        div += Settings_Content('enable_mature', dis_ena, STR_ENABLE_MATURE, STR_ENABLE_MATURE_SUMMARY);
-
-        if (!Main_IsOn_OSInterface) {
-            div += Settings_Content('enable_embed', array_no_yes, STR_DISABLE_EMBED, STR_DISABLE_EMBED_SUMMARY);
-        }
-
-        //Individual settings
         div += Settings_Content('start_user_screen', array_no_yes, STR_START_AT_USER, STR_START_AT_USER_SUMMARY);
 
         div += Settings_Content(
@@ -50138,14 +50444,16 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             STR_REMOTE_CONTROLS_SUMMARY
         );
 
-        // Player settings title
-        div += Settings_DivTitle('play', STR_SETTINGS_PLAYER);
+        div += Settings_Content('enable_mature', dis_ena, STR_ENABLE_MATURE, STR_ENABLE_MATURE_SUMMARY);
+
+        div += Settings_DivTitle('play', STR_SETTINGS_PLAYBACK);
+
+        key = 'default_quality';
+        Settings_value[key].values[0] = STR_AUTO;
+        Settings_value[key].values[1] = STR_SOURCE;
+        div += Settings_Content('default_quality', Settings_value[key].values, STR_DEF_QUALITY, STR_DEF_QUALITY_SUMMARY);
 
         div += Settings_Content('restor_playback', array_no_yes, STR_RESTORE_PLAYBACK, STR_RESTORE_PLAYBACK_SUMMARY);
-
-        div += Settings_Content('single_clickExit', array_no_yes, STR_SINGLE_EXIT, STR_SINGLE_EXIT_SUMMARY);
-
-        div += Settings_Content('PP_workaround', dis_ena, STR_PP_WORKAROUND, STR_PP_WORKAROUND_SUMMARY);
 
         div += Settings_Content(
             'vod_dialog',
@@ -50154,13 +50462,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             STR_VOD_DIALOG_SUMMARY
         );
 
-        div += Settings_Content('check_source', array_no_yes, STR_SOURCE_CHECK, STR_SOURCE_CHECK_SUMMARY);
-
-        div += Settings_Content('ad_filter', array_no_yes, STR_AD_FILTER, STR_AD_FILTER_SUMMARY);
-
-        div += Settings_Content('debug_logs', array_no_yes, STR_DEBUG_LOG, STR_DEBUG_LOG_SUMMARY);
-
-        div += Settings_Content('hide_live_seek_bar', array_no_yes, STR_HIDE_LIVE_SEEK_BAR, STR_HIDE_LIVE_SEEK_BAR_SUMMARY);
+        div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
 
         div += Settings_Content(
             'menu_auto_hide',
@@ -50169,30 +50471,65 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             STR_MENU_AUTO_HIDE_SUMMARY
         );
 
-        div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
+        div += Settings_Content('hide_live_seek_bar', array_no_yes, STR_HIDE_LIVE_SEEK_BAR, STR_HIDE_LIVE_SEEK_BAR_SUMMARY);
 
-        key = 'default_quality';
-        Settings_value[key].values[0] = STR_AUTO;
-        Settings_value[key].values[1] = STR_SOURCE;
-        div += Settings_Content('default_quality', Settings_value[key].values, STR_DEF_QUALITY, STR_DEF_QUALITY_SUMMARY);
+        div += Settings_Content('single_clickExit', array_no_yes, STR_SINGLE_EXIT, STR_SINGLE_EXIT_SUMMARY);
 
-        key = 'speed_adjust';
-        Settings_value[key].values[0] = STR_AUTO;
-        Settings_value[key].values[1] = STR_SOURCE;
-        div += Settings_Content('speed_adjust', dis_ena, STR_SPEED_ADJUST, STR_SPEED_ADJUST_SUMMARY);
-
-        //Dialog settings
-        //div += Settings_Content('proxy_settings', [STR_ENTER_TO_OPEN], PROXY_SETTINGS, null);
-        div += Settings_Content('player_extracodecs', [STR_ENTER_TO_OPEN], STR_PLAYER_EXTRA_CODEC, STR_PLAYER_EXTRA_CODEC_SUMMARY);
-        div += Settings_Content('blocked_codecs', [STR_ENTER_TO_OPEN], STR_BLOCKED_CODEC, STR_BLOCKED_CODEC_SUMMARY);
-
-        div += Settings_Content('block_qualities', [STR_ENTER_TO_OPEN], STR_BLOCK_RES, STR_BLOCK_RES_SHORT_SUMMARY);
-        div += Settings_Content('player_bitrate', [STR_ENTER_TO_OPEN], STR_PLAYER_BITRATE, STR_PLAYER_BITRATE_SHORT_SUMMARY);
+        div += Settings_Content('ad_filter', array_no_yes, STR_AD_FILTER, STR_AD_FILTER_SUMMARY);
 
         div += Settings_Content('preview_settings', [STR_ENTER_TO_OPEN], STR_SIDE_PANEL_PLAYER, null);
         div += Settings_Content('vod_seek', [STR_ENTER_TO_OPEN], STR_VOD_SEEK, null);
         div += Settings_Content('playerend_opt', [STR_ENTER_TO_OPEN], STR_END_DIALOG_OPT, null);
         div += Settings_Content('points_opt', [STR_ENTER_TO_OPEN], STR_POINTS_OPT, null);
+
+        div += Settings_DivTitle('interface', STR_SETTINGS_INTERFACE);
+
+        div += Settings_Content('ui_opt', [STR_ENTER_TO_OPEN], STR_UI_SETTINGS, null);
+        div += Settings_Content('custom_opt', [STR_ENTER_TO_OPEN], STR_GENERAL_CUSTOM, null);
+        div += Settings_Content('chat_opt', [STR_ENTER_TO_OPEN], STR_CHAT_OPTIONS, null);
+        div += Settings_Content('livenotification_opt', [STR_ENTER_TO_OPEN], STR_NOTIFICATION_OPT, null);
+
+        div += Settings_DivTitle('app', STR_SETTINGS_APP);
+
+        div += Settings_Content('backup_sync', [STR_ENTER_TO_OPEN], STR_BACKUP_SYNC, null);
+        div += Settings_Content('update_settings', [STR_ENTER_TO_OPEN], STR_UPDATE_OPT, null);
+
+        div += Settings_Content(
+            'advanced_opt',
+            [Settings_AdvancedOpen ? STR_SETTINGS_HIDE : STR_SETTINGS_SHOW],
+            STR_SETTINGS_ADVANCED,
+            STR_SETTINGS_ADVANCED_SUMMARY
+        );
+
+        if (Settings_AdvancedOpen) {
+            div += Settings_Content('warnings_opt', [STR_ENTER_TO_OPEN], STR_WARNINGS, null);
+
+            if (!Main_isTV || !Main_IsOn_OSInterface) {
+                div += Settings_Content('dpad_opt', [STR_ENTER_TO_OPEN], STR_DPAD_OPT, null);
+            }
+
+            if (!Main_IsOn_OSInterface) {
+                div += Settings_Content('enable_embed', array_no_yes, STR_DISABLE_EMBED, STR_DISABLE_EMBED_SUMMARY);
+            }
+
+            div += Settings_Content('PP_workaround', dis_ena, STR_PP_WORKAROUND, STR_PP_WORKAROUND_SUMMARY);
+
+            div += Settings_Content('check_source', array_no_yes, STR_SOURCE_CHECK, STR_SOURCE_CHECK_SUMMARY);
+
+            key = 'speed_adjust';
+            Settings_value[key].values[0] = STR_AUTO;
+            Settings_value[key].values[1] = STR_SOURCE;
+            div += Settings_Content('speed_adjust', dis_ena, STR_SPEED_ADJUST, STR_SPEED_ADJUST_SUMMARY);
+
+            //div += Settings_Content('proxy_settings', [STR_ENTER_TO_OPEN], PROXY_SETTINGS, null);
+            div += Settings_Content('player_extracodecs', [STR_ENTER_TO_OPEN], STR_PLAYER_EXTRA_CODEC, STR_PLAYER_EXTRA_CODEC_SUMMARY);
+            div += Settings_Content('blocked_codecs', [STR_ENTER_TO_OPEN], STR_BLOCKED_CODEC, STR_BLOCKED_CODEC_SUMMARY);
+
+            div += Settings_Content('block_qualities', [STR_ENTER_TO_OPEN], STR_BLOCK_RES, STR_BLOCK_RES_SHORT_SUMMARY);
+            div += Settings_Content('player_bitrate', [STR_ENTER_TO_OPEN], STR_PLAYER_BITRATE, STR_PLAYER_BITRATE_SHORT_SUMMARY);
+
+            div += Settings_Content('debug_logs', array_no_yes, STR_DEBUG_LOG, STR_DEBUG_LOG_SUMMARY);
+        }
 
         Main_innerHTML('settings_main', div);
         Settings_positions_length = Settings_value_keys.length;
@@ -50271,7 +50608,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             '_arrow_left" class="left"></div></div>' +
             '<div id="' +
             key +
-            '" class="strokedeline settings_value">' +
+            '" class="strokedeline settings_value" aria-live="polite">' +
             Settings_Obj_values(key) +
             '</div>' +
             '<div class="settings_arraw_div"><div id="' +
@@ -50300,7 +50637,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             '_arrow_left" class="left"></div></div>' +
             '<div id="' +
             key +
-            '" class="strokedeline settings_value">' +
+            '" class="strokedeline settings_value" aria-live="polite">' +
             Settings_Obj_values(key) +
             '</div>' +
             '<div class="settings_arraw_div"><div id="' +
@@ -50427,6 +50764,28 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         Settings_AppLang = app_lang;
 
+        //The device language can be a region the list does not name (en_GB), so the row could keep
+        //showing an older choice while another language is applied: point it at the applied language
+        //(a language with no translation falls back to English, index 0)
+        var applied = String(app_lang || '')
+                .substr(0, 3)
+                .toLowerCase(),
+            values = Settings_value.app_lang.apply_values,
+            index = 0,
+            i;
+        for (i = 0; i < values.length; i++) {
+            if (values[i].substr(0, 3).toLowerCase() === applied) {
+                index = i;
+                break;
+            }
+        }
+        if (Settings_value.app_lang.defaultValue !== index) {
+            Settings_value.app_lang.defaultValue = index;
+            Main_setItem('app_lang', index + 1);
+        }
+        //The page language follows the applied one so TalkBack reads with the right voice (WCAG 3.1.1)
+        document.documentElement.setAttribute('lang', values[index].substr(0, 2).toLowerCase());
+
         Main_setItem('app_lang_string', app_lang);
     }
 
@@ -50528,7 +50887,34 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_AddClass(key, 'settings_value_focus');
         Main_AddClass(key + '_div', 'settings_div_focus');
         Settings_Setarrows(position);
+        Settings_RowFocusDom(key);
         Settings_ScrollTable();
+    }
+
+    /* Rows are moved by key handlers through classes; this also gives the focused row the real DOM
+     * focus and a spoken name ('name, value', with its description) so TalkBack follows Settings. The
+     * dialog lists scroll by transform inside an overflow-hidden holder: undo any scroll the browser
+     * adds while focusing (old WebViews ignore preventScroll). */
+    function Settings_RowFocusDom(key) {
+        var row = Main_getElementById(key + '_div'),
+            name = Main_getElementById(key + '_name'),
+            value = Main_getElementById(key),
+            holder = Main_getElementById('settings_scroll_container'),
+            holderTop = holder ? holder.scrollTop : 0,
+            label;
+
+        if (!row) return;
+        label = name && name.firstChild ? name.firstChild.textContent : '';
+        if (value && value.textContent) label += ', ' + value.textContent;
+        row.setAttribute('aria-label', label);
+        if (Main_getElementById(key + '_summary')) row.setAttribute('aria-describedby', key + '_summary');
+        row.setAttribute('tabindex', '-1');
+        try {
+            row.focus({preventScroll: true});
+        } catch (e) {
+            row.focus();
+        }
+        if (holder) holder.scrollTop = holderTop;
     }
 
     function Settings_RemoveInputFocus() {
@@ -50540,6 +50926,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_getElementById(key + '_arrow_right').style.opacity = '0';
         Main_RemoveClass(key, 'settings_value_focus');
         Main_RemoveClass(key + '_div', 'settings_div_focus');
+        var row = Main_getElementById(key + '_div');
+        if (row && document.activeElement === row) row.blur();
     }
 
     function Settings_ChangeSettings(position, skipDefault) {
@@ -50547,6 +50935,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_setItem(key, Settings_Obj_default(key) + 1);
         Main_textContent(key, Settings_Obj_values(key));
         Settings_Setarrows(position);
+        Settings_RowFocusDom(key);
 
         if (!skipDefault) {
             Settings_SetDefault(key);
@@ -51156,9 +51545,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (row && view) {
             var rowRect = row.getBoundingClientRect(),
                 viewRect = view.getBoundingClientRect(),
-                style = window.getComputedStyle(row),
                 //The focus outline is drawn outside the row, keep it inside the clipped area too
-                edge = Math.ceil((parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
+                edge = Settings_FocusEdge('main', row),
                 top = rowRect.top - edge,
                 bottom = rowRect.bottom + edge,
                 title = row.previousElementSibling;
@@ -51176,27 +51564,48 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         }
     }
 
+    /* The focus outline width (outline + offset) only changes with the font size, so it is read once
+     * per list (main list, each dialog) instead of a getComputedStyle on every key press. */
+    var Settings_FocusEdgeCache = {};
+    function Settings_FocusEdge(list, row) {
+        if (Settings_FocusEdgeCache[list] === undefined) {
+            var style = window.getComputedStyle(row);
+            Settings_FocusEdgeCache[list] = Math.ceil((parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0));
+        }
+        return Settings_FocusEdgeCache[list];
+    }
+
     var Settings_ScrollAnimToken = 0;
 
+    /* 200 ms eased scroll on real time (requestAnimationFrame, one scrollTop write per frame): the old
+     * 3 ms setTimeout ticks on a fake clock ran long on slow TVs. Off with app animations or reduced motion. */
     function Settings_ScrollTo(target) {
-        var doc = Main_getElementById('settings_scroll');
+        var doc = Main_getElementById('settings_scroll'),
+            reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         //A new key press cancels the animation of the previous one before it ends
         var token = ++Settings_ScrollAnimToken;
 
-        if (Settings_Obj_default('app_animations')) {
+        if (Settings_Obj_default('app_animations') && !reduce) {
             var start = doc.scrollTop,
                 change = target - start,
-                currentTime = 0,
-                increment = 3;
+                startTime = null,
+                frame =
+                    window.requestAnimationFrame ||
+                    function (callback) {
+                        return setTimeout(function () {
+                            callback(new Date().getTime());
+                        }, 16);
+                    };
 
-            var animateScroll = function () {
+            var animateScroll = function (now) {
                 if (token !== Settings_ScrollAnimToken) return;
-                currentTime += increment;
-                doc.scrollTop = Math.easeInOutQuad(currentTime, start, change, 200);
-                if (currentTime < 200) setTimeout(animateScroll, increment);
+                if (startTime === null) startTime = now;
+                var elapsed = Math.min(200, now - startTime);
+                doc.scrollTop = Math.easeInOutQuad(elapsed, start, change, 200);
+                if (elapsed < 200) frame(animateScroll);
             };
-            animateScroll();
+            frame(animateScroll);
         } else doc.scrollTop = target;
     }
 
@@ -51274,6 +51683,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     function Settings_KeyEnter(click) {
+        if (Settings_value_keys[Settings_cursorY] === 'advanced_opt') {
+            Settings_ToggleAdvanced();
+            return;
+        }
         if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'playerend_opt')) Settings_PlayerEnd(click);
         else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'points_opt')) Settings_DialogShowPoints(click);
         else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'blocked_codecs')) Settings_CodecsShow(click);
@@ -51474,6 +51887,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_AddClass(key, 'settings_value_focus');
         Main_AddClass(key + '_div', 'settings_div_focus');
         Settings_SetarrowsKey(key);
+        Settings_RowFocusDom(key);
     }
 
     function Settings_CodecsRightLeft(offset) {
@@ -51858,8 +52272,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             }
         };
 
-        var red = '#ec0000',
-            green = '#00c900';
+        //Codec support marks use the app's Live Red and VOD dot green (DESIGN.md), not ad-hoc hues
+        var red = '#' + Main_ColorIndicatorLive,
+            green = '#' + Main_ColorIndicatorVod;
 
         Settings_DialogShow(
             obj,
@@ -52949,13 +53364,14 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             Settings_value_keys.length = Settings_positions_length;
         }
 
-        var dialogContent = title + STR_BR,
+        var dialogContent = '<div id="settings_dialog_title" class="settings_dialog_title">' + title + '</div>',
             dialogScroollHolder =
                 '<div id="settings_scroll_container" class="' +
                 (scroll ? 'settings_scroll_container' : '') +
                 '"><div id="settings_scroll_container_scroll" class="side_panel_holder_ani">';
 
         Settings_DialogValue = [];
+        Settings_FocusEdgeCache = {};
 
         for (var property in obj) {
             Settings_DialogValue.push(property);
@@ -52987,6 +53403,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Settings_SetarrowsKey(Settings_DialogValue[0]);
 
         Main_ShowElement('dialog_settings');
+        Settings_RowFocusDom(Settings_DialogValue[0]);
         Main_addEventListener('keydown', Settings_DialoghandleKeyDown);
     }
 
@@ -53091,9 +53508,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         var doc = Main_getElementById(div),
             view = doc.parentNode.clientHeight,
             row = Main_getElementById(Settings_DialogValue[pos] + '_div'),
-            style = window.getComputedStyle(row),
             //The focus outline is drawn outside the row, keep it inside the clipped area too
-            edge = Math.ceil((parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
+            edge = Settings_FocusEdge(div, row),
             //Position inside the list, the same whatever translate (or translate animation) is applied
             top = row.getBoundingClientRect().top - doc.getBoundingClientRect().top - edge,
             bottom = top + row.offsetHeight + edge * 2;
@@ -53117,6 +53533,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_AddClass(key, 'settings_value_focus');
         Main_AddClass(key + '_div', 'settings_div_focus');
         Settings_SetarrowsKey(key);
+        Settings_RowFocusDom(key);
     }
 
     function Settings_DialogRightLeft(offset) {
@@ -53133,6 +53550,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (!skipDefault) {
             Settings_SetarrowsKey(key);
             Settings_SetDefault(key);
+            Settings_RowFocusDom(key);
         }
     }
 
@@ -53201,6 +53619,11 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
      */
 
     var SettingsColor_DefaultColorsPos = 0;
+    //The alpha of an rgba() palette color: presets are written 'rgba(0,0,0,1)', custom ones 'rgba(0, 0, 0, 1)'
+    var SettingsColor_AlphaOne = /,\s*1\)$/;
+    //The palette's accent for inline marks built in JS (the Following heart): Royal Violet by default,
+    //the saved border color otherwise; set by SettingsColor_SetAnimationStyle
+    var SettingsColor_Accent = '#7635fc';
     //Add a new Theme add the array pos + a name on STR_STYLES_ARRAY that is it
     var SettingsColor_DefaultColors = [
         [
@@ -53537,7 +53960,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     function SettingsColor_DivResultUpdate(div, text) {
         Main_innerHTML(
             div,
-            '<i class="icon-circle live_icon strokedeline" style="color: red;"></i>' +
+            '<i class="icon-circle live_icon strokedeline" style="color: #' +
+                Main_ColorIndicatorLive +
+                ';"></i>' +
                 STR_SPACE_HTML +
                 '<i class="icon-circle live_icon strokedeline" style="color: #' +
                 Main_ColorIndicatorHosting +
@@ -53608,7 +54033,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             border = SettingsColor_DefaultColors[pos][2],
             progressColor = SettingsColor_DefaultColors[pos][3],
             //Softer alpha of the border color for the focus glow, falls back to the full color
-            glow = border.replace(', 1)', ', 0.45)'),
+            glow = border.replace(SettingsColor_AlphaOne, ', 0.45)'),
             //Layered focus: tight accent edge + soft glow + depth shadow, never scales the card
             //(scroll math and the native preview overlay read live getBoundingClientRect())
             focusShadow = '0 0 0 0.05em ' + glow + ',0 0 0.7em 0.1em ' + glow + ',0 0.35em 1em rgba(0,0,0,0.5)',
@@ -53617,9 +54042,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             focusSurface = pos === 0 ? '#30253f' : background,
             //Secondary text and drawer fades track the saved palette so light styles stay readable;
             //the dark default keeps its hardcoded literals
-            textSoft = pos === 0 ? '#c1b8cd' : TextColor.replace(', 1)', ', 0.72)'),
+            textSoft = pos === 0 ? '#c1b8cd' : TextColor.replace(SettingsColor_AlphaOne, ', 0.72)'),
             fadeBase = pos === 0 ? '#1e1b25' : background,
-            fadeSoft = fadeBase.replace(', 1)', ', 0)'),
+            fadeSoft = fadeBase.replace(SettingsColor_AlphaOne, ', 0)'),
             cssClass =
                 //Switcher cards use the overlay focus look: outline, no glow.
                 '.feed_thumbnail_focused_no_ani,.feed_thumbnail_focused {background-color:' +
@@ -53653,10 +54078,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             '}';
 
         cssClass +=
-            '#navigation-shell,#navigation-onboarding,#player-ui{color:' +
+            '#navigation-shell,#navigation-onboarding,#player-ui,#add_user_text_holder{color:' +
             TextColor +
             ';}' +
-            '#navigation-shell .navigation-rail,#player-ui .player-ui-bar,#player-ui .player-ui-drawer,#player-ui-paused,.navigation-settings #settings_holder{background:' +
+            '#navigation-shell .navigation-rail,#player-ui .player-ui-bar,#player-ui .player-ui-drawer,#player-ui-paused,.navigation-settings #settings_holder,#add_user_text_holder{background:' +
             surface +
             ';}' +
             '#navigation-onboarding,#navigation-shell #navigation-status{background:' +
@@ -53697,12 +54122,25 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             ';color:' +
             TextColor +
             ';}' +
-            '.navigation-enabled .stream_thumbnail_focused,.navigation-enabled .stream_thumbnail_focused_no_ani{border-color:' +
+            //Grid focus reads from the couch on any thumbnail: a 0.16em Focus Lavender ring held off the
+            //card by a 0.08em gap that shows the dark page surface (the keyline), plus the Focus Fill on
+            //the card body so the meta strip changes too. Never scaled; no transition (Instant Focus).
+            '.navigation-enabled .stream_thumbnail_focused,.navigation-enabled .stream_thumbnail_focused_no_ani{background-color:' +
+            focusSurface +
+            ' !important;border-color:' +
             focusColor +
-            ' !important;box-shadow:none !important;outline:0.1em solid ' +
+            ' !important;box-shadow:none !important;outline:0.16em solid ' +
             focusColor +
-            ';outline-offset:0.05em;}';
+            ';outline-offset:0.08em;transition:none;}';
         cssClass += '.navigation-enabled .stream_info_live,.navigation-enabled #clock_holder{color:' + TextColor + ';opacity:0.85;}';
+        //Category cards: the game name is the primary line, the viewer count is secondary text
+        cssClass +=
+            '.navigation-enabled .stream_info_game_name{color:' +
+            TextColor +
+            ';}' +
+            '.navigation-enabled .stream_thumbnail_game .stream_info_live{color:' +
+            textSoft +
+            ';opacity:1;}';
         cssClass +=
             //Switch rows (channel sections, VOD switch cells) use the same focus system as the cards,
             //and their labels follow the palette instead of hardcoded white
@@ -53716,7 +54154,77 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             '.navigation-enabled .stream_channel_follow_game{color:' +
             TextColor +
             ';}';
+        //Same fallback as the focus color: a palette whose border equals its background marks with text
+        SettingsColor_Accent = pos === 0 ? '#7635fc' : border === background ? TextColor : border;
+
         if (pos !== 0) {
+            //Panels added with the redesign (dialogs, Remote basics, toast, sign-in code, settings groups):
+            //the elevated surface, text and secondary text follow the palette. The 'body' prefix outranks
+            //the static rules they mirror (focus_class_holder is written before the main stylesheet).
+            var divider = TextColor.replace(SettingsColor_AlphaOne, ', 0.15)');
+            cssClass +=
+                'body #dialog_about .about_dialogs,body #dialog_controls .about_dialogs,body #dialog_controls_player .about_dialogs,' +
+                'body #welcome_dialog .about_dialogs,body .navigation-enabled #dialog_thumb_opt .dialog_period,body .navigation-enabled .dialog_exit,' +
+                'body .navigation-enabled #dialog_hist_setting .dialog_period,' +
+                'body .navigation-settings #dialog_settings .about_dialogs,body .navigation-enabled #dialog_warning_text{background-color:' +
+                surface +
+                ';color:' +
+                TextColor +
+                ';}' +
+                'body #dialog_controls_text,body #dialog_controls_player_text,body #dialog_about_text .about_text_title,' +
+                'body #welcome_dialog_text .about_text_title,body .navigation-enabled #dialog_opt_text,body .navigation-enabled #dialog_hist_text,' +
+                'body .navigation-settings .settings_dialog_title::first-line{color:' +
+                TextColor +
+                ';}' +
+                'body #dialog_about_text,body #welcome_dialog_text,body .navigation-filter,body .navigation-enabled #dialog_opt_text_end,' +
+                'body .navigation-enabled #dialog_hist_text_end,body .remote_section_title,body .remote_keys,body .remote_close,' +
+                'body .navigation-settings .settings_dialog_title,body .navigation-settings #dialog_setting_close_text,body .add_user_status,' +
+                'body .navigation-settings #settings_main .settings_section,body .navigation-settings .settings_div_focus .settings_summary{color:' +
+                textSoft +
+                ';}' +
+                //About's addresses carry LINK_COLOR inline (near-white); on a palette they take its text color
+                'body #dialog_about_text a,body #dialog_about_text [style*="color: ' +
+                LINK_COLOR +
+                '"]{color:' +
+                TextColor +
+                ' !important;}' +
+                'body .remote_row,body #dialog_about_text .about_upstream{border-color:' +
+                divider +
+                ';}' +
+                'body .add_user_code{background:' +
+                background +
+                ';border-color:' +
+                divider +
+                ';}' +
+                //Shell secondary text (unselected tabs, detail band lines, footer hints) and the onboarding
+                //buttons were tinted for the dark default only and washed out on light palettes
+                'body #navigation-tabs .navigation-button,body .navigation-details p,body .navigation-footer{color:' +
+                textSoft +
+                ';}' +
+                'body .navigation-onboarding .navigation-button{background:' +
+                background +
+                ';border-color:' +
+                divider +
+                ';color:' +
+                TextColor +
+                ';}' +
+                'body .navigation-onboarding .navigation-button.navigation-focused{background:' +
+                focusSurface +
+                ';}' +
+                //Focused rows in every list dialog (card Options, history, Settings dialogs, chat options)
+                //take the palette's focus fill and outline, not the dark default's #30253f
+                'body .settings_div_focus,body .settings_value_focus{background:' +
+                focusSurface +
+                ';outline-color:' +
+                focusColor +
+                ';}' +
+                //the chosen search type wears the selected-tab pill, like #navigation-tabs [aria-selected]
+                'body #search_button_holder .button_search_selected{background-color:' +
+                focusColor +
+                ';color:' +
+                background +
+                ';}';
+
             //Light and custom palettes: themed caption text, current drawer row and drawer scroll fades.
             //The higher-specificity selectors are needed where the static rules tie on specificity and
             //win by source order (focus_class_holder is written before the main stylesheet)
@@ -53753,9 +54261,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             ' !important;border-color:' +
             arrayColors[2] +
             ' !important;box-shadow:0 0 0 0.05em ' +
-            arrayColors[2].replace(', 1)', ', 0.45)') +
+            arrayColors[2].replace(SettingsColor_AlphaOne, ', 0.45)') +
             ',0 0 0.7em 0.1em ' +
-            arrayColors[2].replace(', 1)', ', 0.45)') +
+            arrayColors[2].replace(SettingsColor_AlphaOne, ', 0.45)') +
             ' !important;}';
 
         cssClass +=
@@ -54440,7 +54948,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 ? '<img id="feed_thumb_partnerimg" class="partnericon_img" alt="" src="' + IMG_PARTNER + '">' + STR_SPACE_HTML + STR_SPACE_HTML
                 : '') +
             '<div id="feed_thumb_partnertext" class="partnericon_text" style="background: #' +
-            (isrerun ? 'FFFFFF; color: #000000;' : 'E21212;') +
+            (isrerun ? 'FFFFFF; color: #000000;' : Main_ColorBadgeLive + ';') +
             '">' +
             STR_SPACE_HTML +
             STR_SPACE_HTML +
@@ -57460,7 +57968,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         }
 
         UserLiveFeedobj_ShowFeedCheck(UserLiveFeedobj_UserAGamesPos, UserLiveFeed_obj[UserLiveFeedobj_UserAGamesPos].Game_changed);
-        Main_IconLoad('icon_feed_back', 'icon-arrow-left', STR_BACK_USER_GAMES + STR_USER + STR_SPACE_HTML + STR_GAMES);
+        Main_IconLoad('icon_feed_back', 'icon-arrow-left', STR_BACK_USER_GAMES + STR_UI.following + STR_UI.separator + STR_UI.categories);
         if (!Settings_Obj_default('hide_etc_help_text')) Main_RemoveClass('icon_feed_back', 'opacity_zero');
     }
 
@@ -57660,7 +58168,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         Main_AddClass('feed_end_' + pos, 'feed_end_name_focus');
 
-        Main_getElementById('feed_end_' + (UserLiveFeedobj_UserRecommendedPos - 1)).style.display = ScreensObj_RecommendedEnabled() ? '' : 'none';
+        //Signed out the switcher wraps before the followed rows (UserLiveFeed_KeyUpDown), so their
+        //names are not offered either; Recommended also follows its setting
+        var userSet = AddUser_UserIsSet();
+        for (i = UserLiveFeedobj_UserLivePos - 1; i < UserLiveFeedobj_MAX - 1; i++) {
+            Main_getElementById('feed_end_' + i).style.display =
+                userSet && (i !== UserLiveFeedobj_UserRecommendedPos - 1 || ScreensObj_RecommendedEnabled()) ? '' : 'none';
+        }
 
         len = UserLiveFeedobj_MAX - 2;
 
@@ -57668,8 +58182,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         Main_innerHTML('feed_end_2', Play_data.data[3] !== '' ? Play_data.data[3] : STR_NO_GAME);
         Main_innerHTML(
             'feed_end_' + (UserLiveFeedobj_UserGamesPos - 1),
-            UserLiveFeedobj_CurrentUserAGameEnable ? UserLiveFeedobj_CurrentUserAGameNameEnter : STR_USER + STR_SPACE_HTML + STR_GAMES
+            UserLiveFeedobj_CurrentUserAGameEnable
+                ? UserLiveFeedobj_CurrentUserAGameNameEnter
+                : STR_UI.following + STR_UI.separator + STR_UI.categories
         );
+
+        UserLiveFeedobj_ScrollStrip(pos);
 
         if (Settings_Obj_default('hide_etc_help_text') === 1) {
             Main_RemoveClass('feed_end', 'opacity_zero');
@@ -57682,6 +58200,20 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 UserLiveFeedobj_SetBottomTextId
             );
         }
+    }
+
+    /* The row names under the switcher read at the 24px floor inside the safe margins, so they can be
+     * wider than the screen: keep the focused name in view, a third of the way in. */
+    function UserLiveFeedobj_ScrollStrip(pos) {
+        var strip = Main_getElementById('feed_end'),
+            item = Main_getElementById('feed_end_' + pos);
+        if (!strip || !item) return;
+        if (strip.scrollWidth <= strip.clientWidth) {
+            strip.scrollLeft = 0;
+            return;
+        }
+        var offset = item.getBoundingClientRect().left - strip.getBoundingClientRect().left + strip.scrollLeft;
+        strip.scrollLeft = Math.max(0, offset - strip.clientWidth / 3);
     }
 
     function UserLiveFeedobj_CreateSideFeed(id, data) {
@@ -57733,7 +58265,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             UserLiveFeed_side_ids[11] +
             id +
             '" class="icon-' +
-            (!data[8] ? 'circle" style="color: red;' : 'refresh" style="') +
+            (!data[8] ? 'circle" style="color: #' + Main_ColorIndicatorLive + ';' : 'refresh" style="') +
             ' font-size: 55%; "></i><div id="' +
             UserLiveFeed_side_ids[12] +
             id +
@@ -57780,7 +58312,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             ' live_icon strokedeline' +
             (force_VOD ? ' hideimp' : '') +
             '" style="color: ' +
-            (data[8] ? '#FFFFFF' : 'red') +
+            (data[8] ? '#FFFFFF' : '#' + Main_ColorIndicatorLive) +
             ';"></i> ' +
             (Extra_vodimg || force_VOD
                 ? '<div class="vodicon_text ' +

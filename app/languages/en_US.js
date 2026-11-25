@@ -108,8 +108,8 @@ function en_USLang() {
     STR_SEARCH_RESULT_EMPTY = 'No search results found';
     STR_SWITCH = 'Switch screen';
     STR_SWITCH_USER = 'Switch user screen';
-    STR_SWITCH_VOD = 'Switch: VODs or highlights';
-    STR_SWITCH_CLIP = 'Switch: Period (24h, 7d, 30d, all)';
+    STR_SWITCH_VOD = 'VODs or highlights';
+    STR_SWITCH_CLIP = 'Change period';
     STR_GO_TO = 'Go to screen';
     STR_USER = 'User';
     STR_LIVE = 'Live';
@@ -132,7 +132,7 @@ function en_USLang() {
     STR_CHECK_HOST = ', checking host';
     STR_IS_SUB_ONLY = 'This video is only available to subscribers';
     STR_IS_SUB_ONLY_ERROR = 'is sub-only content.';
-    STR_NOKEY_GENERAL_WARN = ', navigate to the side panel (Top option) Add User or User: Switch, add, key, press enter on the user';
+    STR_NOKEY_GENERAL_WARN = ' Open Account in the menu.';
     STR_REFRESH_PROBLEM = 'Connection failed or no content available. Try refreshing';
     STR_REFRESH_PROBLEM_ENTER = 'Failed to connect or no content available. Try refreshing.';
     STR_REFRESH_PROBLEM_ENTER_LANG =
@@ -147,12 +147,13 @@ function en_USLang() {
     STR_STREAM_ON = 'Streamed';
     STR_DURATION = 'Duration';
     STR_VIEW = 'View';
-    STR_VIEWS = 'Views';
+    STR_VIEWS = 'views';
+    STR_VIEW_ONE = 'view';
     STR_VIEWER = 'viewer';
     STR_VIEWERS = 'viewers';
-    STR_EXIT_AGAIN = 'Click again to exit';
-    STR_EXIT_AGAIN_PICTURE = 'Click again to exit picture-in-picture mode';
-    STR_EXIT_AGAIN_MULTI = 'Click again to exit multistream mode';
+    STR_EXIT_AGAIN = 'Press again to exit';
+    STR_EXIT_AGAIN_PICTURE = 'Press again to exit picture-in-picture mode';
+    STR_EXIT_AGAIN_MULTI = 'Press again to exit multistream mode';
     STR_EXIT_MESSAGE = 'Are you sure you want to exit Smarter Purple TV?';
     STR_EXIT = 'Exit';
     STR_CHANGELOG = 'Changelog';
@@ -202,7 +203,7 @@ function en_USLang() {
     STR_CLIP_MONTH = '30d';
     STR_CLIP_ALL = 'all';
     STR_JUMP_TIME = 'Jumping';
-    STR_JUMP_TIME_CLICK_AGAIN = 'Click again to jump';
+    STR_JUMP_TIME_CLICK_AGAIN = 'Press again to jump';
     STR_JUMP_T0 = 'to';
     STR_JUMP_CANCEL = 'Jump Canceled';
     STR_JUMP_TIME_BIG = ', jump time bigger than duration';
@@ -278,7 +279,7 @@ function en_USLang() {
     STR_NOKEY_WARN = 'You must set a user to follow or unfollow channels.';
     STR_FOLLOW_ISSUE =
         'Third-party apps can no longer follow or unfollow channels. The button will only appear if you are already following a channel.';
-    STR_NOKUSER_WARN = 'You need to set a user to view followed content.';
+    STR_NOKUSER_WARN = 'Sign in to see the channels you follow.';
     STR_RESET = 'Restart the';
     STR_CLIP = 'Clip';
     STR_CHANNEL_CONT = 'Channel content';
@@ -348,7 +349,7 @@ function en_USLang() {
     STR_RECENT = ', Most recent';
     STR_VIWES = ', Most views';
     STR_NOKEY_VIDEO_WARN = 'Add a user to access followed videos.';
-    STR_SWITCH_TYPE = 'Switch: Most recent or views';
+    STR_SWITCH_TYPE = 'Newest or most viewed';
     STR_ENABLE = 'Enable';
     STR_ENABLED = 'Enabled';
     STR_DISABLE = 'Disable';
@@ -480,7 +481,7 @@ function en_USLang() {
         "Change audio source: Choose the 'Audio source' option at the bottom of the player. If in 50/50 or multistream, use left/right D-pad. If in picture in picture, use previous/next track media keys";
     STR_PICTURE_CONTROLS3 = 'Change audio source for all videos: Hold down D-pad.';
     STR_PICTURE_CONTROLS8 =
-        "Player restart: Choose the 'Player restart' option at the bottom of the player. This will only restart the players, which is useful fpr syncing the player and the chat. This will not sync one player's content with another's";
+        "Player restart: Choose the 'Player restart' option at the bottom of the player. This will only restart the players, which is useful for syncing the player and the chat. This will not sync one player's content with another's";
     STR_PICTURE_CONTROLS9 =
         "Manually sync players: The workaround is to choose the 'Speed' option at the bottom of the player to slow down the stream that is in front or vice versa. Only works for picture in picture mode";
     STR_PICTURE_CONTROLS10 = "Picture in picture video quality: Check the in-app '" + STR_PLAYER_BITRATE + "' settings";
@@ -559,7 +560,7 @@ function en_USLang() {
     STR_WARNINGS = 'Warnings';
     STR_WELCOME = 'Welcome to';
     STR_WELCOME_SUMMARY =
-        'This application has lots and lots of features. Check the app settings and controls to understand how to use it. In doubt, check the Play Store demonstration video, if still unsure, use the contact info.';
+        'Controls, at the bottom of the menu, shows what each remote key does. Settings has the rest; for anything else, use the contact info below.';
     STR_WARNING_PHONE = 'Cellphones warning';
     STR_WARNING_PHONE_SUMMARY =
         "This app is designed to be used mainly on TVs, the support for other devices is limited and may never receive a better support. If you don't have a keyboard or a D-pad + enter and return controller (ESC works as a return on a computer), use the virtual on-screen keys to navigate (only visible on phone/tablet devices). In settings you can change the position and the opacity of the virtual D-pad, click anywhere on the screen to show the virtual D-pad. When it's hidden, it doesn't work.";
@@ -601,7 +602,7 @@ function en_USLang() {
     STR_DELETE_SURE = 'Are you sure you want to delete all';
     STR_CREATED_NEWEST = 'Created / Uptime newest';
     STR_CREATED_OLDEST = 'Created / Uptime Oldest';
-    STR_THUMB_OPTIONS = 'Thumbnail Options';
+    STR_THUMB_OPTIONS = 'Options';
     STR_HISTORY_LIVE_DIS = 'Enable live history';
     STR_HISTORY_VOD_DIS = 'Enable VOD history';
     STR_HISTORY_CLIP_DIS = 'Enable clip history';
@@ -978,8 +979,8 @@ function en_USLang() {
     STR_FAVORITE_NO_USER = 'Add a user first before being able to favorite';
     STR_SAVED = 'Saved';
     STR_SAVE_POSITION = 'Save position';
-    STR_SAVE_POSITION_SUMMARY = 'Save the current live position to resume this stream later from History - Saved';
-    STR_SAVED_POSITION_CONFIRM = 'Position saved, resume later from History - Saved';
+    STR_SAVE_POSITION_SUMMARY = 'Resume this stream later from Library › Saved';
+    STR_SAVED_POSITION_CONFIRM = 'Position saved. Resume it from Library › Saved';
     STR_SAVED_VOD_NOT_YET = "The VOD of this stream is not available yet, try again later";
     STR_HISTORY_SAVED_DIS = 'Enable saved stream list';
     STR_BLOCK_OVERWRITE = 'Show blocked';
@@ -1103,6 +1104,49 @@ function en_USLang() {
     STR_BACKUP_ENABLE_SUMMARY = 'If set to YES the app will keep a backup of all user info ' + STR_BACKUP_USER_INFO;
 
     STR_BACKUP_SYNC_ENABLE = 'Sync across devices';
+    //Signed-out Library panel and the follow buttons of channel and category pages without an account
+    STR_LIBRARY_WELCOME_TITLE = 'Pick up where you left off';
+    STR_LIBRARY_WELCOME_COPY = 'Add an account to keep your watch history, or browse live channels without one.';
+    STR_SIGN_IN_TO_FOLLOW = 'Sign in to follow';
+    STR_SEARCH_TYPE_FIRST = 'Type something to search first';
+    //Search results heading: keep %x, it is replaced by the searched text
+    STR_SEARCH_RESULTS_FOR = 'Results for “%x”';
+    //Account sign-in panel: keep %site, it is replaced by the activation address (twitch.tv/activate)
+    STR_ADD_USER_TITLE = 'Sign in with your phone';
+    STR_ADD_USER_STEP_SCAN = 'Scan the QR code, or go to %site';
+    STR_ADD_USER_STEP_CODE = 'Enter this code';
+    STR_ADD_USER_WAITING = 'Waiting for you to sign in…';
+    STR_ADD_USER_NEW_CODE = 'That code expired, so here is a new one. Waiting for you to sign in…';
+    STR_ADD_USER_RETRY = 'Can’t reach Twitch right now. Trying again…';
+    //About: heading over the donation links, which belong to the original app's author
+    STR_ABOUT_UPSTREAM = 'Support fgl27, author of the original SmartTwitchTV';
+    //Footer hint on the sign-in panel: keep {left} and {back}, they are drawn as remote key glyphs
+    STR_ADD_USER_HELP = '{left} Navigation    {back} Return';
+    //Controls dialog ('Remote basics'): one label per remote key; STR_REMOTE_HOLD_OK keeps {ok}
+    STR_REMOTE_BASICS = 'Remote basics';
+    STR_REMOTE_BROWSING = 'Browsing';
+    STR_REMOTE_WATCHING = 'Watching';
+    STR_REMOTE_HOLD_OK = 'Hold {ok}';
+    STR_REMOTE_MOVE = 'Move between cards';
+    STR_REMOTE_OPEN = 'Watch or open';
+    STR_REMOTE_OPTIONS = 'Options for the card';
+    STR_REMOTE_TABS = 'Tabs, from the top row';
+    STR_REMOTE_MENU = 'Menu, from the first card';
+    STR_REMOTE_BACK = 'Go back';
+    STR_REMOTE_PLAYER_BAR = 'Show the player bar';
+    STR_REMOTE_PLAYER_FEED = 'Live channels row';
+    STR_REMOTE_PLAYER_CHAT = 'Chat on or off';
+    STR_REMOTE_PLAYER_CLOSE = 'Close the video (press twice)';
+    //Settings groups; the Advanced row folds the expert options (Show/Hide is its value)
+    STR_SETTINGS_GENERAL = 'General';
+    STR_SETTINGS_PLAYBACK = 'Playback';
+    STR_SETTINGS_INTERFACE = 'Interface';
+    STR_SETTINGS_APP = 'Sync and updates';
+    STR_SETTINGS_ADVANCED = 'Advanced';
+    STR_SETTINGS_ADVANCED_SUMMARY = 'Codecs, quality and bitrate limits, warnings and diagnostics';
+    STR_SETTINGS_SHOW = 'Show';
+    STR_SETTINGS_HIDE = 'Hide';
+
     STR_BACKUP_SYNC_ENABLE_SUMMARY =
         "Enabling this will add a slight delay to the application's startup process, and is unnecessary if you are using the app in a single device. The app will sync all enabled options below between this device and others using the same Google Drive account. To switch devices and keep watching where you left off, minimize the app on the current device by pressing the Home key. Then, make sure the app is fully closed on the other device before opening it.";
 }

@@ -46,7 +46,7 @@ vm.runInContext(
         STR_CLIPS = 'Clips', STR_CHANNELS = 'Channels', STR_SETTINGS = 'Settings', STR_EXIT = 'Exit',
         STR_ABOUT = 'About', STR_CONTROLS = 'Controls', STR_UPDATE_CHANGELOG = 'Updates', STR_USER_ADD = 'Add',
         STR_REFRESH = 'Refresh', STR_VIEWERS = 'viewers', STR_PLACEHOLDER_SEARCH = 'search',
-        STR_SEARCH_EMPTY = 'empty', STR_GOBACK = 'back', STR_THUMB_OPTIONS_TOP = 'options';
+        STR_SEARCH_EMPTY = 'empty', STR_SEARCH_TYPE_FIRST = 'type first', STR_SEARCH_RESULTS_FOR = 'for %x', STR_GOBACK = 'back', STR_THUMB_OPTIONS_TOP = 'options';
     var harness = {calls: [], screens: [], inputFocusTimer: 0};
     var Main_SearchInput = null;
     var Main_values = {Main_Go: 305, Main_Before: 305, Main_BeforeSearch: 305, Search_data: null, Search_isSearching: false};
@@ -139,7 +139,7 @@ check(!s.Main_values.Search_isSearching, 'form is not searching');
 
 /* Submit: validation, session capture, type mapping, draft kept in the input. */
 s.Search_cursorY = 1;
-s.Search_cursorX = 2; // live
+s.Search_cursorX = 0; // live
 s.Search_fakeInput('   ');
 s.harness.calls = [];
 s.Search_KeyEnter();
@@ -150,13 +150,18 @@ s.Search_KeyEnter();
 check(s.Search_Session.submitted === 'star craft' && s.Main_values.Search_data === 'star craft', 'valid query submitted to loaders');
 check(s.Search_Session.draft === 'star craft', 'draft equals the submitted query');
 check(s.harness.input.value === 'star craft', 'input keeps the query text for the next edit');
-check(s.harness.screens.length === 1 && s.harness.screens[0] === s.Main_SearchLive, 'type 2 maps to live results');
-s.Search_Session.type = 0;
-s.Search_cursorX = 0;
+check(s.harness.screens.length === 1 && s.harness.screens[0] === s.Main_SearchLive, 'type 0 maps to live results');
+s.Search_Session.type = 1;
+s.Search_cursorX = 1;
 s.Search_fakeInput('chan');
 s.harness.screens = [];
 s.Search_KeyEnter();
-check(s.harness.screens[0] === s.Main_SearchChannels, 'type 0 maps to channel results');
+check(s.harness.screens[0] === s.Main_SearchChannels, 'type 1 maps to channel results');
+s.Search_cursorX = 2;
+s.Search_fakeInput('game');
+s.harness.screens = [];
+s.Search_KeyEnter();
+check(s.harness.screens[0] === s.Main_SearchGames, 'type 2 maps to category results');
 s.Search_cursorX = 3;
 s.Search_fakeInput('vod');
 s.harness.screens = [];

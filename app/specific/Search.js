@@ -36,7 +36,7 @@ function Search_SessionEnter(originScreen) {
         Search_Session.origin = originScreen;
         Search_Session.draft = '';
         Search_Session.submitted = '';
-        Search_Session.type = 0;
+        Search_Session.type = 1; // Channels
     }
     Main_values.Main_BeforeSearch = Search_Session.origin;
     Main_values.Search_isSearching = false;
@@ -62,7 +62,7 @@ function Search_init() {
         Search_cursorX = Search_Session.type;
     } else {
         Main_SearchInput.value = '';
-        Search_cursorX = 0;
+        Search_cursorX = 1; // Channels
     }
     Main_ShowElement('search_scroll');
     Search_cursorY = 0;
@@ -92,27 +92,25 @@ function Search_BackCancel() {
 function Search_loadData() {
     Search_exit();
     Main_ready(function () {
-        // Explicit result-type mapping: form button order differs from the shell's result-tab order.
-        if (!Search_cursorX) {
-            Screens_init(Main_SearchChannels);
-        } else if (Search_cursorX === 1) {
-            Screens_init(Main_SearchGames);
-        } else if (Search_cursorX === 2) {
-            Screens_init(Main_SearchLive);
-        } else if (Search_cursorX === 3) {
-            Screens_init(Main_SearchVod);
-        }
+        // The form buttons use the result tabs' order and names (Live, Channels, Categories, Videos),
+        // so type N is result tab N + 1 and the two selectors read as one.
+        var screens = [Main_SearchLive, Main_SearchChannels, Main_SearchGames, Main_SearchVod];
+        if (screens[Search_cursorX] !== undefined) Screens_init(screens[Search_cursorX]);
     });
 }
 
-var Search_buttonIds = ['chanel_button', 'game_button', 'live_button', 'vod_button'];
+var Search_buttonIds = ['live_button', 'chanel_button', 'game_button', 'vod_button'];
 function Search_refreshInputFocusTools() {
     var i = 0,
         len = Search_buttonIds.length;
 
     for (i; i < len; i++) {
         Main_RemoveClass(Search_buttonIds[i], 'button_search_focused');
+        Main_RemoveClass(Search_buttonIds[i], 'button_search_selected');
     }
+
+    //The chosen result type stays marked while the field has focus, so OK there searches it
+    Main_AddClass(Search_buttonIds[Search_cursorX], 'button_search_selected');
 
     if (Search_cursorY) {
         Main_AddClass(Search_buttonIds[Search_cursorX], 'button_search_focused');
@@ -184,10 +182,7 @@ function Search_KeyEnter() {
     } else {
         if (Main_SearchInput.value !== '' && Main_SearchInput.value !== null) {
             if (Main_SearchInput.value.replace(/\s/g, '') === '') {
-                Main_showWarningDialog(STR_SEARCH_EMPTY);
-                Main_setTimeout(function () {
-                    Main_HideWarningDialog();
-                }, 1000);
+                Search_EmptyWarning();
                 return;
             }
             // The submitted query only reaches loaders after validation; the draft stays editable.
@@ -196,13 +191,15 @@ function Search_KeyEnter() {
             Search_Session.type = Search_cursorX;
             Main_values.Search_data = Main_SearchInput.value;
             Search_loadData();
-        } else {
-            Main_showWarningDialog(STR_SEARCH_EMPTY);
-            Main_setTimeout(function () {
-                Main_HideWarningDialog();
-            }, 1000);
-        }
+        } else Search_EmptyWarning();
     }
+}
+
+function Search_EmptyWarning() {
+    Main_showWarningDialog(STR_SEARCH_TYPE_FIRST);
+    Main_setTimeout(function () {
+        Main_HideWarningDialog();
+    }, 2000);
 }
 
 var Search_inputFocusId;
@@ -213,6 +210,8 @@ function Search_inputFocus() {
     Main_removeEventListener('keydown', Search_handleKeyDown);
     Main_addEventListener('keydown', Search_KeyboardEvent);
     Main_SearchInput.placeholder = STR_PLACEHOLDER_SEARCH;
+    //Focus shows at once (Instant Focus); only the real focus, which opens the TV keyboard, waits
+    Main_AddClass('search_input', 'input_class_focus');
 
     Search_inputFocusId = Main_setTimeout(
         function () {
@@ -233,6 +232,7 @@ function Search_RemoveinputFocus(EnaKeydown) {
     OSInterface_AvoidClicks(false);
     Main_SearchInput.blur();
     Search_removeEventListener();
+    Main_RemoveClass('search_input', 'input_class_focus');
     Main_removeEventListener('keydown', Search_KeyboardEvent);
 
     if (EnaKeydown) Main_addEventListener('keydown', Search_handleKeyDown);
@@ -264,6 +264,11 @@ function Search_KeyboardEvent(event) {
             }
             break;
         case KEY_KEYBOARD_DONE:
+            //OK / keyboard Done searches the marked type right away; an empty field says why not
+            Search_KeyboardDismiss();
+            if (Main_SearchInput.value.replace(/\s/g, '')) Search_KeyEnter();
+            else Search_EmptyWarning();
+            break;
         case KEY_DOWN:
             Search_KeyboardDismiss();
             break;

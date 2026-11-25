@@ -165,6 +165,43 @@ function Navigation_Tabs(destination) {
     return [];
 }
 
+/* Tabs show only where every tab leads somewhere: not in Settings, not on the signed-out onboarding
+ * panel, and not on Account without an account (Add user is the only thing it can do there). */
+function Navigation_TabsVisible() {
+    if (Settings_isVisible() || Navigation_Onboarding) return false;
+    return !(Navigation_State.destination === 'account' && !AddUser_IsUserSet());
+}
+
+//The search form has nothing to reload; Refresh appears once there are results
+function Navigation_RefreshVisible() {
+    return Navigation_TabsVisible() && Main_values.Main_Go !== Main_Search;
+}
+
+/* The heading names what is on screen: a category's own screens carry the category name and search
+ * results restate the query; everything else is its destination's label. */
+function Navigation_Heading(screen, route, labels, routes) {
+    if (!route && Navigation_IsCategoryScreen(screen) && Main_values.Main_gameSelected) return Main_values.Main_gameSelected;
+    if (route && route.destination === 'search' && screen !== Main_Search && Main_values.Search_data)
+        return STR_SEARCH_RESULTS_FOR.replace('%x', Main_values.Search_data);
+    return labels[
+        routes
+            .map(function (item) {
+                return item.id;
+            })
+            .indexOf(Navigation_State.destination)
+    ];
+}
+
+//Following and Library need an account; signed out they show the onboarding panel instead
+function Navigation_IsAccountDestination(destination) {
+    return destination === 'following' || destination === 'library';
+}
+
+//A category's own screens (its live list, videos and clips) are named after the category
+function Navigation_IsCategoryScreen(screen) {
+    return screen === Main_aGame || screen === Main_AGameVod || screen === Main_AGameClip;
+}
+
 function Navigation_Button(parent, id, label, callback, icon) {
     var button = document.createElement('button'),
         span = document.createElement('span');
@@ -214,6 +251,7 @@ function Navigation_UpdateHint(screen) {
     else if (Navigation_Region === 'recovery') hint = STR_UI.recoveryHelp;
     else if (screen === Main_Search) hint = STR_UI.searchHelp;
     else if (screen === Main_ChannelContent) hint = STR_UI.channelHelp;
+    else if (screen === Main_addUser) hint = STR_ADD_USER_HELP;
     else if (Settings_isVisible()) hint = STR_UI.settingsNavHelp;
     else if (ScreenObj[screen] && ScreenObj[screen].posSub === Screens_SubActions) hint = STR_UI.actionsHelp;
     else if (Screens_DirectInputMode()) hint = STR_UI.browseHelpDirect;
@@ -260,6 +298,11 @@ function Navigation_Render(screen) {
     if (route && !Navigation_Onboarding) {
         Navigation_State.destination = route.destination;
         Navigation_State.tab = screen === Main_Blocked ? 3 : route.tab;
+    } else if (!route && !Navigation_Onboarding && !AddUser_IsUserSet() && Navigation_IsAccountDestination(Navigation_State.destination)) {
+        //A detail screen restored at launch inherits the default 'following' origin; signed out that
+        //origin's tabs lead nowhere, so the screen belongs to Browse
+        Navigation_State.destination = 'browse';
+        Navigation_State.tab = Navigation_IsCategoryScreen(screen) ? 2 : 0;
     }
     if (Settings_isVisible()) {
         Navigation_State.destination = 'settings';
@@ -276,16 +319,7 @@ function Navigation_Render(screen) {
         //rail never claims you are somewhere you are not
         if ((route || Settings_isVisible()) && routes[i].id === Navigation_State.destination) button.setAttribute('aria-current', 'page');
     }
-    Main_textContent(
-        'navigation-heading',
-        labels[
-            routes
-                .map(function (item) {
-                    return item.id;
-                })
-                .indexOf(Navigation_State.destination)
-        ]
-    );
+    Main_textContent('navigation-heading', Navigation_Heading(screen, route, labels, routes));
     Main_textContent(
         'navigation-account',
         AddUser_UsernameArray[0] ? AddUser_UsernameArray[0].display_name || AddUser_UsernameArray[0].name : STR_UI.noAccount
@@ -306,16 +340,19 @@ function Navigation_Render(screen) {
         live = Boolean(obj && obj.screenType === 0 && !obj.isHistory && !Settings_isVisible());
     if (live && !Navigation_Onboarding) Main_AddClass('scene1', 'navigation-live');
     else Main_RemoveClass('scene1', 'navigation-live');
+    //A category's live list: every card plays the same game, so the cards drop that line
+    if (live && !Navigation_Onboarding && screen === Main_aGame) Main_AddClass('scene1', 'navigation-game');
+    else Main_RemoveClass('scene1', 'navigation-game');
     Main_ShowElement('navigation-shell');
-    if (Settings_isVisible()) {
-        Main_AddClass('scene1', 'navigation-settings');
-        Main_HideElement('navigation-tabs');
-        Main_HideElement('navigation-refresh');
-    } else {
-        Main_RemoveClass('scene1', 'navigation-settings');
-        Main_ShowElement('navigation-tabs');
-        Main_ShowElement('navigation-refresh');
-    }
+    if (Settings_isVisible()) Main_AddClass('scene1', 'navigation-settings');
+    else Main_RemoveClass('scene1', 'navigation-settings');
+    if (Navigation_TabsVisible()) Main_ShowElement('navigation-tabs');
+    else Main_HideElement('navigation-tabs');
+    if (Navigation_RefreshVisible()) Main_ShowElement('navigation-refresh');
+    else Main_HideElement('navigation-refresh');
+    //The onboarding panel has no grid, so grid-only chrome (the position counter) hides with it
+    if (Navigation_Onboarding) Main_AddClass('scene1', 'navigation-onboarding-open');
+    else Main_RemoveClass('scene1', 'navigation-onboarding-open');
     Main_textContent('navigation-about', STR_ABOUT);
     Main_textContent('navigation-help', STR_CONTROLS);
     Main_textContent('navigation-updates', STR_UPDATE_CHANGELOG);
@@ -383,6 +420,7 @@ function Navigation_Open(callback, region) {
     if (Navigation_Region) Navigation_Close(false);
     Navigation_Callback = callback || (ScreenObj[Main_values.Main_Go] && ScreenObj[Main_values.Main_Go].key_fun);
     Navigation_Region = region || 'rail';
+    if (Navigation_Region === 'tabs' && !Navigation_TabsVisible()) Navigation_Region = 'rail';
     Navigation_Position = Navigation_Region === 'tabs' ? Navigation_State.tab : 0;
     if (Navigation_Region === 'rail') {
         var routes = Navigation_Destinations();
@@ -485,15 +523,13 @@ function Navigation_Handle(event, up) {
                 return true;
             }
         } else if (code === KEY_LEFT || code === KEY_3) {
+            // Signed out there is no followed panel to open: Left stays on the rail (the screen's edge)
+            // instead of showing a warning about it.
+            if (!AddUser_UserHasToken()) return true;
             Navigation_Close(false);
-            if (AddUser_UserHasToken()) {
-                // The followed panel returns to the rail with this screen's keys (Right or Back).
-                Sidepannel_Callback = Navigation_Callback;
-                Sidepannel_StartFeed();
-            } else {
-                Sidepannel_ShowNoUserWarning();
-                Navigation_Open(Navigation_Callback);
-            }
+            // The followed panel returns to the rail with this screen's keys (Right or Back).
+            Sidepannel_Callback = Navigation_Callback;
+            Sidepannel_StartFeed();
             return true;
         }
     } else if (Navigation_Region === 'tabs') {
@@ -502,7 +538,10 @@ function Navigation_Handle(event, up) {
             return true;
         }
         if (code === KEY_LEFT || code === KEY_RIGHT)
-            Navigation_Position = Math.max(0, Math.min(tabs.length, Navigation_Position + (code === KEY_LEFT ? -1 : 1)));
+            Navigation_Position = Math.max(
+                0,
+                Math.min(Navigation_RefreshVisible() ? tabs.length : tabs.length - 1, Navigation_Position + (code === KEY_LEFT ? -1 : 1))
+            );
         else if (code === KEY_DOWN) {
             if (Navigation_Onboarding) {
                 Navigation_Region = 'recovery';
@@ -518,10 +557,6 @@ function Navigation_Handle(event, up) {
             Navigation_Region = 'rail';
             Main_AddClass('navigation-rail', 'navigation-expanded');
         } else if (code === KEY_LEFT || code === KEY_RIGHT) Navigation_Position = code === KEY_LEFT ? 0 : 1;
-        else if (code === KEY_UP) {
-            Navigation_Region = 'tabs';
-            Navigation_Position = 0;
-        }
     }
     // Inline region switches (recovery/rail/tabs) re-resolve the detail band and the footer hint.
     Navigation_UpdateDetails(Main_values.Main_Go);
@@ -569,6 +604,10 @@ function Navigation_Activate(index) {
 
 function Navigation_ActivateTab(tab) {
     if (Navigation_Onboarding) return;
+    if (Navigation_IsAccountDestination(Navigation_State.destination) && !AddUser_IsUserSet()) {
+        Navigation_ShowOnboarding(Navigation_State.destination);
+        return;
+    }
     if (Navigation_State.destination === 'search' && tab && !Main_values.Search_data) {
         Navigation_Go(Main_Search);
         return;
@@ -658,12 +697,16 @@ function Navigation_Refresh() {
 }
 
 function Navigation_ShowOnboarding(destination) {
-    Main_ExitCurrent(Main_values.Main_Go);
+    //Exit like Navigation_Go does: Add user, Search and Settings are not ScreenObj screens, and
+    //Main_ExitCurrent alone left the sign-in panel (and its code polling) running behind the panel
+    Navigation_ExitCurrent();
+    //A late code response checks Main_Go to know it is still wanted: never leave it on Add user here
+    if (Main_values.Main_Go === Main_addUser) Main_values.Main_Go = Main_Live;
     Navigation_Onboarding = true;
     Navigation_State.destination = destination || 'following';
     Navigation_State.tab = 0;
-    Main_textContent('navigation-welcome-title', STR_UI.welcomeTitle);
-    Main_textContent('navigation-welcome-copy', STR_UI.welcomeCopy);
+    Main_textContent('navigation-welcome-title', destination === 'library' ? STR_LIBRARY_WELCOME_TITLE : STR_UI.welcomeTitle);
+    Main_textContent('navigation-welcome-copy', destination === 'library' ? STR_LIBRARY_WELCOME_COPY : STR_UI.welcomeCopy);
     Main_textContent('navigation-recovery-0', STR_USER_ADD);
     Main_textContent('navigation-recovery-1', STR_UI.browse);
     Main_getElementById('navigation-recovery-0').onclick = Navigation_Go.bind(null, Main_addUser);

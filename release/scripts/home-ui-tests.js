@@ -43,6 +43,8 @@ s.Main_ColorBadgeVod = '00843a';
 s.Main_ColorBadgeClip = 'c2410c';
 s.Main_ColorIndicatorVod = '00a94b';
 s.Main_ColorIndicatorHosting = 'FED000';
+s.Main_ColorIndicatorLive = 'ff4d4d';
+s.SettingsColor_Accent = '#7635fc';
 s.Main_ColorBadgeFavorite = 'FED000';
 //The favorite star markup depends on the per-user favorites store, not part of this fixture
 s.Screens_isFavorite = () => false;

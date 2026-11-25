@@ -103,18 +103,9 @@ function AddUser_getCodeSuccess(resultObj) {
 
     if (resultObj.status === 200) {
         var data = JSON.parse(resultObj.responseText);
-        var codeDiv = STR_BR + STR_BR + data.user_code + STR_BR + STR_BR;
-
-        var urlDiv;
-        if (Main_IsOn_OSInterface) {
-            urlDiv = '<div style="color: ' + LINK_COLOR + '; text-decoration:none;">' + data.verification_uri + '</div>';
-        } else {
-            urlDiv = STR_DIV_LINK + DefaultMakeLink(data.verification_uri) + '</div>';
-        }
 
         AddUser_DeviceCode = data.device_code;
-
-        Main_innerHTML('add_user_text', STR_ADD_USER_TEXT.replace('%site', urlDiv).replace('%code', codeDiv));
+        AddUser_ShowCode(data.user_code, data.verification_uri);
         Main_ShowElement('add_user_text_holder');
         Main_HideLoadDialog();
         AddUser_getCodeCheck(AddUser_DeviceCodeTimeout);
@@ -123,33 +114,82 @@ function AddUser_getCodeSuccess(resultObj) {
     }
 }
 
+/* Device sign-in panel: numbered steps, the code as large key caps and a QR of the activation URL
+ * (Twitch's verification_uri already carries the code, so scanning skips typing). The site is plain
+ * text, a TV cannot open links. QR drawn locally by the vendored generator, as phone chat does. */
+function AddUser_ShowCode(code, uri) {
+    var site = String(uri || '')
+            .replace(/^https?:\/\/(www\.)?/, '')
+            .split('?')[0],
+        canvas = Main_getElementById('add_user_qr');
+
+    code = String(code || '');
+    Main_textContent('add_user_title', STR_ADD_USER_TITLE);
+    Main_textContent('add_user_step1', STR_ADD_USER_STEP_SCAN.replace('%site', site));
+    Main_textContent('add_user_step2', STR_ADD_USER_STEP_CODE);
+    //An 8 letter code reads as two groups of four
+    Main_textContent('add_user_code', code.length === 8 ? code.substr(0, 4) + ' ' + code.substr(4) : code);
+    Main_textContent('add_user_text_counter', AddUser_CodeRenewed ? STR_ADD_USER_NEW_CODE : STR_ADD_USER_WAITING);
+    AddUser_CodeRenewed = false;
+
+    if (canvas && uri && PhoneChat_IsQrLibraryAvailable()) {
+        try {
+            PhoneChat_DrawQr(canvas, uri);
+            Main_RemoveClass('add_user_qr', 'hide');
+        } catch (e) {
+            Main_AddClass('add_user_qr', 'hide');
+        }
+    } else Main_AddClass('add_user_qr', 'hide');
+}
+
 // function AddUser_insertString(str, index, value) {
 //     return str.substr(0, index) + value + str.substr(index);
 // }
 
+/* A failed request never throws the user out of sign-in: the panel stays, its status line says what
+ * happened and the flow retries by itself (polling again while the code is still valid, a new code
+ * otherwise). Back and the rail stay the way out. */
 var AddUser_getCodeErrorId;
+var AddUser_RetryDelay = 5000;
 function AddUser_getCodeError() {
     //Also the requests' error callback, so it can land after leaving: the error is Add User's, not the next screen's
     if (!AddUser_IsInUserScreen()) return;
 
     Main_HideLoadDialog();
-    Main_showWarningDialog(STR_ADD_ERROR, 7500, true);
+    if (!Main_isElementShowing('add_user_text_holder')) {
+        //No code on screen yet: show the panel with its title and the status alone
+        Main_textContent('add_user_title', STR_ADD_USER_TITLE);
+        Main_textContent('add_user_step1', '');
+        Main_textContent('add_user_step2', '');
+        Main_textContent('add_user_code', '');
+        Main_AddClass('add_user_qr', 'hide');
+        Main_ShowElement('add_user_text_holder');
+    }
+    Main_textContent('add_user_text_counter', STR_ADD_USER_RETRY);
     AddUser_getCodeErrorId = Main_setTimeout(
         function () {
-            if (AddUser_IsInUserScreen()) AddUser_handleKeyBack();
+            if (!AddUser_IsInUserScreen()) return;
+            if (AddUser_DeviceCode) AddUser_getDeviceCode();
+            else AddUser_getCode();
         },
-        3000,
+        AddUser_RetryDelay,
         AddUser_getCodeErrorId
     );
+}
+
+//The code ran out (or was refused): drop it and fetch a new one in place, saying so on the status line
+var AddUser_CodeRenewed = false;
+function AddUser_RenewCode() {
+    AddUser_CodeRenewed = true;
+    AddUser_getCode();
 }
 
 var AddUser_getCodeCheckId;
 function AddUser_getCodeCheck(counter) {
     if (!AddUser_IsInUserScreen()) return;
 
+    //The status line stays a calm 'Waiting for you to sign in…': a per-second countdown was noise
     if (counter) {
-        Main_textContent('add_user_text_counter', STR_ADD_USER_TEXT_COUNTER.replace('%d', counter));
-
         AddUser_getCodeCheckId = Main_setTimeout(
             function () {
                 AddUser_getCodeCheck(counter - 1);
@@ -158,7 +198,6 @@ function AddUser_getCodeCheck(counter) {
             AddUser_getCodeCheckId
         );
     } else {
-        Main_textContent('add_user_text_counter', STR_ADD_USER_TEXT_COUNTER_NOW);
         AddUser_getDeviceCode();
     }
 }
@@ -190,10 +229,10 @@ function AddUser_getDeviceCodeSuccess(resultObj) {
         AddUser_getUserToken();
     } else if (resultObj.status === 400) {
         data = JSON.parse(resultObj.responseText);
-        if (Main_A_includes_B(data.message, 'authorization_pending')) {
+        if (Main_A_includes_B(data.message, 'authorization_pending') || Main_A_includes_B(data.message, 'slow_down')) {
             AddUser_getCodeCheck(AddUser_DeviceCodeTimeout);
         } else {
-            AddUser_getCodeError();
+            AddUser_RenewCode();
         }
     } else {
         AddUser_getCodeError();

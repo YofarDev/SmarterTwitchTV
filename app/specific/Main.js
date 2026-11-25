@@ -32,7 +32,9 @@ var Main_ColorBadgeLive = 'd92626',
 //State indicator dots (DESIGN.md: VOD Dot Green, Hosting Yellow) — the brighter
 //indicator hues of their badge colors; dots are marks, not text surfaces.
 var Main_ColorIndicatorVod = '00a94b',
-    Main_ColorIndicatorHosting = 'FED000';
+    Main_ColorIndicatorHosting = 'FED000',
+    //Live Red (DESIGN.md): the live dot, and the app's one alert red (update notices)
+    Main_ColorIndicatorLive = 'ff4d4d';
 
 //Favorite channel star: the hosting gold, a mark next to the channel name
 var Main_ColorBadgeFavorite = 'FED000';
@@ -573,6 +575,48 @@ function Main_SetStringsMain() {
     Main_Changelog();
 }
 
+/* Controls is one 'Remote basics' screen: what each remote key does while browsing and while
+ * watching, drawn with the footer's key glyphs. The player opens it with Watching first. */
+function Main_RemoteBasicsHtml(fromPlayer) {
+    var browse = [
+            ['{up}{down}{left}{right}', STR_REMOTE_MOVE],
+            ['{ok}', STR_REMOTE_OPEN],
+            [STR_REMOTE_HOLD_OK, STR_REMOTE_OPTIONS],
+            ['{up}', STR_REMOTE_TABS],
+            ['{left}', STR_REMOTE_MENU],
+            ['{back}', STR_REMOTE_BACK]
+        ],
+        watch = [
+            ['{ok}', STR_REMOTE_PLAYER_BAR],
+            ['{up}', STR_REMOTE_PLAYER_FEED],
+            ['{down}', STR_REMOTE_PLAYER_CHAT],
+            ['{back}', STR_REMOTE_PLAYER_CLOSE]
+        ],
+        section = function (title, rows) {
+            var html = '<div class="remote_section"><div class="remote_section_title">' + Screens_AriaEscape(title) + '</div>',
+                i;
+            for (i = 0; i < rows.length; i++) {
+                html +=
+                    '<div class="remote_row"><span class="remote_keys">' +
+                    Navigation_KeyHintHtml(rows[i][0]) +
+                    '</span><span class="remote_label">' +
+                    Screens_AriaEscape(rows[i][1]) +
+                    '</span></div>';
+            }
+            return html + '</div>';
+        };
+
+    return (
+        '<div class="remote_title">' +
+        Screens_AriaEscape(STR_REMOTE_BASICS) +
+        '</div><div class="remote_columns">' +
+        (fromPlayer ? section(STR_REMOTE_WATCHING, watch) + section(STR_REMOTE_BROWSING, browse) : section(STR_REMOTE_BROWSING, browse) + section(STR_REMOTE_WATCHING, watch)) +
+        '</div><div class="remote_close">' +
+        Screens_AriaEscape(STR_CLOSE_THIS) +
+        '</div>'
+    );
+}
+
 function Main_SetStringsSecondary() {
     Main_textContent('play_dialog_exit_text', STR_EXIT_AGAIN);
 
@@ -583,7 +627,7 @@ function Main_SetStringsSecondary() {
     Main_textContent('password_help', STR_MATURE_HELP_SET_PASS);
 
     Main_textContent('chanel_button', STR_CHANNELS);
-    Main_textContent('game_button', STR_GAMES);
+    Main_textContent('game_button', STR_UI.categories);
     Main_textContent('live_button', STR_LIVE);
     Main_textContent('vod_button', STR_VIDEOS);
     Main_textContent('exit_app_cancel', STR_CANCEL);
@@ -593,8 +637,13 @@ function Main_SetStringsSecondary() {
     Main_textContent('exit_app_minimize', STR_MINIMIZE);
     Main_textContent('main_dialog_exit_text', STR_EXIT_MESSAGE);
 
-    Main_innerHTML('dialog_controls_text', '<p>' + Navigation_KeyHintHtml(STR_UI.browseHelp) + '</p>' + STR_CONTROLS_MAIN_0);
-    Main_innerHTML('dialog_controls_player_text', '<p>' + Navigation_KeyHintHtml(STR_UI.playerHelp) + '</p>' + STR_CONTROLS_PLAYER_0);
+    Main_innerHTML('dialog_controls_text', Main_RemoteBasicsHtml(false));
+    Main_innerHTML('dialog_controls_player_text', Main_RemoteBasicsHtml(true));
+    //Dialog names for screen readers, translated with the rest of the strings
+    Main_getElementById('dialog_controls').setAttribute('aria-label', STR_REMOTE_BASICS);
+    Main_getElementById('dialog_controls_player').setAttribute('aria-label', STR_REMOTE_BASICS);
+    Main_getElementById('dialog_about').setAttribute('aria-label', STR_ABOUT);
+    Main_getElementById('search_input').setAttribute('aria-label', STR_SEARCH);
     Main_textContent('side_panel_warn_text', STR_NO + STR_LIVE_CHANNELS);
     Main_textContent('side_panel_movel_top_text', STR_LIVE_FEED);
 
@@ -669,11 +718,13 @@ function Main_SetStringsSecondary() {
 
     Main_innerHTML('feed_end_1', STR_FEATURED);
     Main_innerHTML('feed_end_3', STR_LIVE);
-    Main_innerHTML('feed_end_4', STR_USER + STR_SPACE_HTML + STR_LIVE);
+    //The player's channel switcher names its rows with the shell's own destinations
+    //(Following, Library), not the old 'User Live' / 'Live History' vocabulary
+    Main_innerHTML('feed_end_4', STR_UI.following);
     Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserRecommendedPos - 1), STR_UI.recommended);
-    Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserHistoryPos - 1), STR_LIVE + STR_SPACE_HTML + STR_HISTORY);
-    Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodPos - 2), STR_USER + STR_SPACE_HTML + 'VOD');
-    Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodHistoryPos - 2), 'VOD ' + STR_HISTORY);
+    Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserHistoryPos - 1), STR_UI.library + STR_UI.separator + STR_LIVE);
+    Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodPos - 2), STR_UI.following + STR_UI.separator + STR_VIDEOS);
+    Main_innerHTML('feed_end_' + (UserLiveFeedobj_UserVodHistoryPos - 2), STR_UI.library + STR_UI.separator + STR_VIDEOS);
     Main_innerHTML('icon_feed_back', STR_SPACE_HTML);
 }
 
@@ -867,10 +918,46 @@ function Main_showAboutDialog(removeEventListener, addEventListener) {
     Main_HideControlsDialog();
     Main_AboutDialogUpdateTime();
     Main_ShowElementWithEle(Main_about_dialog_div);
+    Main_DrawAboutQrs();
+    Main_DialogTakeFocus(Main_about_dialog_div);
+}
+
+//Donation QR codes, drawn with the vendored generator the sign-in and phone chat QRs use
+function Main_DrawAboutQrs() {
+    var codes = [
+            ['about_qr_paypal', 'http://tiny.cc/donatetofgl27'],
+            ['about_qr_bitcoin', 'bitcoin:' + STR_BITCOIN_WALLET]
+        ],
+        canvas,
+        i;
+    if (!PhoneChat_IsQrLibraryAvailable()) return;
+    for (i = 0; i < codes.length; i++) {
+        canvas = Main_getElementById(codes[i][0]);
+        if (canvas && !canvas.getAttribute('data-drawn')) {
+            PhoneChat_DrawQr(canvas, codes[i][1]);
+            canvas.setAttribute('data-drawn', '1');
+        }
+    }
+}
+
+/* Dialogs without focusable rows take the DOM focus themselves so TalkBack announces them;
+ * key handling stays with the listeners, the focus is only for assistive tech. */
+function Main_DialogTakeFocus(dialog) {
+    if (!dialog) return;
+    try {
+        dialog.focus({preventScroll: true});
+    } catch (e) {
+        dialog.focus();
+    }
+}
+
+function Main_DialogReleaseFocus(dialog) {
+    if (dialog && document.activeElement === dialog) dialog.blur();
 }
 
 function Main_HideAboutDialog() {
     Main_HideElementWithEle(Main_about_dialog_div);
+    Main_DialogReleaseFocus(Main_about_dialog_div);
 }
 
 function Main_isAboutDialogVisible() {
@@ -939,10 +1026,12 @@ function Main_showControlsDialog(removeEventListener, addEventListener) {
     Main_addEventListener('keydown', addEventListener);
     Main_HideAboutDialog();
     Main_ShowElement('dialog_controls');
+    Main_DialogTakeFocus(Main_getElementById('dialog_controls'));
 }
 
 function Main_HideControlsDialog() {
     Main_HideElement('dialog_controls');
+    Main_DialogReleaseFocus(Main_getElementById('dialog_controls'));
 }
 
 function Main_isControlsDialogVisible() {
@@ -995,7 +1084,8 @@ function Main_formatLiveDuration(startedAt, now) {
 }
 
 function Main_GetViewsStrings(value) {
-    return value === 1 ? STR_VIEW : STR_VIEWS;
+    //STR_VIEW is also the password dialog's 'View' button, so the count word has its own string
+    return parseInt(value, 10) === 1 ? STR_VIEW_ONE : STR_VIEWS;
 }
 
 // function Main_videoqualitylang(video_height, average_fps, language) {
@@ -1265,7 +1355,7 @@ function Main_WarnUpdate(web) {
         'label_update',
         '<div style="vertical-align: middle; display: inline-block;"><i class="icon-' +
             (web ? 'globe' : 'play-1') +
-            '" style="color: #ff2121;"></i></div><div style="vertical-align: middle; display: inline-block; color: #ff2121">' +
+            '" style="color: #' + Main_ColorIndicatorLive + ';"></i></div><div style="vertical-align: middle; display: inline-block; color: #' + Main_ColorIndicatorLive + '">' +
             STR_SPACE_HTML +
             (web ? STR_WEB_UPDATE_AVAILABLE : STR_UPDATE_AVAILABLE) +
             STR_UPDATE_CHECK_SIDE +
@@ -1433,7 +1523,7 @@ var Main_UpdateDialogLastCheck;
 function Main_UpdateDialogTitle() {
     var innerHtml =
             '<div class="about_text_title" ' +
-            (Main_HasUpdate ? ' style="color: #ff2121;"' : '') +
+            (Main_HasUpdate ? ' style="color: #' + Main_ColorIndicatorLive + ';"' : '') +
             '>' +
             (Main_HasUpdate ? (Main_IsWebupdate ? STR_WEB_UPDATE_AVAILABLE : STR_UPDATE_AVAILABLE) : STR_UPDATE_CHANGELOG) +
             STR_BR +

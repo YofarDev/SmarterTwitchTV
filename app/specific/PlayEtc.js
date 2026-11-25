@@ -4810,10 +4810,12 @@ function Play_showControlsDialog(removeEventListener) {
     Main_removeEventListener('keydown', removeEventListener);
     Main_addEventListener('keydown', Play_handleKeyControls);
     Main_ShowElement('dialog_controls_player');
+    Main_DialogTakeFocus(Main_getElementById('dialog_controls_player'));
 }
 
 function Play_HideControlsDialog() {
     Main_HideElement('dialog_controls_player');
+    Main_DialogReleaseFocus(Main_getElementById('dialog_controls_player'));
     Main_removeEventListener('keydown', Play_handleKeyControls);
     Main_addEventListener('keydown', Play_controlsEventListener);
 }

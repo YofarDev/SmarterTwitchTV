@@ -14,6 +14,10 @@ const source = fs.readFileSync('app/specific/Settings.js', 'utf8');
 const start = source.indexOf('var Settings_DialogScrollY = 0;');
 const end = source.indexOf('\n}\n', source.indexOf('function Settings_ScrollConatiner(')) + 2;
 assert.ok(start !== -1 && end > start, 'Settings_ScrollConatiner found');
+//The outline edge is read once per list through the shared cache helper
+const edgeStart = source.indexOf('var Settings_FocusEdgeCache = {};');
+const edgeEnd = source.indexOf('\n}\n', source.indexOf('function Settings_FocusEdge(')) + 2;
+assert.ok(edgeStart !== -1 && edgeEnd > edgeStart, 'Settings_FocusEdge found');
 
 //Rows like the Chat options dialog: plain options 36px, options with a summary 78px or 101px
 const heights = [101, 78, 36, 78, 36, 101, 36, 78, 78, 78, 36, 36, 36, 36, 36, 36, 36, 36, 36, 101, 78, 36, 36, 36, 36, 36, 36];
@@ -40,7 +44,7 @@ function sandbox() {
         window: {getComputedStyle: () => outline}
     };
     vm.createContext(s);
-    vm.runInContext(source.slice(start, end), s);
+    vm.runInContext(source.slice(edgeStart, edgeEnd) + source.slice(start, end), s);
     return {s, list, rows, total: y + padding};
 }
 

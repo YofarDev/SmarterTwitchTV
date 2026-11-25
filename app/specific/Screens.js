@@ -839,7 +839,7 @@ function Screens_createCellChannel(id, idArray, valuesArray, key) {
         id +
         '" class="stream_info_channel_name">' +
         (valuesArray[5]
-            ? '<i class="icon-circle channel_live_icon strokedeline" style="color: red;"></i><span class="stream_live_badge">' + STR_LIVE + '</span>'
+            ? '<i class="icon-circle channel_live_icon strokedeline" style="color: #' + Main_ColorIndicatorLive + ';"></i><span class="stream_live_badge">' + STR_LIVE + '</span>'
             : '') +
         valuesArray[3] +
         (valuesArray[4]
@@ -940,11 +940,10 @@ function Screens_createCellClip(id, idArray, valuesArray, key, Extra_when, Extra
         playing +
         '</div>' +
         '<div style="line-height: 1.3ch;"><div class="stream_info_live" style="width: auto; display: inline-block;">' +
-        STR_CREATED_AT +
+        //Compact scan line like the live cards: 'Nov 18, 2026 · 729.8K views'
         valuesArray[16] +
-        ',' +
-        STR_SPACE_HTML +
-        valuesArray[14] +
+        STR_UI.separator +
+        Main_formatCompactViewers(valuesArray[13]) +
         Main_GetViewsStrings(valuesArray[13]) +
         '</div></div>' +
         (Extra_when
@@ -1014,14 +1013,13 @@ function Screens_createCellVod(id, idArray, valuesArray, key, Extra_when, Extra_
         valuesArray[10] +
         '</div>' +
         '<div class="stream_info_live">' +
-        (valuesArray[3] !== '' && valuesArray[3] !== null ? STR_STARTED + STR_PLAYING + valuesArray[3] : '') +
+        (valuesArray[3] !== '' && valuesArray[3] !== null ? STR_PLAYING + valuesArray[3] : '') +
         '</div>' +
         '<div style="line-height: 1.3ch;"><div class="stream_info_live" style="width: auto; display: inline-block;">' +
-        STR_STREAM_ON +
+        //Compact scan line like the live cards: 'Nov 18, 2026 · 22.7M views'
         valuesArray[2] +
-        ',' +
-        STR_SPACE_HTML +
-        valuesArray[4] +
+        STR_UI.separator +
+        Main_formatCompactViewers(valuesArray[13]) +
         Main_GetViewsStrings(valuesArray[13]) +
         '</div></div>' +
         (Extra_when
@@ -1081,7 +1079,7 @@ function Screens_createCellLive(id, idArray, valuesArray, key, Extra_when, Extra
         ' live_icon strokedeline' +
         (force_VOD ? ' hideimp' : '') +
         '" style="color: ' +
-        (valuesArray[8] ? '#FFFFFF' : ishosting ? '#' + Main_ColorIndicatorHosting : 'red') +
+        (valuesArray[8] ? '#FFFFFF' : ishosting ? '#' + Main_ColorIndicatorHosting : '#' + Main_ColorIndicatorLive) +
         ';"></i> ' +
         (Extra_vodimg || force_VOD
             ? '<div class="vodicon_text ' + (force_VOD ? '' : 'hideimp') + '" style="background: #' + Main_ColorBadgeVod + ';">&nbsp;&nbsp;VOD&nbsp;&nbsp;</div>&nbsp;'
@@ -1104,7 +1102,7 @@ function Screens_createCellLive(id, idArray, valuesArray, key, Extra_when, Extra
         '" >' +
         Main_ReplaceLargeFont(twemoji.parse(valuesArray[2])) +
         '</div>' +
-        '<div class="stream_info_live" id="' +
+        '<div class="stream_info_live stream_info_live_game" id="' +
         idArray[12] +
         id +
         '" >' +
@@ -2917,7 +2915,8 @@ var Screens_ThumbOptionSpecial;
 
 function Screens_histStart(key, click) {
     ScreenObj[key].sethistDialog();
-    Main_textContent('dialog_hist_text_end', click ? STR_THUMB_OPTIONS_CLICK : STR_THUMB_OPTIONS_KEY);
+    if (click) Main_textContent('dialog_hist_text_end', STR_THUMB_OPTIONS_CLICK);
+    else Main_innerHTML('dialog_hist_text_end', Navigation_KeyHintHtml(STR_UI.playerHelp));
     Main_ShowElement('dialog_hist_setting');
     Main_removeEventListener('keydown', ScreenObj[key].key_fun);
     Main_addEventListener('keydown', ScreenObj[key].key_hist);
@@ -3399,7 +3398,9 @@ function Screens_ThumbOptionStart(key, click) {
 
     Main_removeEventListener('keydown', ScreenObj[key].key_fun);
     Main_addEventListener('keydown', ScreenObj[key].key_thumb);
-    Main_textContent('dialog_opt_text_end', click ? STR_THUMB_OPTIONS_CLICK : STR_THUMB_OPTIONS_KEY);
+    //Remote users get the same key-glyph hint as the player drawers, not a sentence
+    if (click) Main_textContent('dialog_opt_text_end', STR_THUMB_OPTIONS_CLICK);
+    else Main_innerHTML('dialog_opt_text_end', Navigation_KeyHintHtml(STR_UI.playerHelp));
 
     Main_ShowElementWithEle(Screens_dialog_thumb_div);
 }
@@ -3442,7 +3443,8 @@ function Screens_ThumbOptionStringSet(key) {
         Main_textContent(Screens_ThumbFollowCheckName, STR_NOKEY + STR_CANT_FOLLOW);
     }
 
-    Main_textContent('dialog_thumb_opt_val_2', '...');
+    //'...' is the follow check in progress; signed out the row's name already says what to do
+    Main_textContent('dialog_thumb_opt_val_2', AddUser_UserIsSet() ? '...' : '');
 
     if (ScreenObj[key].screenType < 2) {
         Main_values.Play_isHost = Main_A_includes_B(Screens_values_Play_data[1], STR_USER_HOSTED_BY);
@@ -3619,7 +3621,7 @@ function Screens_ThumbOption_UpdateFollow(key, FollowState) {
     Main_textContent(Screens_ThumbFollowCheckName, name);
 
     if (FollowState) {
-        Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart', STR_FOLLOWING, '#7635fc');
+        Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart', STR_FOLLOWING, SettingsColor_Accent);
     } else {
         Main_IconLoad('dialog_thumb_opt_val_2', 'icon-heart-o', STR_FOLLOW);
     }
@@ -4515,9 +4517,12 @@ function Screens_SetLastRefresh(key) {
     )
         return;
 
+    //A screen that never loaded has lastRefresh 0: say nothing rather than 'refreshed 20782d ago'
     Main_innerHTML(
         'label_last_refresh',
-        STR_SPACE_HTML + '(' + STR_LAST_REFRESH + Play_timeDay(new Date().getTime() - ScreenObj[key].lastRefresh) + ')'
+        ScreenObj[key].lastRefresh
+            ? STR_SPACE_HTML + '(' + STR_LAST_REFRESH + Play_timeDay(new Date().getTime() - ScreenObj[key].lastRefresh) + ')'
+            : ''
     );
 }
 
@@ -4705,7 +4710,7 @@ function AGame_setFollow() {
     if (AGame_following) {
         Main_innerHTML(
             ScreenObj[Main_aGame].ids[2] + '-1_2',
-            '<i class="icon-heart" style="color: #7635fc; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE + STR_FOLLOWING
+            '<i class="icon-heart" style="color: ' + SettingsColor_Accent + '; font-size: 100%;"></i>' + STR_SPACE_HTML + STR_SPACE + STR_FOLLOWING
         );
     } else {
         Main_innerHTML(
@@ -4713,7 +4718,7 @@ function AGame_setFollow() {
             '<i class="icon-heart-o" style="color: #FFFFFF; font-size: 100%; "></i>' +
                 STR_SPACE_HTML +
                 STR_SPACE_HTML +
-                (AddUser_UserIsSet() ? STR_FOLLOW : STR_NOKEY)
+                (AddUser_UserIsSet() ? STR_FOLLOW : STR_SIGN_IN_TO_FOLLOW)
         );
     }
 }

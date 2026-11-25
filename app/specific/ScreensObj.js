@@ -842,14 +842,8 @@ function ScreensObj_StartAllVars() {
                             [
                                 game.boxArtURL ? game.boxArtURL.replace('{width}x{height}', Main_GameSize) : '', //0
                                 game.displayName, //1
-                                (cell.channelsCount ? Main_formatNumber(cell.channelsCount) : 0) +
-                                    STR_SPACE_HTML +
-                                    STR_CHANNELS +
-                                    STR_BR +
-                                    STR_FOR +
-                                    (cell.viewersCount ? Main_formatNumber(cell.viewersCount) : 0) +
-                                    STR_SPACE_HTML +
-                                    Main_GetViewerStrings(cell.viewersCount ? cell.viewersCount : 0), //2
+                                //One compact line ('299.3K viewers') so the game name can lead the card
+                                Main_GetCompactViewerStrings(cell.viewersCount ? cell.viewersCount : 0), //2
                                 id_cell //3
                             ],
                             this.screen
@@ -863,16 +857,7 @@ function ScreensObj_StartAllVars() {
                             [
                                 game.box && game.box.template ? game.box.template.replace('{width}x{height}', Main_GameSize) : '', //0
                                 game.name, //1
-                                hasLive
-                                    ? Main_formatNumber(cell.channels) +
-                                      STR_SPACE_HTML +
-                                      STR_CHANNELS +
-                                      STR_BR +
-                                      STR_FOR +
-                                      Main_formatNumber(cell.viewers) +
-                                      STR_SPACE_HTML +
-                                      Main_GetViewerStrings(cell.viewers)
-                                    : '', //2
+                                hasLive ? Main_GetCompactViewerStrings(cell.viewers) : '', //2
                                 game._id //3
                             ],
                             this.screen
@@ -3278,6 +3263,22 @@ function ScreensObj_SetTopLable(text, small_text) {
     //Detail screens (channel, game, VOD) have no destination of their own; the shell heading shows
     //the screen-set label so the chrome names what is actually on screen instead of the origin
     if (!Navigation_Route(Main_values.Main_Go)) Main_textContent('navigation-heading', text);
+    //Screens with switches (period, VODs/highlights, sort) show their current choice as a chip next
+    //to the tabs: the switch row only names the action, the shell hides the legacy label holding it
+    var obj = ScreenObj[Main_values.Main_Go],
+        route = Navigation_Route(Main_values.Main_Go);
+    Main_textContent(
+        'navigation-filter',
+        //search results carry the query here, which the heading already shows
+        small_text && obj && obj.SwitchesIcons && !(route && route.destination === 'search')
+            ? String(small_text)
+                  .replace(/&nbsp;/g, ' ')
+                  .replace(/<[^>]*>/g, '')
+                  .replace(/^\s*,\s*/, '')
+                  .replace(/\s*,\s*/g, STR_UI.separator)
+                  .replace(/^\s+|\s+$/g, '')
+            : ''
+    );
 }
 
 function ScreensObj_LiveQueryCellArray(cell) {

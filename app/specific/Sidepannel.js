@@ -370,7 +370,7 @@ function Sidepannel_partnerIcon(name, partner, isrerun) {
             ? '<img id="feed_thumb_partnerimg" class="partnericon_img" alt="" src="' + IMG_PARTNER + '">' + STR_SPACE_HTML + STR_SPACE_HTML
             : '') +
         '<div id="feed_thumb_partnertext" class="partnericon_text" style="background: #' +
-        (isrerun ? 'FFFFFF; color: #000000;' : 'E21212;') +
+        (isrerun ? 'FFFFFF; color: #000000;' : Main_ColorBadgeLive + ';') +
         '">' +
         STR_SPACE_HTML +
         STR_SPACE_HTML +

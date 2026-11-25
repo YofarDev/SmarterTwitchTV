@@ -318,7 +318,8 @@
                 color: #ffffff;
                 text-align: left;
                 margin-left: 0.5%;
-                filter: drop-shadow(0 0.05em 0.15em #000000) drop-shadow(0 0.05em 0.15em #000000);
+                /* text-shadow, not stacked drop-shadow filters: an extra GPU pass per element on TVs */
+                text-shadow: 0 0.05em 0.15em #000000, 0 0.05em 0.15em #000000;
             }
 
             .stream_thumbnail_game_feed,
@@ -760,13 +761,61 @@
                 font-family: 'Roboto';
             }
 
-            .add_user_text {
-                width: 99% !important;
-                height: auto !important;
-                left: 0;
-                color: #ffffff;
-                font-size: 200%;
-                text-align: center;
+            /* Account sign-in: steps and the code on the left, the QR on the right, on the same
+             * elevated surface as Settings (re-themed in SettingsColor.js). Everything reads at
+             * couch distance: the code is the largest text on screen. */
+            .add_user_panel {
+                width: 86%;
+                margin: 3% 0 0 2%;
+            }
+            .add_user_layout {
+                display: flex;
+                align-items: center;
+                padding: 2em 2.4em;
+                border-radius: 0.25em;
+                background: #1e1b25;
+                color: #f5f1fa;
+            }
+            .add_user_steps {
+                flex: 1;
+                min-width: 0;
+            }
+            .add_user_title {
+                font-family: 'Roboto-Bold';
+                font-size: 150%;
+                margin-bottom: 0.6em;
+            }
+            .add_user_list {
+                margin: 0;
+                padding-left: 1.3em;
+                font-size: 110%;
+                line-height: 1.6;
+            }
+            .add_user_code {
+                display: inline-block;
+                margin: 0.35em 0 0.4em 0.42em;
+                padding: 0.15em 0.4em;
+                border: 0.04em solid #2b2438;
+                border-radius: 0.15em; /* chip radius (DESIGN.md scale) */
+                background: #15121c;
+                font-family: 'Roboto-Bold';
+                font-size: 300%;
+                letter-spacing: 0.12em;
+                white-space: pre;
+            }
+            .add_user_status {
+                margin-top: 0.8em;
+                color: #c1b8cd;
+                font-size: 100%;
+            }
+            .add_user_qr {
+                flex: none;
+                width: 36vh;
+                height: 36vh;
+                margin-left: 2em;
+                image-rendering: pixelated;
+                background-color: #ffffff;
+                border-radius: 0.25em;
             }
 
             .dialog_multi_help,
@@ -861,6 +910,12 @@
 
             .channel_about_text {
                 position: relative;
+            }
+            /* The bio sits on a scrim so it reads over any banner image */
+            .navigation-enabled .channel_about_text {
+                padding: 0.4em 0.5em;
+                border-radius: 0.2em;
+                background: linear-gradient(to bottom, rgba(11, 10, 14, 0.85), rgba(11, 10, 14, 0.6));
             }
 
             img.stream_img_channel_logo {
@@ -1023,7 +1078,7 @@
                 bottom: 0;
                 position: absolute;
                 /* Intentional off-scale radius: tracks the viewport-scaled video overlay geometry. */
-                border-radius: 0.5vh;
+                border-radius: 0.25em; /* card radius */
                 box-shadow:
                     0 0 0 0.3vh rgba(11, 10, 14, 0.9),
                     0 0 0 0.42vh #a78bfa,
@@ -1299,7 +1354,8 @@
 
             /* The text field takes real DOM focus while typing: give it the shell's remote-focus
              * outline so the caret's home is as visible as any other focused control. */
-            .input_class:focus {
+            .input_class:focus,
+            .input_class.input_class_focus {
                 outline: 0.08em solid #bca0ff;
                 outline-offset: 0.06em;
                 border-color: #bca0ff;
@@ -1317,6 +1373,61 @@
                 width: 101%;
                 display: flex;
                 justify-content: space-evenly;
+            }
+            /* Dialog buttons (exit, yes/no) read as buttons at rest, not just when focused: Panel
+             * Charcoal with the Edge hairline, the focus treatment adds outline + Focus Fill */
+            .navigation-enabled .button_dialog {
+                width: auto;
+                min-width: 22%;
+                padding: 0 0.7em;
+                margin: 0 0.25em;
+                box-sizing: border-box;
+                font-size: 115%;
+                background-color: #15121c;
+                border: 0.09em solid #2b2438;
+                border-radius: 0.25em;
+            }
+            .navigation-enabled .button_dialog.button_dialog_focused {
+                background-color: #30253f;
+            }
+            /* The exit / yes-no panel: the elevated surface, without the legacy violet edge gradients
+             * (violet is for focus, progress and active state only) */
+            .navigation-enabled .dialog_exit {
+                padding: 0.4em 0 1em;
+                background-color: #1e1b25;
+                border: none;
+                border-image: none;
+            }
+            /* The chosen type keeps the selected-tab pill while focus is in the field */
+            #search_button_holder .button_search_selected {
+                background-color: #6f43bd;
+                color: #ffffff;
+            }
+            /* Type names match the result tabs ('Categories' is the longest), so the search
+             * buttons size to their label instead of clipping at a fixed 19% */
+            #search_button_holder .button_search {
+                width: auto;
+                min-width: 19%;
+                padding: 0 0.6em;
+                box-sizing: border-box;
+            }
+
+            /* Warnings in the navigation shell are a toast on the elevated surface, sitting above the
+             * footer instead of stroked text floating over the middle of the content. */
+            .navigation-enabled #dialog_warning {
+                margin-top: 0 !important;
+                top: auto;
+                bottom: 12%;
+            }
+            .navigation-enabled #dialog_warning_text {
+                padding: 0.55em 1.1em;
+                border-radius: 0.25em;
+                background: #1e1b25;
+                color: #f5f1fa;
+                font-size: 110% !important;
+                text-shadow: none;
+                filter: none;
+                box-shadow: 0 0.35em 1em rgba(0, 0, 0, 0.5);
             }
 
             .button_dialog,
@@ -1383,6 +1494,123 @@
                 font-size: 1.65vh;
                 margin-top: 0;
                 margin-bottom: 0;
+            }
+
+            /* Welcome (first launch and after an update): the same elevated panel as About, at
+             * reading size, the title leading */
+            #welcome_dialog .about_dialogs {
+                width: 66% !important;
+                margin-left: 17% !important;
+                padding: 1.1em 1.6em;
+                box-sizing: border-box;
+                background-color: #1e1b25;
+            }
+            #welcome_dialog_text {
+                font-size: 2.3vh !important;
+                line-height: 1.4;
+                color: #c1b8cd;
+            }
+            #welcome_dialog_text .about_text_title {
+                color: #f5f1fa;
+            }
+            #welcome_dialog_text .about_text_title:first-child {
+                font-size: 150%;
+                margin-bottom: 0.3em;
+            }
+
+            /* About: the same elevated panel as the other dialogs, its long content in two columns
+             * so it fits one screen at reading size (2.2vh ~= 24px at 1080p). */
+            #dialog_about .about_dialogs {
+                width: 90% !important;
+                margin-left: 5% !important;
+                padding: 1em 1.4em;
+                box-sizing: border-box;
+                background-color: #1e1b25;
+            }
+            #dialog_about_text {
+                font-size: 2.2vh !important;
+                line-height: 1.35;
+                color: #c1b8cd;
+                -webkit-column-count: 2;
+                column-count: 2;
+                -webkit-column-gap: 2.5em;
+                column-gap: 2.5em;
+            }
+            #dialog_about_text .about_text_title {
+                color: #f5f1fa;
+            }
+            /* The original author's donations close the dialog as one block, never split across
+             * the columns, with QR codes big enough to scan from the couch */
+            #dialog_about_text .about_upstream {
+                -webkit-column-break-inside: avoid;
+                break-inside: avoid;
+                padding-top: 0.6em;
+                border-top: 0.04em solid #2b2438;
+            }
+            #dialog_about_text .about_qr {
+                width: 15vh;
+                height: 15vh;
+                margin: 0.3em 0;
+                vertical-align: middle;
+                image-rendering: pixelated;
+                background-color: #ffffff;
+                border-radius: 0.25em;
+            }
+
+            /* Controls = 'Remote basics': one screen, two columns of key -> action rows on the
+             * elevated surface, at couch-reading size (2.6vh ~= 28px at 1080p). */
+            #dialog_controls .about_dialogs,
+            #dialog_controls_player .about_dialogs {
+                width: 70% !important;
+                margin-left: 15% !important;
+                padding: 1.2em 1.6em;
+                box-sizing: border-box;
+                background-color: #1e1b25;
+            }
+            #dialog_controls_text,
+            #dialog_controls_player_text {
+                width: 100%;
+                margin: 0;
+                font-size: 2.6vh;
+                text-align: left;
+                color: #f5f1fa;
+            }
+            .remote_title {
+                font-family: 'Roboto-Bold';
+                font-size: 140%;
+                margin-bottom: 0.7em;
+            }
+            .remote_columns {
+                display: flex;
+            }
+            .remote_section {
+                flex: 1;
+                min-width: 0;
+            }
+            .remote_section + .remote_section {
+                margin-left: 2em;
+            }
+            .remote_section_title {
+                font-family: 'Roboto-Bold';
+                color: #c1b8cd;
+                margin-bottom: 0.4em;
+            }
+            .remote_row {
+                display: flex;
+                align-items: center;
+                padding: 0.3em 0;
+                border-top: 0.04em solid #2b2438;
+            }
+            .remote_keys {
+                flex: none;
+                width: 5.2em;
+                white-space: nowrap;
+                color: #c1b8cd;
+            }
+            .remote_close {
+                margin-top: 1em;
+                font-size: 85%;
+                color: #c1b8cd;
             }
 
             .up,
@@ -1886,12 +2114,12 @@
                 width: fit-content;
                 text-align: center;
                 display: inline-block;
-                filter: drop-shadow(0 0.05em 0.15em #000000) drop-shadow(0 0.05em 0.15em #000000);
+                text-shadow: 0 0.05em 0.15em #000000, 0 0.05em 0.15em #000000;
                 white-space: normal;
             }
 
             .shadow_text {
-                filter: drop-shadow(0 0.05em 0.15em rgba(0, 0, 0, 0.8)) drop-shadow(0 0.05em 0.15em rgba(0, 0, 0, 0.5));
+                text-shadow: 0 0.05em 0.15em rgba(0, 0, 0, 0.8), 0 0.05em 0.15em rgba(0, 0, 0, 0.5);
             }
 
             .streams_div {
@@ -2171,6 +2399,79 @@
                 text-align: center;
             }
 
+            /* Settings in the navigation shell (and the dialogs it opens) read like the player
+             * drawers: one line per row, the description only for the focused row and at the
+             * 24px reading floor, values at the same size, left-aligned group titles. */
+            .navigation-settings .settings_div {
+                padding: 0.3em 0;
+                line-height: 1.15em;
+            }
+            .navigation-settings .settings_summary {
+                display: none;
+            }
+            .navigation-settings .settings_div_focus .settings_summary {
+                display: block;
+                margin: 0.25em 0 0;
+                font-size: 90% !important;
+                line-height: 1.35em;
+                color: #c1b8cd;
+            }
+            .navigation-settings .settings_value {
+                width: 24%;
+                font-size: 65%;
+            }
+            .navigation-settings .settings_name {
+                width: 68.5%;
+            }
+            .navigation-settings #settings_main .settings_section {
+                padding: 0.9em 0 0.3em 1.5%;
+                box-sizing: border-box;
+                text-align: left;
+                font-family: 'Roboto-Bold';
+                font-size: 90%; /* ~16px at 720p, 24px at 1080p */
+                color: #c1b8cd;
+            }
+            .navigation-settings #settings_main .settings_section:first-child {
+                padding-top: 0.2em;
+            }
+            /* Settings dialogs: a centered panel on the elevated surface instead of a full-width
+             * sheet; the title's first line leads, any explanation under it is secondary text. */
+            .navigation-settings #dialog_settings .about_dialogs {
+                width: 76% !important;
+                margin-left: 12% !important;
+                padding: 0.9em 1.2em;
+                box-sizing: border-box;
+                background-color: #1e1b25;
+            }
+            .settings_dialog_title {
+                margin-bottom: 0.6em;
+                text-align: center;
+                line-height: 1.35em;
+            }
+            .navigation-settings .settings_dialog_title {
+                margin: 0 0 0.7em 1.5%;
+                text-align: left;
+                color: #c1b8cd;
+            }
+            .navigation-settings #dialog_settings .settings_div {
+                padding: 0.12em 0;
+            }
+            .navigation-settings #dialog_settings .settings_value {
+                font-size: 70%; /* 24px at 1080p */
+            }
+            .navigation-settings #dialog_setting_close_text {
+                margin: 0.6em 0 0 1.5%;
+                text-align: left;
+                font-family: 'Roboto';
+                font-size: 95%;
+                color: #c1b8cd;
+            }
+            .navigation-settings .settings_dialog_title::first-line {
+                font-family: 'Roboto-Bold';
+                font-size: 125%;
+                color: #f5f1fa;
+            }
+
             .settings_summary {
                 line-height: 1.4em;
                 width: 100%;
@@ -2409,7 +2710,7 @@
                 max-width: 100%;
                 max-height: 100%;
                 overflow: hidden;
-                border-radius: 0.5vh;
+                border-radius: 0.25em; /* card radius */
                 box-shadow:
                     0 0 0 0.3vh rgba(11, 10, 14, 0.9),
                     0 0 0 0.42vh #a78bfa,
@@ -2427,7 +2728,7 @@
                 max-width: 100%;
                 max-height: 100%;
                 overflow: hidden;
-                border-radius: 0.5vh;
+                border-radius: 0.25em; /* card radius */
                 box-shadow:
                     0 0 0 0.3vh rgba(11, 10, 14, 0.9),
                     0 0 0 0.42vh #a78bfa,
@@ -2514,7 +2815,7 @@
                 width: 0.5em;
                 height: 0.5em;
                 background: #ffffff;
-                border-radius: 1em;
+                border-radius: 50%; /* circle (DESIGN.md scale) */
                 border: 0.1em solid #000000;
             }
 
@@ -3007,8 +3308,8 @@
                 text-align: left;
                 position: relative; /* anchors the update badge */
             }
-            /* Passive update signal on the rail's Updates entry. The #ff5252 dot and #ff8f8f label
-             * tint are the semantic light-red pair, outside the violet palette by design. */
+            /* Passive update signal on the rail's Updates entry: Live Red (#ff4d4d, DESIGN.md), the
+             * app's one alert red, for the dot and the label (5:1 on Rail Charcoal). */
             .navigation-update-available::after {
                 content: '';
                 position: absolute;
@@ -3017,10 +3318,10 @@
                 width: 0.5em;
                 height: 0.5em;
                 border-radius: 50%;
-                background: #ff5252;
+                background: #ff4d4d;
             }
             .navigation-update-available > span {
-                color: #ff8f8f;
+                color: #ff4d4d;
             }
             .navigation-button:focus {
                 outline: none;
@@ -3121,7 +3422,7 @@
                 font-family: 'Roboto-Bold';
             }
             .navigation-header p {
-                font-size: 75%;
+                font-size: 83%; /* 24px at 1080p, the reading floor */
                 margin-top: 0.35em;
                 opacity: 0.85;
             }
@@ -3135,6 +3436,72 @@
             }
             #navigation-tabs {
                 display: inline-block;
+            }
+            /* The id rule above outranks .hide: hidden tabs (onboarding, Account without an
+             * account) and the hidden Refresh need their own hide at id specificity. */
+            #navigation-tabs.hide,
+            #navigation-refresh.hide {
+                display: none;
+            }
+            /* The current period / type of a grid with switches (set by ScreensObj_SetTopLable) */
+            .navigation-filter {
+                display: inline-block;
+                margin-left: 0.75em;
+                padding: 0.15em 0.6em;
+                border: 0.09em solid #2b2438;
+                border-radius: 0.15em;
+                font-size: 85%;
+                color: #c1b8cd;
+                vertical-align: middle;
+            }
+            .navigation-filter:empty {
+                display: none;
+            }
+            /* Card Options (Hold OK) and history settings: the same centered Rail Charcoal panel as
+             * the Settings dialogs, left-aligned, one row per action with its value on the right */
+            .navigation-enabled #dialog_thumb_opt .dialog_period,
+            .navigation-enabled #dialog_hist_setting .dialog_period {
+                width: 62%;
+                margin-left: 19%;
+                margin-top: 5%;
+                padding: 0.9em 1.3em;
+                box-sizing: border-box;
+                background-color: #1e1b25;
+                border: none;
+                border-image: none;
+                text-align: left !important;
+            }
+            .navigation-enabled #dialog_opt_text,
+            .navigation-enabled #dialog_hist_text {
+                width: auto;
+                margin: 0 0 0.6em 1.5%;
+                font-family: 'Roboto-Bold';
+                font-size: 125%;
+                color: #f5f1fa;
+            }
+            .navigation-enabled #dialog_thumb_opt .hist_div,
+            .navigation-enabled #dialog_hist_setting .hist_div {
+                width: 100%;
+                padding: 0.18em 0;
+                line-height: 1.2em;
+            }
+            .navigation-enabled #dialog_thumb_opt .hist_name,
+            .navigation-enabled #dialog_hist_setting .hist_name {
+                width: 56%;
+            }
+            .navigation-enabled #dialog_thumb_opt .hist_value,
+            .navigation-enabled #dialog_hist_setting .hist_value {
+                width: 32%;
+                font-size: 62%; /* 24px at 1080p */
+                text-shadow: none;
+            }
+            .navigation-enabled #dialog_opt_text_end,
+            .navigation-enabled #dialog_hist_text_end {
+                width: auto;
+                margin: 0.8em 0 0 1.5%;
+                font-size: 2.3vh; /* the footer hint size */
+                color: #c1b8cd;
+                white-space: pre-wrap;
             }
             #navigation-tabs .navigation-button {
                 margin-right: 0.35em;
@@ -3209,7 +3576,7 @@
                 border: 0.09em solid;
                 border-radius: 0.25em;
                 font-family: 'Roboto-Bold';
-                font-size: 80%;
+                font-size: 96%; /* ~24px at 1080p next to the 24.8px hint text */
                 line-height: 1.2;
             }
             /* Between key groups, the same line as the details rule above the footer */
@@ -3304,6 +3671,13 @@
                 bottom: 9.5%;
                 right: 5%;
             }
+            .navigation-enabled #dialog_counter .counter_class {
+                font-size: 83%; /* 24px at 1080p */
+            }
+            /* The signed-out onboarding panel has no grid to count */
+            .navigation-onboarding-open #dialog_counter {
+                display: none;
+            }
             /* Settings has no tabs row under the heading, start the list right below the account line */
             .navigation-settings #screens_holder {
                 top: 16%;
@@ -3379,6 +3753,83 @@
             }
             .navigation-live .stream_info_live_meta {
                 opacity: 0.6;
+            }
+            /* Category cards: the game name leads (24px at 1080p, Roboto-Bold) and the compact
+             * viewer count sits under it as secondary text. Colors come from SettingsColor.js. */
+            .navigation-enabled .stream_info_game_name {
+                font-family: 'Roboto-Bold';
+                font-size: 112%;
+            }
+            .navigation-enabled .stream_thumbnail_game .stream_info_live {
+                font-size: 96%;
+            }
+            /* Room above the first row for the focus ring (the holder clips), same as live cells. */
+            .navigation-enabled .stream_thumbnail_game_holder {
+                padding-top: 0.5%;
+            }
+            /* Grid action rows (Change period, Play All, VODs or highlights; a channel's Videos, Clips,
+             * Follow) read as buttons, not as column headers: Panel Charcoal with the Edge hairline,
+             * content-height, aligned on the card column's left edge */
+            .navigation-enabled .stream_thumbnail_channel_vod {
+                width: 100%;
+                margin-left: 0;
+                padding-bottom: 0;
+                height: 2.1em;
+                box-sizing: border-box;
+                background-color: #15121c;
+                border: 0.09em solid #2b2438;
+                border-radius: 0.25em;
+            }
+            .navigation-enabled .stream_channel_follow_game {
+                font-size: 80%; /* 24px at 1080p */
+            }
+            /* Same column geometry as .stream_thumbnail_live_holder so each button sits over its card */
+            .navigation-enabled .stream_cell_period {
+                width: 32%;
+                padding: 0.5%;
+                box-sizing: content-box;
+            }
+            /* The channel page's row is static markup: the whitespace between its inline-block cells
+             * would push the third button onto a new line */
+            .navigation-enabled #stream_table_channel_content .stream_cell_period {
+                margin-right: -0.3em;
+            }
+            /* The last meta line of a card stops short of its Actions pill (dots at rest, the wider
+             * 'Options' word on focus) instead of running under it */
+            .navigation-enabled .stream_thumbnail_live .stream_text_holder > :last-child {
+                max-width: calc(100% - 3em);
+                box-sizing: border-box;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .navigation-enabled .stream_thumbnail_live .stream_text_holder > :last-child .stream_info_live {
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .navigation-enabled .stream_thumbnail_focused .stream_text_holder > :last-child {
+                max-width: calc(100% - 4.6em);
+            }
+            /* The Options pill sits on the art's bottom edge so it never covers the game or
+             * channel name (both name strips are about 14% / 10% of the card height). */
+            .navigation-enabled .stream_thumbnail_game .stream_actions_btn {
+                bottom: 17%;
+            }
+            .navigation-enabled .stream_thumbnail_channel .stream_actions_btn {
+                bottom: 13%;
+            }
+            /* Inside a category every card plays the same game, so the stream title takes the
+             * game line's slot (one line; the detail band still shows it in full). */
+            .navigation-live.navigation-game .stream_info_live_game {
+                display: none;
+            }
+            .navigation-live.navigation-game .stream_info_live_title {
+                display: block;
+                max-height: 1.2em;
+                font-size: 88%;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
 
             /* Player rows are the original action DOM, bound to the active drawer renderer. */
@@ -3591,6 +4042,35 @@
             #user_feed .icon_feed_refresh {
                 color: #c1b8cd;
             }
+            /* Row names and hints under the switcher read at the 24px floor (83%) inside the 4.5%
+             * safe margin; the name strip scrolls to keep the focused name in view
+             * (UserLiveFeedobj_ScrollStrip) instead of running off the screen edge. */
+            #user_feed #feed_end {
+                width: 91%;
+                margin-left: 4.5%;
+                overflow: hidden;
+                font-size: 83%;
+                white-space: nowrap;
+            }
+            #user_feed #icon_feed_refresh,
+            #user_feed #icon_feed_back,
+            #user_feed #feed_last_refresh,
+            #user_feed #feed_counter {
+                font-size: 83%;
+                white-space: nowrap;
+            }
+            #user_feed #icon_feed_refresh {
+                margin-left: 4.5%;
+            }
+            /* Switcher cards: metadata at the 24px floor; the title keeps one line to make room */
+            #user_feed .stream_thumbnail_feed_text_holder {
+                font-size: 112%;
+            }
+            #user_feed .stream_info_live_title {
+                max-height: 1.2em;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
             #player-ui-scroll::-webkit-scrollbar {
                 width: 0;
                 height: 0;
@@ -3725,6 +4205,7 @@
                     <div class="navigation-toolbar">
                         <div id="navigation-tabs" role="tablist"></div>
                         <button id="navigation-refresh" type="button" class="navigation-button"></button>
+                        <span id="navigation-filter" class="navigation-filter" aria-live="polite"></span>
                     </div>
                     <section id="navigation-details" class="navigation-details" aria-live="polite">
                         <div>
@@ -4004,7 +4485,7 @@
                 <div id="dialog_warning" class="strokedeline dialogs hide" style="z-index: 100; margin-top: 50vh">
                     <div id="dialog_warning_text" class="strokedeline dialog_text" style="font-size: 150%"></div>
                 </div>
-                <div id="dialog_controls" class="screens hide" style="z-index: 99; background: rgba(0, 0, 0, 0.75)">
+                <div id="dialog_controls" class="screens hide" role="dialog" aria-modal="true" tabindex="-1" style="z-index: 99; background: rgba(0, 0, 0, 0.75)">
                     <div class="about_dialogs" style="width: 95%; margin-left: 2.5%">
                         <div id="dialog_controls_text" class="controls_text"></div>
                     </div>
@@ -4029,7 +4510,7 @@
                         <div id="dialog_codecs_text" class="about_text" style="font-size: 98%"></div>
                     </div>
                 </div>
-                <div id="dialog_settings" class="screens hide" style="z-index: 99; background: rgba(0, 0, 0, 0.75)">
+                <div id="dialog_settings" class="screens hide" role="dialog" aria-modal="true" aria-labelledby="settings_dialog_title" style="z-index: 99; background: rgba(0, 0, 0, 0.75)">
                     <div class="about_dialogs" style="width: 98%; margin-left: 1%">
                         <div id="dialog_settings_text" class="about_text" style="font-size: 88%"></div>
                     </div>
@@ -4185,21 +4666,28 @@
 
                     <!-- Input screens-->
                     <div id="add_user_scroll" class="screen_holder hide">
-                        <div id="add_user" class="input_text_box" style="margin-top: 10%">
-                            <!-- <input id="user_input" class="input_class hide" type="text" placeholder="" /> -->
-                            <div id="add_user_text_holder" class="hide">
-                                <div id="add_user_text" class="add_user_text">Text</div>
-                                <div id="add_user_text_counter" class="add_user_text">counter 1 2 ...</div>
+                        <div id="add_user" class="add_user_panel">
+                            <div id="add_user_text_holder" class="add_user_layout hide">
+                                <div class="add_user_steps">
+                                    <div id="add_user_title" class="add_user_title"></div>
+                                    <ol class="add_user_list">
+                                        <li id="add_user_step1"></li>
+                                        <li id="add_user_step2"></li>
+                                    </ol>
+                                    <div id="add_user_code" class="add_user_code"></div>
+                                    <div id="add_user_text_counter" class="add_user_status" aria-live="polite"></div>
+                                </div>
+                                <canvas id="add_user_qr" class="add_user_qr hide" width="400" height="400" aria-hidden="true"></canvas>
                             </div>
                         </div>
                     </div>
                     <div id="search_scroll" class="screen_holder hide">
                         <div id="search" class="input_text_box" style="margin-top: 10%">
-                            <input id="search_input" class="input_class" type="text" placeholder="" />
+                            <input id="search_input" class="input_class" type="text" placeholder="" aria-label="Search" />
                             <div id="search_button_holder" class="button_search_container">
+                                <div id="live_button" class="button_search"></div>
                                 <div id="chanel_button" class="button_search"></div>
                                 <div id="game_button" class="button_search"></div>
-                                <div id="live_button" class="button_search"></div>
                                 <div id="vod_button" class="button_search"></div>
                             </div>
                         </div>
@@ -5100,7 +5588,7 @@
                         <div id="dialog_multi_help_text" class="screens dialog_multi_help"></div>
                     </div>
                 </div>
-                <div id="dialog_controls_player" class="screens hide" style="z-index: 99; background: rgba(0, 0, 0, 0.75)">
+                <div id="dialog_controls_player" class="screens hide" role="dialog" aria-modal="true" tabindex="-1" style="z-index: 99; background: rgba(0, 0, 0, 0.75)">
                     <div class="about_dialogs" style="width: 95%; margin-left: 2.5%">
                         <div id="dialog_controls_player_text" class="controls_text"></div>
                     </div>
@@ -5468,7 +5956,7 @@
                     <div id="update_dialog_exit" class="exit_text" style="margin-top: 1%; margin-bottom: 1%"></div>
                 </div>
             </div>
-            <div id="dialog_about" class="screens hide" style="z-index: 99; background: rgba(0, 0, 0, 0.75)">
+            <div id="dialog_about" class="screens hide" role="dialog" aria-modal="true" tabindex="-1" style="z-index: 99; background: rgba(0, 0, 0, 0.75)">
                 <div class="about_dialogs" style="width: 96%; margin-left: 2%">
                     <div id="dialog_about_text" class="about_text hideimp" style="font-size: 1.8vh"></div>
                     <div id="dialog_changelod_text" class="about_text hideimp" style="font-size: 2.2vh"></div>

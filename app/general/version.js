@@ -24,8 +24,22 @@ var version = {
     publishVersionCode: 405, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/405/SmarterPurpleTV_3_0_405.apk',
     WebVersion: 'November 25 2026',
-    WebTag: 805, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 806, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 25 2026 (Web 806)',
+            changes: [
+                'Design: a full interface pass — a bolder focus ring that reads on any thumbnail, larger card text, category cards that lead with the game name, and the Options pill no longer covering names',
+                'New: signing in shows a large code and a QR code to scan with your phone; an expired code is replaced in place and a network error retries instead of leaving the screen',
+                'New: Settings are grouped (General, Playback, Interface, Sync and updates) with expert options behind Advanced; each row shows its description only when focused',
+                'New: Controls is now a one-screen Remote basics page; About, Welcome, card Options, exit and Settings dialogs use the same readable panel',
+                'Improvement: search results show what you searched for, OK in the search field searches right away, and the type buttons match the result tabs',
+                'Improvement: signed out, Following and Library open the sign-in panel instead of empty or failing screens, and tabs that lead nowhere are hidden',
+                'Improvement: video, clip and channel cards use the compact "Nov 18 · 729.9K views" / "Live for 7h 24m · 46.7K viewers" lines, and grids with a period or type switch show the current choice next to the tabs',
+                'Improvement: light and custom color styles now theme every panel, dialog and focused row',
+                'Accessibility: TalkBack reads Settings rows with their value, dialogs are announced, and the page language follows the app language'
+            ]
+        },
         {
             title: 'November 25 2026 (Web 805)',
             changes: [

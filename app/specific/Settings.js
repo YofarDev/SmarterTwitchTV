@@ -556,6 +556,11 @@ var Settings_value = {
         set_values: [''],
         defaultValue: 1
     },
+    advanced_opt: {
+        values: ['None'],
+        set_values: [''],
+        defaultValue: 1
+    },
     vod_seek: {
         values: ['None'],
         set_values: [''],
@@ -996,6 +1001,17 @@ function Settings_isVisible() {
     return Main_isElementShowing('settings_holder');
 }
 
+//The Advanced group is folded by default; opening it adds its rows to the list in place
+var Settings_AdvancedOpen = false;
+
+function Settings_ToggleAdvanced() {
+    Settings_RemoveInputFocus();
+    Settings_AdvancedOpen = !Settings_AdvancedOpen;
+    Settings_SetSettings();
+    Settings_cursorY = Settings_value_keys.indexOf('advanced_opt');
+    Settings_inputFocus(Settings_cursorY);
+}
+
 // The order in Settings_SetSettings is the display order
 function Settings_SetSettings() {
     var div = '',
@@ -1004,8 +1020,16 @@ function Settings_SetSettings() {
         dis_ena = [STR_DISABLED, STR_ENABLED];
 
     Settings_value_keys = [];
+    Settings_FocusEdgeCache = {}; //font size may have changed (font offset setting)
 
-    //Individual settings
+    /* Grouped list (Web 804): everyday options first in General / Playback / Interface / Sync and
+     * updates; expert rows (codecs, bitrate limits, warnings, diagnostics) sit behind the Advanced
+     * row and only join the list while it is open. Keys, values and saved preferences are unchanged. */
+    div += Settings_DivTitle('general', STR_SETTINGS_GENERAL);
+
+    key = 'app_lang';
+    div += Settings_Content(key, Settings_value[key].values, STR_APP_LANG, STR_APP_LANG_SUMMARY);
+
     Settings_value.content_lang.values[0] = STR_LANG_ALL;
     key = 'content_lang';
     div += Settings_Content(key, Settings_value[key].values, STR_CONTENT_LANG, STR_CONTENT_LANG_SUMMARY);
@@ -1013,29 +1037,6 @@ function Settings_SetSettings() {
     key = 'loadAll_lang';
     div += Settings_Content(key, array_no_yes, STR_LOAD_ALL_LANG, STR_LOAD_ALL_LANG_SUMMARY);
 
-    key = 'app_lang';
-    div += Settings_Content(key, Settings_value[key].values, STR_APP_LANG, STR_APP_LANG_SUMMARY);
-
-    //Dialog settings
-    div += Settings_Content('backup_sync', [STR_ENTER_TO_OPEN], STR_BACKUP_SYNC, null);
-    div += Settings_Content('chat_opt', [STR_ENTER_TO_OPEN], STR_CHAT_OPTIONS, null);
-    div += Settings_Content('ui_opt', [STR_ENTER_TO_OPEN], STR_UI_SETTINGS, null);
-    div += Settings_Content('custom_opt', [STR_ENTER_TO_OPEN], STR_GENERAL_CUSTOM, null);
-    div += Settings_Content('livenotification_opt', [STR_ENTER_TO_OPEN], STR_NOTIFICATION_OPT, null);
-    div += Settings_Content('update_settings', [STR_ENTER_TO_OPEN], STR_UPDATE_OPT, null);
-    div += Settings_Content('warnings_opt', [STR_ENTER_TO_OPEN], STR_WARNINGS, null);
-
-    if (!Main_isTV || !Main_IsOn_OSInterface) {
-        div += Settings_Content('dpad_opt', [STR_ENTER_TO_OPEN], STR_DPAD_OPT, null);
-    }
-
-    div += Settings_Content('enable_mature', dis_ena, STR_ENABLE_MATURE, STR_ENABLE_MATURE_SUMMARY);
-
-    if (!Main_IsOn_OSInterface) {
-        div += Settings_Content('enable_embed', array_no_yes, STR_DISABLE_EMBED, STR_DISABLE_EMBED_SUMMARY);
-    }
-
-    //Individual settings
     div += Settings_Content('start_user_screen', array_no_yes, STR_START_AT_USER, STR_START_AT_USER_SUMMARY);
 
     div += Settings_Content(
@@ -1045,24 +1046,20 @@ function Settings_SetSettings() {
         STR_REMOTE_CONTROLS_SUMMARY
     );
 
-    // Player settings title
-    div += Settings_DivTitle('play', STR_SETTINGS_PLAYER);
+    div += Settings_Content('enable_mature', dis_ena, STR_ENABLE_MATURE, STR_ENABLE_MATURE_SUMMARY);
+
+    div += Settings_DivTitle('play', STR_SETTINGS_PLAYBACK);
+
+    key = 'default_quality';
+    Settings_value[key].values[0] = STR_AUTO;
+    Settings_value[key].values[1] = STR_SOURCE;
+    div += Settings_Content('default_quality', Settings_value[key].values, STR_DEF_QUALITY, STR_DEF_QUALITY_SUMMARY);
 
     div += Settings_Content('restor_playback', array_no_yes, STR_RESTORE_PLAYBACK, STR_RESTORE_PLAYBACK_SUMMARY);
 
-    div += Settings_Content('single_clickExit', array_no_yes, STR_SINGLE_EXIT, STR_SINGLE_EXIT_SUMMARY);
-
-    div += Settings_Content('PP_workaround', dis_ena, STR_PP_WORKAROUND, STR_PP_WORKAROUND_SUMMARY);
-
     div += Settings_Content('vod_dialog', [STR_VOD_DIALOG_LAST, STR_VOD_DIALOG_SHOW, STR_VOD_DIALOG_START], STR_VOD_DIALOG, STR_VOD_DIALOG_SUMMARY);
 
-    div += Settings_Content('check_source', array_no_yes, STR_SOURCE_CHECK, STR_SOURCE_CHECK_SUMMARY);
-
-    div += Settings_Content('ad_filter', array_no_yes, STR_AD_FILTER, STR_AD_FILTER_SUMMARY);
-
-    div += Settings_Content('debug_logs', array_no_yes, STR_DEBUG_LOG, STR_DEBUG_LOG_SUMMARY);
-
-    div += Settings_Content('hide_live_seek_bar', array_no_yes, STR_HIDE_LIVE_SEEK_BAR, STR_HIDE_LIVE_SEEK_BAR_SUMMARY);
+    div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
 
     div += Settings_Content(
         'menu_auto_hide',
@@ -1071,30 +1068,65 @@ function Settings_SetSettings() {
         STR_MENU_AUTO_HIDE_SUMMARY
     );
 
-    div += Settings_Content('seek_preview', SEEK_PREVIEW_ARRAY, SEEK_PREVIEW, SEEK_PREVIEW_SUMMARY);
+    div += Settings_Content('hide_live_seek_bar', array_no_yes, STR_HIDE_LIVE_SEEK_BAR, STR_HIDE_LIVE_SEEK_BAR_SUMMARY);
 
-    key = 'default_quality';
-    Settings_value[key].values[0] = STR_AUTO;
-    Settings_value[key].values[1] = STR_SOURCE;
-    div += Settings_Content('default_quality', Settings_value[key].values, STR_DEF_QUALITY, STR_DEF_QUALITY_SUMMARY);
+    div += Settings_Content('single_clickExit', array_no_yes, STR_SINGLE_EXIT, STR_SINGLE_EXIT_SUMMARY);
 
-    key = 'speed_adjust';
-    Settings_value[key].values[0] = STR_AUTO;
-    Settings_value[key].values[1] = STR_SOURCE;
-    div += Settings_Content('speed_adjust', dis_ena, STR_SPEED_ADJUST, STR_SPEED_ADJUST_SUMMARY);
-
-    //Dialog settings
-    //div += Settings_Content('proxy_settings', [STR_ENTER_TO_OPEN], PROXY_SETTINGS, null);
-    div += Settings_Content('player_extracodecs', [STR_ENTER_TO_OPEN], STR_PLAYER_EXTRA_CODEC, STR_PLAYER_EXTRA_CODEC_SUMMARY);
-    div += Settings_Content('blocked_codecs', [STR_ENTER_TO_OPEN], STR_BLOCKED_CODEC, STR_BLOCKED_CODEC_SUMMARY);
-
-    div += Settings_Content('block_qualities', [STR_ENTER_TO_OPEN], STR_BLOCK_RES, STR_BLOCK_RES_SHORT_SUMMARY);
-    div += Settings_Content('player_bitrate', [STR_ENTER_TO_OPEN], STR_PLAYER_BITRATE, STR_PLAYER_BITRATE_SHORT_SUMMARY);
+    div += Settings_Content('ad_filter', array_no_yes, STR_AD_FILTER, STR_AD_FILTER_SUMMARY);
 
     div += Settings_Content('preview_settings', [STR_ENTER_TO_OPEN], STR_SIDE_PANEL_PLAYER, null);
     div += Settings_Content('vod_seek', [STR_ENTER_TO_OPEN], STR_VOD_SEEK, null);
     div += Settings_Content('playerend_opt', [STR_ENTER_TO_OPEN], STR_END_DIALOG_OPT, null);
     div += Settings_Content('points_opt', [STR_ENTER_TO_OPEN], STR_POINTS_OPT, null);
+
+    div += Settings_DivTitle('interface', STR_SETTINGS_INTERFACE);
+
+    div += Settings_Content('ui_opt', [STR_ENTER_TO_OPEN], STR_UI_SETTINGS, null);
+    div += Settings_Content('custom_opt', [STR_ENTER_TO_OPEN], STR_GENERAL_CUSTOM, null);
+    div += Settings_Content('chat_opt', [STR_ENTER_TO_OPEN], STR_CHAT_OPTIONS, null);
+    div += Settings_Content('livenotification_opt', [STR_ENTER_TO_OPEN], STR_NOTIFICATION_OPT, null);
+
+    div += Settings_DivTitle('app', STR_SETTINGS_APP);
+
+    div += Settings_Content('backup_sync', [STR_ENTER_TO_OPEN], STR_BACKUP_SYNC, null);
+    div += Settings_Content('update_settings', [STR_ENTER_TO_OPEN], STR_UPDATE_OPT, null);
+
+    div += Settings_Content(
+        'advanced_opt',
+        [Settings_AdvancedOpen ? STR_SETTINGS_HIDE : STR_SETTINGS_SHOW],
+        STR_SETTINGS_ADVANCED,
+        STR_SETTINGS_ADVANCED_SUMMARY
+    );
+
+    if (Settings_AdvancedOpen) {
+        div += Settings_Content('warnings_opt', [STR_ENTER_TO_OPEN], STR_WARNINGS, null);
+
+        if (!Main_isTV || !Main_IsOn_OSInterface) {
+            div += Settings_Content('dpad_opt', [STR_ENTER_TO_OPEN], STR_DPAD_OPT, null);
+        }
+
+        if (!Main_IsOn_OSInterface) {
+            div += Settings_Content('enable_embed', array_no_yes, STR_DISABLE_EMBED, STR_DISABLE_EMBED_SUMMARY);
+        }
+
+        div += Settings_Content('PP_workaround', dis_ena, STR_PP_WORKAROUND, STR_PP_WORKAROUND_SUMMARY);
+
+        div += Settings_Content('check_source', array_no_yes, STR_SOURCE_CHECK, STR_SOURCE_CHECK_SUMMARY);
+
+        key = 'speed_adjust';
+        Settings_value[key].values[0] = STR_AUTO;
+        Settings_value[key].values[1] = STR_SOURCE;
+        div += Settings_Content('speed_adjust', dis_ena, STR_SPEED_ADJUST, STR_SPEED_ADJUST_SUMMARY);
+
+        //div += Settings_Content('proxy_settings', [STR_ENTER_TO_OPEN], PROXY_SETTINGS, null);
+        div += Settings_Content('player_extracodecs', [STR_ENTER_TO_OPEN], STR_PLAYER_EXTRA_CODEC, STR_PLAYER_EXTRA_CODEC_SUMMARY);
+        div += Settings_Content('blocked_codecs', [STR_ENTER_TO_OPEN], STR_BLOCKED_CODEC, STR_BLOCKED_CODEC_SUMMARY);
+
+        div += Settings_Content('block_qualities', [STR_ENTER_TO_OPEN], STR_BLOCK_RES, STR_BLOCK_RES_SHORT_SUMMARY);
+        div += Settings_Content('player_bitrate', [STR_ENTER_TO_OPEN], STR_PLAYER_BITRATE, STR_PLAYER_BITRATE_SHORT_SUMMARY);
+
+        div += Settings_Content('debug_logs', array_no_yes, STR_DEBUG_LOG, STR_DEBUG_LOG_SUMMARY);
+    }
 
     Main_innerHTML('settings_main', div);
     Settings_positions_length = Settings_value_keys.length;
@@ -1173,7 +1205,7 @@ function Settings_DivOptionNoSummary(key, string) {
         '_arrow_left" class="left"></div></div>' +
         '<div id="' +
         key +
-        '" class="strokedeline settings_value">' +
+        '" class="strokedeline settings_value" aria-live="polite">' +
         Settings_Obj_values(key) +
         '</div>' +
         '<div class="settings_arraw_div"><div id="' +
@@ -1202,7 +1234,7 @@ function Settings_DivOptionWithSummary(key, string_title, string_summary, fontSi
         '_arrow_left" class="left"></div></div>' +
         '<div id="' +
         key +
-        '" class="strokedeline settings_value">' +
+        '" class="strokedeline settings_value" aria-live="polite">' +
         Settings_Obj_values(key) +
         '</div>' +
         '<div class="settings_arraw_div"><div id="' +
@@ -1329,6 +1361,28 @@ function Settings_SetAppLang() {
 
     Settings_AppLang = app_lang;
 
+    //The device language can be a region the list does not name (en_GB), so the row could keep
+    //showing an older choice while another language is applied: point it at the applied language
+    //(a language with no translation falls back to English, index 0)
+    var applied = String(app_lang || '')
+            .substr(0, 3)
+            .toLowerCase(),
+        values = Settings_value.app_lang.apply_values,
+        index = 0,
+        i;
+    for (i = 0; i < values.length; i++) {
+        if (values[i].substr(0, 3).toLowerCase() === applied) {
+            index = i;
+            break;
+        }
+    }
+    if (Settings_value.app_lang.defaultValue !== index) {
+        Settings_value.app_lang.defaultValue = index;
+        Main_setItem('app_lang', index + 1);
+    }
+    //The page language follows the applied one so TalkBack reads with the right voice (WCAG 3.1.1)
+    document.documentElement.setAttribute('lang', values[index].substr(0, 2).toLowerCase());
+
     Main_setItem('app_lang_string', app_lang);
 }
 
@@ -1430,7 +1484,34 @@ function Settings_inputFocus(position) {
     Main_AddClass(key, 'settings_value_focus');
     Main_AddClass(key + '_div', 'settings_div_focus');
     Settings_Setarrows(position);
+    Settings_RowFocusDom(key);
     Settings_ScrollTable();
+}
+
+/* Rows are moved by key handlers through classes; this also gives the focused row the real DOM
+ * focus and a spoken name ('name, value', with its description) so TalkBack follows Settings. The
+ * dialog lists scroll by transform inside an overflow-hidden holder: undo any scroll the browser
+ * adds while focusing (old WebViews ignore preventScroll). */
+function Settings_RowFocusDom(key) {
+    var row = Main_getElementById(key + '_div'),
+        name = Main_getElementById(key + '_name'),
+        value = Main_getElementById(key),
+        holder = Main_getElementById('settings_scroll_container'),
+        holderTop = holder ? holder.scrollTop : 0,
+        label;
+
+    if (!row) return;
+    label = name && name.firstChild ? name.firstChild.textContent : '';
+    if (value && value.textContent) label += ', ' + value.textContent;
+    row.setAttribute('aria-label', label);
+    if (Main_getElementById(key + '_summary')) row.setAttribute('aria-describedby', key + '_summary');
+    row.setAttribute('tabindex', '-1');
+    try {
+        row.focus({preventScroll: true});
+    } catch (e) {
+        row.focus();
+    }
+    if (holder) holder.scrollTop = holderTop;
 }
 
 function Settings_RemoveInputFocus() {
@@ -1442,6 +1523,8 @@ function Settings_RemoveInputFocusKey(key) {
     Main_getElementById(key + '_arrow_right').style.opacity = '0';
     Main_RemoveClass(key, 'settings_value_focus');
     Main_RemoveClass(key + '_div', 'settings_div_focus');
+    var row = Main_getElementById(key + '_div');
+    if (row && document.activeElement === row) row.blur();
 }
 
 function Settings_ChangeSettings(position, skipDefault) {
@@ -1449,6 +1532,7 @@ function Settings_ChangeSettings(position, skipDefault) {
     Main_setItem(key, Settings_Obj_default(key) + 1);
     Main_textContent(key, Settings_Obj_values(key));
     Settings_Setarrows(position);
+    Settings_RowFocusDom(key);
 
     if (!skipDefault) {
         Settings_SetDefault(key);
@@ -2057,9 +2141,8 @@ function Settings_ScrollTable() {
     if (row && view) {
         var rowRect = row.getBoundingClientRect(),
             viewRect = view.getBoundingClientRect(),
-            style = window.getComputedStyle(row),
             //The focus outline is drawn outside the row, keep it inside the clipped area too
-            edge = Math.ceil((parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
+            edge = Settings_FocusEdge('main', row),
             top = rowRect.top - edge,
             bottom = rowRect.bottom + edge,
             title = row.previousElementSibling;
@@ -2077,27 +2160,48 @@ function Settings_ScrollTable() {
     }
 }
 
+/* The focus outline width (outline + offset) only changes with the font size, so it is read once
+ * per list (main list, each dialog) instead of a getComputedStyle on every key press. */
+var Settings_FocusEdgeCache = {};
+function Settings_FocusEdge(list, row) {
+    if (Settings_FocusEdgeCache[list] === undefined) {
+        var style = window.getComputedStyle(row);
+        Settings_FocusEdgeCache[list] = Math.ceil((parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0));
+    }
+    return Settings_FocusEdgeCache[list];
+}
+
 var Settings_ScrollAnimToken = 0;
 
+/* 200 ms eased scroll on real time (requestAnimationFrame, one scrollTop write per frame): the old
+ * 3 ms setTimeout ticks on a fake clock ran long on slow TVs. Off with app animations or reduced motion. */
 function Settings_ScrollTo(target) {
-    var doc = Main_getElementById('settings_scroll');
+    var doc = Main_getElementById('settings_scroll'),
+        reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     //A new key press cancels the animation of the previous one before it ends
     var token = ++Settings_ScrollAnimToken;
 
-    if (Settings_Obj_default('app_animations')) {
+    if (Settings_Obj_default('app_animations') && !reduce) {
         var start = doc.scrollTop,
             change = target - start,
-            currentTime = 0,
-            increment = 3;
+            startTime = null,
+            frame =
+                window.requestAnimationFrame ||
+                function (callback) {
+                    return setTimeout(function () {
+                        callback(new Date().getTime());
+                    }, 16);
+                };
 
-        var animateScroll = function () {
+        var animateScroll = function (now) {
             if (token !== Settings_ScrollAnimToken) return;
-            currentTime += increment;
-            doc.scrollTop = Math.easeInOutQuad(currentTime, start, change, 200);
-            if (currentTime < 200) setTimeout(animateScroll, increment);
+            if (startTime === null) startTime = now;
+            var elapsed = Math.min(200, now - startTime);
+            doc.scrollTop = Math.easeInOutQuad(elapsed, start, change, 200);
+            if (elapsed < 200) frame(animateScroll);
         };
-        animateScroll();
+        frame(animateScroll);
     } else doc.scrollTop = target;
 }
 
@@ -2175,6 +2279,10 @@ function Settings_handleKeyDown(event) {
 }
 
 function Settings_KeyEnter(click) {
+    if (Settings_value_keys[Settings_cursorY] === 'advanced_opt') {
+        Settings_ToggleAdvanced();
+        return;
+    }
     if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'playerend_opt')) Settings_PlayerEnd(click);
     else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'points_opt')) Settings_DialogShowPoints(click);
     else if (Main_A_includes_B(Settings_value_keys[Settings_cursorY], 'blocked_codecs')) Settings_CodecsShow(click);
@@ -2374,6 +2482,7 @@ function Settings_CodecsUpDownAfter(key) {
     Main_AddClass(key, 'settings_value_focus');
     Main_AddClass(key + '_div', 'settings_div_focus');
     Settings_SetarrowsKey(key);
+    Settings_RowFocusDom(key);
 }
 
 function Settings_CodecsRightLeft(offset) {
@@ -2758,8 +2867,9 @@ function Settings_DialogShowExtraCodecs(click) {
         }
     };
 
-    var red = '#ec0000',
-        green = '#00c900';
+    //Codec support marks use the app's Live Red and VOD dot green (DESIGN.md), not ad-hoc hues
+    var red = '#' + Main_ColorIndicatorLive,
+        green = '#' + Main_ColorIndicatorVod;
 
     Settings_DialogShow(
         obj,
@@ -3843,13 +3953,14 @@ function Settings_DialogShow(obj, title, click, scroll) {
         Settings_value_keys.length = Settings_positions_length;
     }
 
-    var dialogContent = title + STR_BR,
+    var dialogContent = '<div id="settings_dialog_title" class="settings_dialog_title">' + title + '</div>',
         dialogScroollHolder =
             '<div id="settings_scroll_container" class="' +
             (scroll ? 'settings_scroll_container' : '') +
             '"><div id="settings_scroll_container_scroll" class="side_panel_holder_ani">';
 
     Settings_DialogValue = [];
+    Settings_FocusEdgeCache = {};
 
     for (var property in obj) {
         Settings_DialogValue.push(property);
@@ -3881,6 +3992,7 @@ function Settings_DialogShow(obj, title, click, scroll) {
     Settings_SetarrowsKey(Settings_DialogValue[0]);
 
     Main_ShowElement('dialog_settings');
+    Settings_RowFocusDom(Settings_DialogValue[0]);
     Main_addEventListener('keydown', Settings_DialoghandleKeyDown);
 }
 
@@ -3985,9 +4097,8 @@ function Settings_ScrollConatiner(div, pos) {
     var doc = Main_getElementById(div),
         view = doc.parentNode.clientHeight,
         row = Main_getElementById(Settings_DialogValue[pos] + '_div'),
-        style = window.getComputedStyle(row),
         //The focus outline is drawn outside the row, keep it inside the clipped area too
-        edge = Math.ceil((parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
+        edge = Settings_FocusEdge(div, row),
         //Position inside the list, the same whatever translate (or translate animation) is applied
         top = row.getBoundingClientRect().top - doc.getBoundingClientRect().top - edge,
         bottom = top + row.offsetHeight + edge * 2;
@@ -4011,6 +4122,7 @@ function Settings_DialogUpDownAfter() {
     Main_AddClass(key, 'settings_value_focus');
     Main_AddClass(key + '_div', 'settings_div_focus');
     Settings_SetarrowsKey(key);
+    Settings_RowFocusDom(key);
 }
 
 function Settings_DialogRightLeft(offset) {
@@ -4027,6 +4139,7 @@ function Settings_DialogRightLeftAfter(key, offset, skipDefault) {
     if (!skipDefault) {
         Settings_SetarrowsKey(key);
         Settings_SetDefault(key);
+        Settings_RowFocusDom(key);
     }
 }
 

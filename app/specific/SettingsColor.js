@@ -19,6 +19,11 @@
  */
 
 var SettingsColor_DefaultColorsPos = 0;
+//The alpha of an rgba() palette color: presets are written 'rgba(0,0,0,1)', custom ones 'rgba(0, 0, 0, 1)'
+var SettingsColor_AlphaOne = /,\s*1\)$/;
+//The palette's accent for inline marks built in JS (the Following heart): Royal Violet by default,
+//the saved border color otherwise; set by SettingsColor_SetAnimationStyle
+var SettingsColor_Accent = '#7635fc';
 //Add a new Theme add the array pos + a name on STR_STYLES_ARRAY that is it
 var SettingsColor_DefaultColors = [
     [
@@ -355,7 +360,7 @@ function SettingsColor_DivColorText(key, title, result) {
 function SettingsColor_DivResultUpdate(div, text) {
     Main_innerHTML(
         div,
-        '<i class="icon-circle live_icon strokedeline" style="color: red;"></i>' +
+        '<i class="icon-circle live_icon strokedeline" style="color: #' + Main_ColorIndicatorLive + ';"></i>' +
             STR_SPACE_HTML +
             '<i class="icon-circle live_icon strokedeline" style="color: #' + Main_ColorIndicatorHosting + ';">' +
             STR_SPACE_HTML +
@@ -422,7 +427,7 @@ function SettingsColor_SetAnimationStyle(pos) {
         border = SettingsColor_DefaultColors[pos][2],
         progressColor = SettingsColor_DefaultColors[pos][3],
         //Softer alpha of the border color for the focus glow, falls back to the full color
-        glow = border.replace(', 1)', ', 0.45)'),
+        glow = border.replace(SettingsColor_AlphaOne, ', 0.45)'),
         //Layered focus: tight accent edge + soft glow + depth shadow, never scales the card
         //(scroll math and the native preview overlay read live getBoundingClientRect())
         focusShadow = '0 0 0 0.05em ' + glow + ',0 0 0.7em 0.1em ' + glow + ',0 0.35em 1em rgba(0,0,0,0.5)',
@@ -431,9 +436,9 @@ function SettingsColor_SetAnimationStyle(pos) {
         focusSurface = pos === 0 ? '#30253f' : background,
         //Secondary text and drawer fades track the saved palette so light styles stay readable;
         //the dark default keeps its hardcoded literals
-        textSoft = pos === 0 ? '#c1b8cd' : TextColor.replace(', 1)', ', 0.72)'),
+        textSoft = pos === 0 ? '#c1b8cd' : TextColor.replace(SettingsColor_AlphaOne, ', 0.72)'),
         fadeBase = pos === 0 ? '#1e1b25' : background,
-        fadeSoft = fadeBase.replace(', 1)', ', 0)'),
+        fadeSoft = fadeBase.replace(SettingsColor_AlphaOne, ', 0)'),
         cssClass =
             //Switcher cards use the overlay focus look: outline, no glow.
             '.feed_thumbnail_focused_no_ani,.feed_thumbnail_focused {background-color:' +
@@ -467,10 +472,10 @@ function SettingsColor_SetAnimationStyle(pos) {
         '}';
 
     cssClass +=
-        '#navigation-shell,#navigation-onboarding,#player-ui{color:' +
+        '#navigation-shell,#navigation-onboarding,#player-ui,#add_user_text_holder{color:' +
         TextColor +
         ';}' +
-        '#navigation-shell .navigation-rail,#player-ui .player-ui-bar,#player-ui .player-ui-drawer,#player-ui-paused,.navigation-settings #settings_holder{background:' +
+        '#navigation-shell .navigation-rail,#player-ui .player-ui-bar,#player-ui .player-ui-drawer,#player-ui-paused,.navigation-settings #settings_holder,#add_user_text_holder{background:' +
         surface +
         ';}' +
         '#navigation-onboarding,#navigation-shell #navigation-status{background:' +
@@ -511,12 +516,25 @@ function SettingsColor_SetAnimationStyle(pos) {
         ';color:' +
         TextColor +
         ';}' +
-        '.navigation-enabled .stream_thumbnail_focused,.navigation-enabled .stream_thumbnail_focused_no_ani{border-color:' +
+        //Grid focus reads from the couch on any thumbnail: a 0.16em Focus Lavender ring held off the
+        //card by a 0.08em gap that shows the dark page surface (the keyline), plus the Focus Fill on
+        //the card body so the meta strip changes too. Never scaled; no transition (Instant Focus).
+        '.navigation-enabled .stream_thumbnail_focused,.navigation-enabled .stream_thumbnail_focused_no_ani{background-color:' +
+        focusSurface +
+        ' !important;border-color:' +
         focusColor +
-        ' !important;box-shadow:none !important;outline:0.1em solid ' +
+        ' !important;box-shadow:none !important;outline:0.16em solid ' +
         focusColor +
-        ';outline-offset:0.05em;}';
+        ';outline-offset:0.08em;transition:none;}';
     cssClass += '.navigation-enabled .stream_info_live,.navigation-enabled #clock_holder{color:' + TextColor + ';opacity:0.85;}';
+    //Category cards: the game name is the primary line, the viewer count is secondary text
+    cssClass +=
+        '.navigation-enabled .stream_info_game_name{color:' +
+        TextColor +
+        ';}' +
+        '.navigation-enabled .stream_thumbnail_game .stream_info_live{color:' +
+        textSoft +
+        ';opacity:1;}';
     cssClass +=
         //Switch rows (channel sections, VOD switch cells) use the same focus system as the cards,
         //and their labels follow the palette instead of hardcoded white
@@ -530,7 +548,77 @@ function SettingsColor_SetAnimationStyle(pos) {
         '.navigation-enabled .stream_channel_follow_game{color:' +
         TextColor +
         ';}';
+    //Same fallback as the focus color: a palette whose border equals its background marks with text
+    SettingsColor_Accent = pos === 0 ? '#7635fc' : border === background ? TextColor : border;
+
     if (pos !== 0) {
+        //Panels added with the redesign (dialogs, Remote basics, toast, sign-in code, settings groups):
+        //the elevated surface, text and secondary text follow the palette. The 'body' prefix outranks
+        //the static rules they mirror (focus_class_holder is written before the main stylesheet).
+        var divider = TextColor.replace(SettingsColor_AlphaOne, ', 0.15)');
+        cssClass +=
+            'body #dialog_about .about_dialogs,body #dialog_controls .about_dialogs,body #dialog_controls_player .about_dialogs,' +
+            'body #welcome_dialog .about_dialogs,body .navigation-enabled #dialog_thumb_opt .dialog_period,body .navigation-enabled .dialog_exit,' +
+            'body .navigation-enabled #dialog_hist_setting .dialog_period,'+
+            'body .navigation-settings #dialog_settings .about_dialogs,body .navigation-enabled #dialog_warning_text{background-color:' +
+            surface +
+            ';color:' +
+            TextColor +
+            ';}' +
+            'body #dialog_controls_text,body #dialog_controls_player_text,body #dialog_about_text .about_text_title,' +
+            'body #welcome_dialog_text .about_text_title,body .navigation-enabled #dialog_opt_text,body .navigation-enabled #dialog_hist_text,' +
+            'body .navigation-settings .settings_dialog_title::first-line{color:' +
+            TextColor +
+            ';}' +
+            'body #dialog_about_text,body #welcome_dialog_text,body .navigation-filter,body .navigation-enabled #dialog_opt_text_end,' +
+            'body .navigation-enabled #dialog_hist_text_end,body .remote_section_title,body .remote_keys,body .remote_close,' +
+            'body .navigation-settings .settings_dialog_title,body .navigation-settings #dialog_setting_close_text,body .add_user_status,' +
+            'body .navigation-settings #settings_main .settings_section,body .navigation-settings .settings_div_focus .settings_summary{color:' +
+            textSoft +
+            ';}' +
+            //About's addresses carry LINK_COLOR inline (near-white); on a palette they take its text color
+            'body #dialog_about_text a,body #dialog_about_text [style*="color: ' +
+            LINK_COLOR +
+            '"]{color:' +
+            TextColor +
+            ' !important;}' +
+            'body .remote_row,body #dialog_about_text .about_upstream{border-color:' +
+            divider +
+            ';}' +
+            'body .add_user_code{background:' +
+            background +
+            ';border-color:' +
+            divider +
+            ';}' +
+            //Shell secondary text (unselected tabs, detail band lines, footer hints) and the onboarding
+            //buttons were tinted for the dark default only and washed out on light palettes
+            'body #navigation-tabs .navigation-button,body .navigation-details p,body .navigation-footer{color:' +
+            textSoft +
+            ';}' +
+            'body .navigation-onboarding .navigation-button{background:' +
+            background +
+            ';border-color:' +
+            divider +
+            ';color:' +
+            TextColor +
+            ';}' +
+            'body .navigation-onboarding .navigation-button.navigation-focused{background:' +
+            focusSurface +
+            ';}' +
+            //Focused rows in every list dialog (card Options, history, Settings dialogs, chat options)
+            //take the palette's focus fill and outline, not the dark default's #30253f
+            'body .settings_div_focus,body .settings_value_focus{background:' +
+            focusSurface +
+            ';outline-color:' +
+            focusColor +
+            ';}' +
+            //the chosen search type wears the selected-tab pill, like #navigation-tabs [aria-selected]
+            'body #search_button_holder .button_search_selected{background-color:' +
+            focusColor +
+            ';color:' +
+            background +
+            ';}';
+
         //Light and custom palettes: themed caption text, current drawer row and drawer scroll fades.
         //The higher-specificity selectors are needed where the static rules tie on specificity and
         //win by source order (focus_class_holder is written before the main stylesheet)
@@ -567,9 +655,9 @@ function SettingsColor_SetAnimationStyleTest(arrayColors) {
         ' !important;border-color:' +
         arrayColors[2] +
         ' !important;box-shadow:0 0 0 0.05em ' +
-        arrayColors[2].replace(', 1)', ', 0.45)') +
+        arrayColors[2].replace(SettingsColor_AlphaOne, ', 0.45)') +
         ',0 0 0.7em 0.1em ' +
-        arrayColors[2].replace(', 1)', ', 0.45)') +
+        arrayColors[2].replace(SettingsColor_AlphaOne, ', 0.45)') +
         ' !important;}';
 
     cssClass +=

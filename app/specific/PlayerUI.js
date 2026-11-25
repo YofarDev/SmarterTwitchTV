@@ -17,7 +17,8 @@ function PlayerUI_Mode() {
 
 function PlayerUI_Groups() {
     return {
-        chat: [Play_controlsPhoneChat, Play_controlsChat, Play_controlsChatSend, Play_controlsChatSettings],
+        //Show chat is the everyday action, so it leads; chat on the phone follows it
+        chat: [Play_controlsChat, Play_controlsPhoneChat, Play_controlsChatSend, Play_controlsChatSettings],
         quality: [Play_controlsQuality, Play_controlsQualityMini, Play_controlsQualityMulti],
         layout: [Play_controlsChatSide, Play_MultiStream],
         content: [

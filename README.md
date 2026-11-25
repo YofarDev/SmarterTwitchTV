@@ -14,7 +14,7 @@ Watch live streams, VODs and clips on your TV with the remote.
 
 Smarter Purple TV (SPTV) is [SmartTwitchTV](https://github.com/fgl27/SmartTwitchTV) with a purple identity and fork-specific improvements.
 
-<img src="docs/ui-redesign-screenshots/production-browse-tabs-1080.png" alt="Smarter Purple TV Browse screen with selected and focused tabs" width="720">
+<img src="docs/ui-redesign-screenshots/production-browse-tabs-1080.png" alt="Smarter Purple TV Browse screen: live grid with the focused card and its detail band" width="720">
 
 </div>
 

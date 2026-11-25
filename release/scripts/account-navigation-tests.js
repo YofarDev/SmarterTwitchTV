@@ -161,6 +161,9 @@ const failures = [];
 const timers = [];
 Object.assign(s, {
     STR_ADD_ERROR: 'error',
+    STR_ADD_USER_RETRY: 'retry',
+    STR_ADD_USER_TITLE: 'title',
+    Main_AddClass: () => {},
     STR_ADD_USER_TEXT_COUNTER_NOW: 'now',
     AddCode_Url: '',
     AddCode_UrlToken: '',
@@ -228,14 +231,14 @@ for (const account of [false, true]) {
     failures.forEach(fail => fail());
     check(failures.length === 2 && !calls.length && timers.length === waits, who + 'requests failing after leaving show no error and start no wait');
 
-    // An error goes Back after a wait while Add User is still up, never after the user left.
+    // An error keeps Add User up and retries after a wait (a new code, none being held), never going Back.
     onAddUser(account);
     calls.length = 0;
     let wait = errorWait();
     timers[wait]();
     check(
-        calls.join(',') === 'warning,' + (account ? 'switch' : 'open:rail:adduser'),
-        who + 'an error on Add User still shows and goes Back after the wait'
+        !calls.length && s.Main_values.Main_Go === s.Main_addUser && requests.length === 1,
+        who + 'an error on Add User stays on the panel and retries after the wait'
     );
     onAddUser(account);
     wait = errorWait();

@@ -19,7 +19,9 @@
  */
 
 // Bellow here are the all untranslatable string,they are a combination of strings and html code use by pats of the code
-var LINK_COLOR = '#328df5';
+//Addresses in dialogs (About, sync codes): primary text, not an off-palette blue; a TV cannot open
+//them, they are read and typed on another device
+var LINK_COLOR = '#f5f1fa';
 var STR_BR = '<br>';
 var STR_SPACE_HTML = '&nbsp;';
 var STR_SPACE = ' ';
@@ -29,7 +31,8 @@ var STR_DIV_TITLE = '<div class="about_text_title">';
 var STR_DIV_MIDLE_LEFT = '<div style="text-align: left;">';
 var STR_DIV_LINK = '<div style="text-align: center; width: 100%; display: inline-block; color: ' + LINK_COLOR + ';">';
 var STR_SPAN_LINK = '<span style="color: ' + LINK_COLOR + ';">';
-var STR_RED_DIV = '<div class="class_bold" style="text-align: center; width: 100%; display: inline-block; color: #FF0000; font-size: 110%;">';
+//#ff4d4d is DESIGN.md Live Red (Main_ColorIndicatorLive loads after the language files)
+var STR_RED_DIV = '<div class="class_bold" style="text-align: center; width: 100%; display: inline-block; color: #ff4d4d; font-size: 110%;">';
 var STR_CONTROL_KEY = '';
 var STR_SEARCH_KEY = '';
 var STR_ABOUT_KEY = '';
@@ -126,6 +129,7 @@ function DefaultLang() {
     STR_CONTENT = STR_SPACE + STR_CONTENT;
     STR_VIEWS = STR_SPACE + STR_VIEWS;
     STR_VIEW = STR_SPACE + STR_VIEW;
+    STR_VIEW_ONE = STR_SPACE + STR_VIEW_ONE;
     STR_LIVE_CHANNELS = STR_SPACE + STR_LIVE_CHANNELS;
     STR_LIVE_GAMES = STR_SPACE + STR_LIVE_GAMES;
     STR_USER_CHANNEL = STR_SPACE + STR_USER_CHANNEL;
@@ -187,12 +191,12 @@ function DefaultLang() {
     STR_CONTROLS_MAIN_3 = STR_CONTROLS_MAIN_3 + STR_GUIDE + STR_GUIDE_EXTRA + STR_GUIDE_EXTRA2;
     STR_GOBACK = STR_GOBACK_START;
     STR_PAYPAL =
-        '<div style="vertical-align: middle;"><div class="class_bold" style="vertical-align: middle; display: inline-block; font-size: 120%;"><img style="vertical-align: middle; display: inline-block; width: 4%;" alt="" src="https://fgl27.github.io/SmartTwitchTV/release/githubio/images/paypal.png">' +
-        STR_SPACE_HTML +
+        //QR codes are drawn locally when About opens (Main_DrawAboutQrs): no image fetched from another domain
+        '<div style="vertical-align: middle;"><div class="class_bold" style="vertical-align: middle; display: inline-block; font-size: 120%;">' +
         STR_PAYPAL_SUMMARY +
         STR_BR +
         STR_SPACE_HTML +
-        '<img style="vertical-align: middle; display: inline-block; width: 10.5%;" alt="" src="https://fgl27.github.io/SmartTwitchTV/screenshot/donoqr.png">' +
+        '<canvas id="about_qr_paypal" class="about_qr" width="400" height="400" aria-hidden="true"></canvas>' +
         '<div style="display: inline-block; color: ' +
         LINK_COLOR +
         ';font-size: 2.7vh;text-align: center; font-family: Roboto;">' +
@@ -203,8 +207,7 @@ function DefaultLang() {
         '</div></div></div>';
 
     STR_BITCOIN =
-        '<div style="vertical-align: middle;"><div class="class_bold" style="vertical-align: middle; display: inline-block; font-size: 120%;"><img style="vertical-align: middle; display: inline-block; width: 4%;" alt="" src="https://fgl27.github.io/SmartTwitchTV/release/githubio/images/bitcoin.png">' +
-        STR_SPACE_HTML +
+        '<div style="vertical-align: middle;"><div class="class_bold" style="vertical-align: middle; display: inline-block; font-size: 120%;">' +
         STR_BITCOIN_SUMMARY +
         STR_BR +
         STR_SPACE_HTML +
@@ -213,7 +216,7 @@ function DefaultLang() {
         ';font-size: 2.7vh;text-align: center; font-family: Roboto;">' +
         STR_BITCOIN_WALLET +
         STR_SPACE_HTML +
-        '</div><img style="vertical-align: middle; display: inline-block; width: 10.5%;" alt="" src="https://fgl27.github.io/SmartTwitchTV/screenshot/chart.png"></div></div>';
+        '</div><canvas id="about_qr_bitcoin" class="about_qr" width="400" height="400" aria-hidden="true"></canvas></div></div>';
 
     STR_PIX =
         '<div style="vertical-align: middle;"><div class="class_bold" style="vertical-align: middle; display: inline-block; font-size: 120%;">' +
@@ -462,8 +465,6 @@ function DefaultLang() {
         STR_ABOUT_INFO_2 +
         (Main_IsOn_OSInterface ? '' : STR_BR + STR_RED_DIV + STR_ABOUT_INFO_2_SOURCE + '</div>') +
         STR_CONTACT +
-        STR_PAYPAL +
-        STR_BITCOIN +
         STR_BR +
         STR_DIV_TITLE +
         STR_ABOUT_INFO_18 +
@@ -489,6 +490,15 @@ function DefaultLang() {
         DefaultMakeLink('https://tinyurl.com/sttvdependency') +
         '</div>' +
         STR_BR +
+        STR_BR +
+        //The donation links are the original SmartTwitchTV author's: a closing section that says so
+        '<div class="about_upstream">' +
+        STR_DIV_TITLE +
+        STR_ABOUT_UPSTREAM +
+        '</div>' +
+        STR_PAYPAL +
+        STR_BITCOIN +
+        '</div>' +
         STR_BR +
         STR_DIV_TITLE +
         STR_CLOSE_THIS +
