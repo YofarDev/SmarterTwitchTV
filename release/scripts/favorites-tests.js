@@ -8,10 +8,10 @@ const fs = require('fs'),
 const built = process.argv.includes('--built');
 
 const wanted =
-    /^(Screens_FavoritesSetDefaultObj|Screens_isFavorite|Screens_FavoriteChannel|Screens_FavoriteUpdateBadge|Screens_BlockChannelGetId|Screens_BlockChannelGetName|Screens_createCellLive|Screens_ActionsButtonHtml|Screens_ScreenIds|Screens_AriaEscape|Screens_ThumbOptionDialogKeyUpDown|ScreensObj_SortFavoritesFirst|Main_Slice|Main_GetViewerStrings|Main_GetCompactViewerStrings|Main_formatCompactViewers|Main_formatCompactScaled|Main_formatLiveDuration|Main_formatNumber|Main_AddClassWithEle|Main_RemoveClassWithEle)$/;
+    /^(Screens_FavoritesSetDefaultObj|Screens_isFavorite|Screens_FavoriteChannel|Screens_FavoriteToggle|Screens_FavoriteMessage|Screens_FavoriteDisplayName|UserLiveFeedobj_FavoritesFirst|ChannelContent_setFavorite|ChannelContent_toggleFavorite|Screens_FavoriteUpdateBadge|Screens_BlockChannelGetId|Screens_BlockChannelGetName|Screens_createCellLive|Screens_ActionsButtonHtml|Screens_ScreenIds|Screens_AriaEscape|Screens_ThumbOptionDialogKeyUpDown|ScreensObj_SortFavoritesFirst|Main_Slice|Main_GetViewerStrings|Main_GetCompactViewerStrings|Main_formatCompactViewers|Main_formatCompactScaled|Main_formatLiveDuration|Main_formatNumber|Main_AddClassWithEle|Main_RemoveClassWithEle)$/;
 const sources = built
     ? ['release/githubio/js/main_uncompressed.js']
-    : ['app/specific/Main.js', 'app/specific/Screens.js', 'app/specific/ScreensObj.js'];
+    : ['app/specific/Main.js', 'app/specific/Screens.js', 'app/specific/ScreensObj.js', 'app/specific/UserLiveFeedobj.js', 'app/specific/ChannelContent.js'];
 const definitions = [];
 for (const file of sources) {
     UglifyJS.parse(fs.readFileSync(file, 'utf8')).walk(
@@ -32,6 +32,13 @@ function check(value, label) {
 
 const s = require('./ui-test-sandbox')();
 vm.runInContext(definitions.join('\n'), s);
+//The Options row order is a data var, not a function: lift it from the same sources
+const orderMatch = sources
+    .map(file => fs.readFileSync(file, 'utf8'))
+    .join('\n')
+    .match(/var Screens_ThumbOptionOrder = (\[[^\]]*\]);/);
+if (!orderMatch) throw new Error('Screens_ThumbOptionOrder not found' + (built ? '; rebuild first' : ''));
+vm.runInContext('var Screens_ThumbOptionOrder = ' + orderMatch[1] + ';', s);
 
 //Screens_createCellLive and the toggle render translated strings; the real language
 //definitions load before the fixtures run
@@ -51,6 +58,7 @@ s.Main_values_History_data = {'1': {live: [], vod: [], clip: [], saved: [], dele
 s.Main_setHistoryItem = () => saves++;
 s.Main_ReloadScreen = () => reloads++;
 s.Main_showWarningDialog = text => (warned = text);
+s.Main_A_includes_B = (a, b) => a.indexOf(b) !== -1;
 
 /* The toggle runs on a live cell of the followed live screen. */
 const key = s.Main_UserLive;
@@ -83,6 +91,7 @@ check(entry && entry.data[3] === 'streamer', 'favorite entry stores the channel 
 check(entry && entry.date > 0, 'favorite entry has a date');
 check(saves > savesBefore, 'toggle persists via Main_setHistoryItem');
 check(reloads === 1, 'Live now reloads to re-sort after a toggle');
+check(warned === 'Streamer pinned to the top of Following › Live now', 'adding confirms with the channel name and where it shows');
 check(s.Screens_isFavorite('42'), 'lookup finds the favorite');
 check(s.Screens_isFavorite(42), 'lookup tolerates a numeric id');
 
@@ -90,6 +99,7 @@ check(s.Screens_isFavorite(42), 'lookup tolerates a numeric id');
 s.Screens_FavoriteChannel(key);
 check(!s.Main_values_History_data['1'].favorites['42'], 'second toggle removes the favorite');
 check(!s.Screens_isFavorite('42'), 'lookup is false after removal');
+check(warned === 'Streamer removed from favorites', 'removing confirms too');
 
 /* 4. Without a user the toggle warns and stores nothing. */
 userSet = false;
@@ -176,25 +186,69 @@ const plainHtml = s.Screens_createCellLive('0_1', ScreenObjSaved.ids, liveData, 
 check(/icon-star stream_fav_icon strokedeline hideimp/.test(plainHtml), 'non-favorite cell keeps the star hidden');
 check(favHtml.indexOf('stream_fav_icon') === plainHtml.indexOf('stream_fav_icon'), 'the star markup sits at the same child position either way');
 
-/* 8. Down on the last visible row stays put when the Favorite row below is hidden
- * (categories, banners): clamping onto the hidden row selected it without focus. */
+/* 8. Options rows: Favorite (id 9) is drawn under Follow (id 2); Up/Down follow the on-screen
+ * order and skip hidden rows, and stop at either end. */
 const rows = {};
 for (let i = -1; i <= 9; i++) rows[i] = {className: 'hist_div'};
-rows[9].className = 'hist_div hideimp';
-let focused = 8;
+rows[-1].className = 'hist_div hideimp';
+let focused = 2;
 s.Main_getElementById = id => rows[id.replace('dialog_thumb_opt_setting_', '')] || null;
-s.Main_A_includes_B = (a, b) => a.indexOf(b) !== -1;
 s.Screens_histRemoveFocus = () => {};
 s.Screens_ThumbOptionAddFocus = pos => (focused = pos);
-s.Screens_ThumbOptionTotalPosition = 9;
+s.Screens_ThumbOptionPosY = 2;
+s.Screens_ThumbOptionDialogKeyUpDown(key, 2, 1);
+check(s.Screens_ThumbOptionPosY === 9 && focused === 9, 'down from Follow lands on Favorite');
+s.Screens_ThumbOptionDialogKeyUpDown(key, 9, 1);
+check(s.Screens_ThumbOptionPosY === 3 && focused === 3, 'down from Favorite lands on Block channel');
+s.Screens_ThumbOptionDialogKeyUpDown(key, 3, -1);
+check(s.Screens_ThumbOptionPosY === 9, 'up from Block channel returns to Favorite');
+
 s.Screens_ThumbOptionPosY = 8;
 s.Screens_ThumbOptionDialogKeyUpDown(key, 8, 1);
-check(s.Screens_ThumbOptionPosY === 8 && focused === 8, 'down past a hidden last row keeps the current row');
+check(s.Screens_ThumbOptionPosY === 8, 'down on the last row (Go to screen) stays on it');
 
-rows[9].className = 'hist_div';
-s.Screens_ThumbOptionDialogKeyUpDown(key, 8, 1);
-check(s.Screens_ThumbOptionPosY === 9 && focused === 9, 'a visible Favorite row takes the focus');
-s.Screens_ThumbOptionDialogKeyUpDown(key, 9, 1);
-check(s.Screens_ThumbOptionPosY === 9 && focused === 9, 'down on the last row stays on it');
+rows[9].className = 'hist_div hideimp';
+s.Screens_ThumbOptionPosY = 2;
+s.Screens_ThumbOptionDialogKeyUpDown(key, 2, 1);
+check(s.Screens_ThumbOptionPosY === 3, 'a hidden Favorite row (categories, banners) is skipped');
+
+s.Screens_ThumbOptionPosY = 0;
+s.Screens_ThumbOptionDialogKeyUpDown(key, 0, -1);
+check(s.Screens_ThumbOptionPosY === 0, 'up past a hidden first row keeps the current row');
+
+/* 9. The player's followed feed and side panel put favorites first, keeping the feed sort. */
+const node = id => ({stream: {broadcaster: {id: id}}});
+s.Main_values_History_data['1'].favorites = {c: {date: 1, data: []}, e: {date: 2, data: []}};
+const feed = [node('a'), node('b'), node('c'), node('d'), node('e'), {stream: null}];
+const sortedFeed = s.UserLiveFeedobj_FavoritesFirst(feed);
+check(sortedFeed.map(n => (n.stream ? n.stream.broadcaster.id : '-')).join('') === 'ceabd-', 'feed favorites lead, the rest keeps its order');
+s.Main_values_History_data['1'].favorites = {};
+check(s.UserLiveFeedobj_FavoritesFirst(feed) === feed, 'no favorites returns the feed untouched');
+userSet = false;
+s.Main_values_History_data['1'].favorites = {c: {date: 1, data: []}};
+check(s.UserLiveFeedobj_FavoritesFirst(feed) === feed, 'signed out returns the feed untouched');
+userSet = true;
+
+/* 10. Channel page Favorite button: label and pressed state follow the store, the toggle confirms. */
+const html = {},
+    attrs = {};
+s.Main_innerHTML = (id, value) => (html[id] = value);
+s.Main_getElementById = id => ({setAttribute: (name, value) => (attrs[id + ':' + name] = value)});
+s.Main_values = {Main_selectedChannel_id: '77', Main_selectedChannel: 'chan', Main_selectedChannelDisplayname: 'Chan'};
+s.Main_values_History_data['1'].favorites = {};
+s.ChannelContent_setFavorite();
+check(/Favorite$/.test(html.channel_content_titley_3) && attrs['channel_content_thumbdivy_3:aria-pressed'] === 'false', 'channel page shows Favorite at rest');
+s.ChannelContent_toggleFavorite();
+check(s.Screens_isFavorite('77'), 'channel page button stores the favorite');
+check(s.Main_values_History_data['1'].favorites['77'].data[3] === 'chan', 'channel page stores the login name');
+check(/Favorited$/.test(html.channel_content_titley_3) && /FED000/.test(html.channel_content_titley_3), 'set state reads Favorited with the gold star');
+check(attrs['channel_content_thumbdivy_3:aria-pressed'] === 'true', 'set state is announced as pressed');
+check(warned === 'Chan pinned to the top of Following › Live now', 'channel page confirms the toggle');
+userSet = false;
+s.ChannelContent_setFavorite();
+check(/Sign in to favorite$/.test(html.channel_content_titley_3), 'signed out the button asks to sign in');
+s.ChannelContent_toggleFavorite();
+check(warned === s.STR_FAVORITE_NO_USER, 'signed out the button warns instead of toggling');
+userSet = true;
 
 console.log('favorites-tests: ' + checks + ' checks OK' + (built ? ' (built)' : ''));

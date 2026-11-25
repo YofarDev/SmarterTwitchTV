@@ -1389,6 +1389,26 @@ function UserLiveFeedobj_loadDataSuccess(responseText) {
     UserLiveFeed_loadDataSuccessEnd(response);
 }
 
+//Stable partition: favorites first, each part keeps the chosen feed sort
+function UserLiveFeedobj_FavoritesFirst(response) {
+    if (!AddUser_UserIsSet()) return response;
+
+    var favorites = [],
+        others = [],
+        i = 0,
+        len = response.length,
+        stream;
+
+    for (i; i < len; i++) {
+        stream = response[i];
+
+        if (stream && stream.stream && stream.stream.broadcaster && Screens_isFavorite(stream.stream.broadcaster.id)) favorites.push(stream);
+        else others.push(stream);
+    }
+
+    return favorites.length ? favorites.concat(others) : response;
+}
+
 function UserLiveFeed_loadDataSuccessEnd(response) {
     //Main_Log('UserLiveFeedobj_loadDataSuccess');
 
@@ -1439,6 +1459,9 @@ function UserLiveFeed_loadDataSuccessEnd(response) {
                 });
             }
         }
+
+        //Favorites lead the player's followed strip and the side panel, same as Live now
+        response = UserLiveFeedobj_FavoritesFirst(response);
 
         for (i; i < response_items; i++) {
             stream = response[i];

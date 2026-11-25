@@ -3371,6 +3371,8 @@ function Screens_ThumbOptionStart(key, click) {
             Screens_values_Play_data = Screens_GetObj(key);
             Main_RemoveClass('dialog_thumb_opt_setting_2', 'hideimp');
             Main_RemoveClass('dialog_thumb_opt_setting_3', 'hideimp');
+            //A followed channel can be favorited from its channel card, even while it is offline
+            Main_RemoveClass('dialog_thumb_opt_setting_9', 'hideimp');
         }
 
         if (ScreenObj[key].screenType === 3 && !ScreenObj[key].BannerCreated) {
@@ -3497,17 +3499,7 @@ function Screens_ThumbOptionStringSet(key) {
     } else {
         Main_RemoveClass('dialog_thumb_opt_setting_9', 'hideimp');
 
-        var favName = '';
-
-        if (ScreenObj[key].screenType === 2) {
-            favName = Screens_values_Play_data[4];
-        } else if (ScreenObj[key].screenType === 4) {
-            favName = Screens_values_Play_data[3];
-        } else if (Screens_values_Play_data[1]) {
-            favName = Main_A_includes_B(Screens_values_Play_data[1], STR_USER_HOSTED_BY)
-                ? Screens_values_Play_data[1].split(STR_USER_HOSTED_BY)[0]
-                : Screens_values_Play_data[1];
-        }
+        var favName = Screens_FavoriteDisplayName(key);
 
         Main_textContent('dialog_thumb_opt_val_9', favName ? favName : STR_EMPTY);
         Main_textContent('dialog_thumb_opt_setting_name_9', STR_FAVORITE_CHANNEL);
@@ -3690,27 +3682,26 @@ function Screens_ThumbOptionhandleKeyRight() {
     }
 }
 
+//Row ids stay stable for the handlers; this is the on-screen order. Favorite (9) sits under
+//Follow (2) so the two channel-relationship actions read together
+var Screens_ThumbOptionOrder = [-1, 0, 1, 2, 9, 3, 4, 5, 6, 7, 8];
+
 function Screens_ThumbOptionDialogKeyUpDown(key, current, adder) {
-    Screens_ThumbOptionPosY += adder;
+    var order = Screens_ThumbOptionOrder,
+        index = order.indexOf(current),
+        elemt;
 
-    if (Screens_ThumbOptionPosY < -1) {
-        Screens_ThumbOptionPosY = current;
-        return;
+    //Past either end stay on the current row; hidden rows are skipped
+    while (true) {
+        index += adder;
+
+        if (index < 0 || index >= order.length) return;
+
+        elemt = Main_getElementById('dialog_thumb_opt_setting_' + order[index]);
+        if (elemt && !Main_A_includes_B(elemt.className, 'hideimp')) break;
     }
 
-    //Past the last row stay on the current one: the last row (Favorite) can be hidden, so
-    //clamping onto it would select an option with no focus on it
-    if (Screens_ThumbOptionPosY > Screens_ThumbOptionTotalPosition) {
-        Screens_ThumbOptionPosY = current;
-        return;
-    }
-
-    var elemt = Main_getElementById('dialog_thumb_opt_setting_' + Screens_ThumbOptionPosY);
-    if (!elemt || Main_A_includes_B(elemt.className, 'hideimp')) {
-        Screens_ThumbOptionDialogKeyUpDown(key, current, adder);
-        return;
-    }
-
+    Screens_ThumbOptionPosY = order[index];
     Screens_histRemoveFocus(current, 'thumb_opt');
     Screens_ThumbOptionAddFocus(Screens_ThumbOptionPosY);
 }
@@ -3921,37 +3912,69 @@ function Screens_isFavorite(channelId) {
     );
 }
 
+//Shared by the card Options panel, the channel page and the player menu. Returns true when the
+//channel is a favorite after the call
+function Screens_FavoriteToggle(channelId, channelName) {
+    var favorites;
+
+    Screens_FavoritesSetDefaultObj();
+    channelId = channelId.toString();
+    favorites = Main_values_History_data[AddUser_UsernameArray[0].id].favorites;
+
+    if (favorites[channelId]) {
+        delete favorites[channelId];
+    } else {
+        favorites[channelId] = {};
+        favorites[channelId].date = new Date().getTime();
+        favorites[channelId].data = [];
+        favorites[channelId].data[1] = channelId;
+
+        if (channelName) {
+            favorites[channelId].data[3] = channelName;
+        }
+    }
+
+    Main_setHistoryItem();
+
+    return !!favorites[channelId];
+}
+
+//The confirmation names the channel and says where the favorite shows, so the toggle is not silent
+function Screens_FavoriteMessage(isFavorite, displayName) {
+    return (isFavorite ? STR_FAVORITE_ADDED : STR_FAVORITE_REMOVED).replace('%x', displayName ? displayName : STR_CHANNEL).trim();
+}
+
+//Display name of the channel a card belongs to: hosted streams show the host's channel first
+function Screens_FavoriteDisplayName(key) {
+    if (ScreenObj[key].screenType === 2) {
+        return Screens_values_Play_data[4];
+    } else if (ScreenObj[key].screenType === 4) {
+        return Screens_values_Play_data[3];
+    } else if (Screens_values_Play_data[1]) {
+        return Main_A_includes_B(Screens_values_Play_data[1], STR_USER_HOSTED_BY)
+            ? Screens_values_Play_data[1].split(STR_USER_HOSTED_BY)[0]
+            : Screens_values_Play_data[1];
+    }
+
+    return '';
+}
+
 function Screens_FavoriteChannel(key) {
     if (!AddUser_IsUserSet()) {
         Main_showWarningDialog(STR_FAVORITE_NO_USER, 2000);
         return;
     }
 
-    var channelId = Screens_BlockChannelGetId(key),
-        channelName = Screens_BlockChannelGetName(key);
+    var channelId = Screens_BlockChannelGetId(key);
 
     if (!channelId) {
         Main_showWarningDialog(STR_BLOCK_NO_CHANNEL, 2000);
         return;
     }
 
-    Screens_FavoritesSetDefaultObj();
-    channelId = channelId.toString();
+    var isFavorite = Screens_FavoriteToggle(channelId, Screens_BlockChannelGetName(key));
 
-    if (Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId]) {
-        delete Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId];
-    } else {
-        Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId] = {};
-        Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].date = new Date().getTime();
-        Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data = [];
-        Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data[1] = channelId;
-
-        if (channelName) {
-            Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data[3] = channelName;
-        }
-    }
-
-    Main_setHistoryItem();
+    Main_showWarningDialog(Screens_FavoriteMessage(isFavorite, Screens_FavoriteDisplayName(key)), 2500);
 
     //Live now re-sorts favorites to the top, other screens just flip the star of the focused card
     if (ScreenObj[key].screen === Main_UserLive) {

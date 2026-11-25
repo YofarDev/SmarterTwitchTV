@@ -24,8 +24,16 @@ var version = {
     publishVersionCode: 405, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/405/SmarterPurpleTV_3_0_405.apk',
     WebVersion: 'November 25 2026',
-    WebTag: 806, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebTag: 807, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 25 2026 (Web 807)',
+            changes: [
+                'Improvement: Favorite is easier to reach: a Favorite button sits next to Follow on channel pages and in the player Content menu, and in card Options it is right under Follow',
+                'Improvement: favoriting or unfavoriting confirms with the channel name, and favorites also lead the player followed-channels row and the side panel',
+                'Fix: the player Save position warning without an account no longer talks about favorites'
+            ]
+        },
         {
             title: 'November 25 2026 (Web 806)',
             changes: [

@@ -21,6 +21,8 @@
 //Variable initialization
 var ChannelContent_cursorY = 0;
 var ChannelContent_cursorX = 0;
+//Videos, Clips, Follow, Favorite
+var ChannelContent_ActionsCount = 4;
 var ChannelContent_dataEnded = false;
 var ChannelContent_itemsCount = 0;
 var ChannelContent_itemsCountOffset = 0;
@@ -230,6 +232,41 @@ function ChannelContent_setFollow() {
     }
 }
 
+//Favorite sits next to Follow: an outline-weight grey star at rest, the favorite gold when set
+function ChannelContent_setFavorite() {
+    var isFavorite = Screens_isFavorite(Main_values.Main_selectedChannel_id),
+        label = !AddUser_UserIsSet() ? STR_SIGN_IN_TO_FAVORITE : isFavorite ? STR_FAVORITED : STR_FAVORITE;
+
+    Main_innerHTML(
+        'channel_content_titley_3',
+        '<i class="icon-star ' +
+            (isFavorite ? '" style="color: #' + Main_ColorBadgeFavorite + '; font-size: 100%;"' : 'stream_channel_follow_icon"') +
+            '></i>' +
+            STR_SPACE_HTML +
+            STR_SPACE_HTML +
+            label
+    );
+    Main_getElementById('channel_content_thumbdivy_3').setAttribute('aria-label', isFavorite ? STR_FAVORITED : label);
+    Main_getElementById('channel_content_thumbdivy_3').setAttribute('aria-pressed', String(isFavorite));
+}
+
+function ChannelContent_toggleFavorite() {
+    if (!AddUser_IsUserSet()) {
+        Main_showWarningDialog(STR_FAVORITE_NO_USER, 2000);
+        return;
+    }
+
+    if (!Main_values.Main_selectedChannel_id) {
+        Main_showWarningDialog(STR_BLOCK_NO_CHANNEL, 2000);
+        return;
+    }
+
+    var isFavorite = Screens_FavoriteToggle(Main_values.Main_selectedChannel_id, Main_values.Main_selectedChannel);
+
+    Main_showWarningDialog(Screens_FavoriteMessage(isFavorite, Main_values.Main_selectedChannelDisplayname), 2500);
+    ChannelContent_setFavorite();
+}
+
 function ChannelContent_loadDataSuccess() {
     Main_innerHTML(
         'channel_content_thumbdiv0_1',
@@ -381,6 +418,8 @@ function ChannelContent_loadDataSuccessFinish() {
 }
 
 function ChannelContent_checkUser() {
+    ChannelContent_setFavorite();
+
     if (AddUser_UserIsSet()) {
         AddCode_Channel_id = Main_values.Main_selectedChannel_id;
         AddCode_PlayRequest = false;
@@ -415,6 +454,7 @@ function ChannelContent_removeAllFollowFocus() {
     Main_RemoveClass('channel_content_thumbdivy_0', 'stream_switch_focused');
     Main_RemoveClass('channel_content_thumbdivy_1', 'stream_switch_focused');
     Main_RemoveClass('channel_content_thumbdivy_2', 'stream_switch_focused');
+    Main_RemoveClass('channel_content_thumbdivy_3', 'stream_switch_focused');
 }
 
 function ChannelContent_keyEnter() {
@@ -446,6 +486,8 @@ function ChannelContent_keyEnter() {
             } else {
                 Main_showWarningDialog(STR_NOKEY_WARN, 2000);
             }
+        } else if (ChannelContent_cursorX === 3) {
+            ChannelContent_toggleFavorite();
         }
     } else {
         Main_removeEventListener('keydown', ChannelContent_handleKeyDown);
@@ -591,7 +633,7 @@ function ChannelContent_handleKeyDown(event) {
             if (!ChannelContent_cursorY && ChannelContent_cursorX) {
                 ChannelContent_removeFocus();
                 ChannelContent_cursorX--;
-                if (ChannelContent_cursorX < 0) ChannelContent_cursorX = 2;
+                if (ChannelContent_cursorX < 0) ChannelContent_cursorX = ChannelContent_ActionsCount - 1;
                 ChannelContent_addFocus();
             } else {
                 ChannelContent_removeFocus();
@@ -602,7 +644,7 @@ function ChannelContent_handleKeyDown(event) {
             if (!ChannelContent_cursorY) {
                 ChannelContent_removeFocus();
                 ChannelContent_cursorX++;
-                if (ChannelContent_cursorX > 2) ChannelContent_cursorX = 0;
+                if (ChannelContent_cursorX > ChannelContent_ActionsCount - 1) ChannelContent_cursorX = 0;
                 ChannelContent_addFocus();
             }
             break;

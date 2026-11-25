@@ -28,6 +28,7 @@ function PlayerUI_Groups() {
             Play_controlsOpenLive,
             Play_controlsOpenVod,
             Play_controlsFollow,
+            Play_controlsFavorite,
             Play_controlsContentLang
         ],
         playback: [

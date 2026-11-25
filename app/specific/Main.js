@@ -673,6 +673,11 @@ function Main_SetStringsSecondary() {
     Main_getElementById('channel_content_thumbdivy_0').setAttribute('aria-label', STR_VIDEOS);
     Main_getElementById('channel_content_thumbdivy_1').setAttribute('aria-label', STR_CLIPS);
     Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', STR_FOLLOW);
+    Main_innerHTML(
+        'channel_content_titley_3',
+        '<i class="icon-star stream_channel_follow_icon"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FAVORITE
+    );
+    Main_getElementById('channel_content_thumbdivy_3').setAttribute('aria-label', STR_FAVORITE);
 
     Main_textContent('dialog_hist_setting_name_0', STR_SORTING);
     Main_textContent('dialog_hist_setting_name_2', STR_DELETE_HISTORY);

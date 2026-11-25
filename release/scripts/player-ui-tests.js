@@ -227,7 +227,7 @@ function check(value, label) {
     assert.ok(value, label);
     checks++;
 }
-check(Object.keys(s.Play_controls).length === 49, 'all production control declarations loaded');
+check(Object.keys(s.Play_controls).length === 50, 'all production control declarations loaded');
 const mapped = new Set(Object.values(s.PlayerUI_Groups()).flat());
 for (const key of Object.keys(s.Play_controls))
     check(

@@ -813,6 +813,12 @@
         STR_FAVORITE_CHANNEL,
         STR_UNFAVORITE_CHANNEL,
         STR_FAVORITE_NO_USER,
+        STR_FAVORITE,
+        STR_FAVORITED,
+        STR_SIGN_IN_TO_FAVORITE,
+        STR_FAVORITE_ADDED,
+        STR_FAVORITE_REMOVED,
+        STR_SAVE_POSITION_NO_USER,
         STR_SAVED,
         STR_SAVE_POSITION,
         STR_SAVE_POSITION_SUMMARY,
@@ -2484,7 +2490,13 @@
         STR_BLOCK_NO_CHANNEL = "Can't get the channel for this";
         STR_FAVORITE_CHANNEL = 'Favorite channel';
         STR_UNFAVORITE_CHANNEL = 'Unfavorite channel';
-        STR_FAVORITE_NO_USER = 'Add a user first before being able to favorite';
+        STR_FAVORITE_NO_USER = 'Sign in to favorite channels';
+        STR_FAVORITE = 'Favorite';
+        STR_FAVORITED = 'Favorited';
+        STR_SIGN_IN_TO_FAVORITE = 'Sign in to favorite';
+        STR_FAVORITE_ADDED = '%x pinned to the top of Following › Live now';
+        STR_FAVORITE_REMOVED = '%x removed from favorites';
+        STR_SAVE_POSITION_NO_USER = 'Sign in to save positions';
         STR_SAVED = 'Saved';
         STR_SAVE_POSITION = 'Save position';
         STR_SAVE_POSITION_SUMMARY = 'Resume this stream later from Library › Saved';
@@ -8703,8 +8715,16 @@
         publishVersionCode: 405, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
         ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/405/SmarterPurpleTV_3_0_405.apk',
         WebVersion: 'November 25 2026',
-        WebTag: 806, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        WebTag: 807, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 25 2026 (Web 807)',
+                changes: [
+                    'Improvement: Favorite is easier to reach: a Favorite button sits next to Follow on channel pages and in the player Content menu, and in card Options it is right under Follow',
+                    'Improvement: favoriting or unfavoriting confirms with the channel name, and favorites also lead the player followed-channels row and the side panel',
+                    'Fix: the player Save position warning without an account no longer talks about favorites'
+                ]
+            },
             {
                 title: 'November 25 2026 (Web 806)',
                 changes: [
@@ -12937,6 +12957,8 @@
     //Variable initialization
     var ChannelContent_cursorY = 0;
     var ChannelContent_cursorX = 0;
+    //Videos, Clips, Follow, Favorite
+    var ChannelContent_ActionsCount = 4;
     var ChannelContent_dataEnded = false;
     var ChannelContent_itemsCount = 0;
     var ChannelContent_itemsCountOffset = 0;
@@ -13153,6 +13175,41 @@
         }
     }
 
+    //Favorite sits next to Follow: an outline-weight grey star at rest, the favorite gold when set
+    function ChannelContent_setFavorite() {
+        var isFavorite = Screens_isFavorite(Main_values.Main_selectedChannel_id),
+            label = !AddUser_UserIsSet() ? STR_SIGN_IN_TO_FAVORITE : isFavorite ? STR_FAVORITED : STR_FAVORITE;
+
+        Main_innerHTML(
+            'channel_content_titley_3',
+            '<i class="icon-star ' +
+                (isFavorite ? '" style="color: #' + Main_ColorBadgeFavorite + '; font-size: 100%;"' : 'stream_channel_follow_icon"') +
+                '></i>' +
+                STR_SPACE_HTML +
+                STR_SPACE_HTML +
+                label
+        );
+        Main_getElementById('channel_content_thumbdivy_3').setAttribute('aria-label', isFavorite ? STR_FAVORITED : label);
+        Main_getElementById('channel_content_thumbdivy_3').setAttribute('aria-pressed', String(isFavorite));
+    }
+
+    function ChannelContent_toggleFavorite() {
+        if (!AddUser_IsUserSet()) {
+            Main_showWarningDialog(STR_FAVORITE_NO_USER, 2000);
+            return;
+        }
+
+        if (!Main_values.Main_selectedChannel_id) {
+            Main_showWarningDialog(STR_BLOCK_NO_CHANNEL, 2000);
+            return;
+        }
+
+        var isFavorite = Screens_FavoriteToggle(Main_values.Main_selectedChannel_id, Main_values.Main_selectedChannel);
+
+        Main_showWarningDialog(Screens_FavoriteMessage(isFavorite, Main_values.Main_selectedChannelDisplayname), 2500);
+        ChannelContent_setFavorite();
+    }
+
     function ChannelContent_loadDataSuccess() {
         Main_innerHTML(
             'channel_content_thumbdiv0_1',
@@ -13305,6 +13362,8 @@
     }
 
     function ChannelContent_checkUser() {
+        ChannelContent_setFavorite();
+
         if (AddUser_UserIsSet()) {
             AddCode_Channel_id = Main_values.Main_selectedChannel_id;
             AddCode_PlayRequest = false;
@@ -13339,6 +13398,7 @@
         Main_RemoveClass('channel_content_thumbdivy_0', 'stream_switch_focused');
         Main_RemoveClass('channel_content_thumbdivy_1', 'stream_switch_focused');
         Main_RemoveClass('channel_content_thumbdivy_2', 'stream_switch_focused');
+        Main_RemoveClass('channel_content_thumbdivy_3', 'stream_switch_focused');
     }
 
     function ChannelContent_keyEnter() {
@@ -13370,6 +13430,8 @@
                 } else {
                     Main_showWarningDialog(STR_NOKEY_WARN, 2000);
                 }
+            } else if (ChannelContent_cursorX === 3) {
+                ChannelContent_toggleFavorite();
             }
         } else {
             Main_removeEventListener('keydown', ChannelContent_handleKeyDown);
@@ -13513,7 +13575,7 @@
                 if (!ChannelContent_cursorY && ChannelContent_cursorX) {
                     ChannelContent_removeFocus();
                     ChannelContent_cursorX--;
-                    if (ChannelContent_cursorX < 0) ChannelContent_cursorX = 2;
+                    if (ChannelContent_cursorX < 0) ChannelContent_cursorX = ChannelContent_ActionsCount - 1;
                     ChannelContent_addFocus();
                 } else {
                     ChannelContent_removeFocus();
@@ -13524,7 +13586,7 @@
                 if (!ChannelContent_cursorY) {
                     ChannelContent_removeFocus();
                     ChannelContent_cursorX++;
-                    if (ChannelContent_cursorX > 2) ChannelContent_cursorX = 0;
+                    if (ChannelContent_cursorX > ChannelContent_ActionsCount - 1) ChannelContent_cursorX = 0;
                     ChannelContent_addFocus();
                 }
                 break;
@@ -19858,6 +19920,11 @@
         Main_getElementById('channel_content_thumbdivy_0').setAttribute('aria-label', STR_VIDEOS);
         Main_getElementById('channel_content_thumbdivy_1').setAttribute('aria-label', STR_CLIPS);
         Main_getElementById('channel_content_thumbdivy_2').setAttribute('aria-label', STR_FOLLOW);
+        Main_innerHTML(
+            'channel_content_titley_3',
+            '<i class="icon-star stream_channel_follow_icon"></i>' + STR_SPACE_HTML + STR_SPACE_HTML + STR_FAVORITE
+        );
+        Main_getElementById('channel_content_thumbdivy_3').setAttribute('aria-label', STR_FAVORITE);
 
         Main_textContent('dialog_hist_setting_name_0', STR_SORTING);
         Main_textContent('dialog_hist_setting_name_2', STR_DELETE_HISTORY);
@@ -32114,6 +32181,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var Play_controlsPreviewMainVolume = temp_controls_pos++;
     var Play_controlsContentLang = temp_controls_pos++;
     var Play_controlsControls = temp_controls_pos++;
+    //Appended last so the existing control positions do not move; the drawer order comes from PlayerUI_Groups
+    var Play_controlsFavorite = temp_controls_pos++;
 
     var Play_controlsDefault = Play_controlsChat;
     var Play_PanelCounter = Play_controlsDefault;
@@ -32352,6 +32421,75 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             }
         };
 
+        Play_controls[Play_controlsFavorite] = {
+            //favorite channel, next to Follow in the Content drawer
+            ShowInLive: true,
+            ShowInVod: true,
+            ShowInClip: true,
+            ShowInPP: false,
+            ShowInMulti: false,
+            ShowInChat: false,
+            ShowInAudio: false,
+            ShowInAudioPP: false,
+            ShowInAudioMulti: false,
+            ShowInPreview: false,
+            ShowInStay: false,
+            icons: 'star',
+            offsetY: -5,
+            string: STR_FAVORITE,
+            values: '',
+            defaultValue: null,
+            //Same channel source as Follow: the live stream's broadcaster, else the selected channel
+            channel: function () {
+                if (Play_isOn && Play_data.data && Play_data.data.length) {
+                    return {id: Play_data.data[14], name: Play_data.data[6], display: Play_data.data[1]};
+                }
+
+                return {
+                    id: Main_values.Main_selectedChannel_id,
+                    name: Main_values.Main_selectedChannel,
+                    display: Main_values.Main_selectedChannelDisplayname
+                };
+            },
+            enterKey: function () {
+                if (!AddUser_IsUserSet()) {
+                    Play_showWarningMiddleDialog(STR_FAVORITE_NO_USER, 3000);
+                    return;
+                }
+
+                var channel = this.channel();
+
+                if (!channel.id) {
+                    Play_showWarningMiddleDialog(STR_BLOCK_NO_CHANNEL, 3000);
+                    return;
+                }
+
+                var isFavorite = Screens_FavoriteToggle(channel.id, channel.name);
+
+                Play_showWarningMiddleDialog(Screens_FavoriteMessage(isFavorite, channel.display), 3000);
+                this.setLabel();
+            },
+            setLabel: function () {
+                if (!this.doc_title) return;
+
+                var channel = this.channel(),
+                    isFavorite = Screens_isFavorite(channel.id);
+
+                Main_textContentWithEle(
+                    this.doc_title,
+                    (isFavorite ? STR_FAVORITED : STR_FAVORITE) + (AddUser_UserIsSet() && channel.display ? ' - ' + channel.display : '')
+                );
+                Main_innerHTML(
+                    'controls_button_icon_holder_' + this.position,
+                    '<i id="controls_button_icon_' +
+                        this.position +
+                        '" class="pause_button3d icon-star" style="color: #' +
+                        (isFavorite ? Main_ColorBadgeFavorite : 'FFFFFF') +
+                        ';" ></i>'
+                );
+            }
+        };
+
         Play_controls[Play_controlsSpeed] = {
             //speed
             ShowInLive: true,
@@ -32508,7 +32646,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             defaultValue: null,
             enterKey: function () {
                 if (!AddUser_IsUserSet()) {
-                    Play_showWarningMiddleDialog(STR_FAVORITE_NO_USER, 3000);
+                    Play_showWarningMiddleDialog(STR_SAVE_POSITION_NO_USER, 3000);
                     return;
                 }
 
@@ -39794,6 +39932,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 Play_controlsOpenLive,
                 Play_controlsOpenVod,
                 Play_controlsFollow,
+                Play_controlsFavorite,
                 Play_controlsContentLang
             ],
             playback: [
@@ -43850,6 +43989,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 Screens_values_Play_data = Screens_GetObj(key);
                 Main_RemoveClass('dialog_thumb_opt_setting_2', 'hideimp');
                 Main_RemoveClass('dialog_thumb_opt_setting_3', 'hideimp');
+                //A followed channel can be favorited from its channel card, even while it is offline
+                Main_RemoveClass('dialog_thumb_opt_setting_9', 'hideimp');
             }
 
             if (ScreenObj[key].screenType === 3 && !ScreenObj[key].BannerCreated) {
@@ -43979,17 +44120,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         } else {
             Main_RemoveClass('dialog_thumb_opt_setting_9', 'hideimp');
 
-            var favName = '';
-
-            if (ScreenObj[key].screenType === 2) {
-                favName = Screens_values_Play_data[4];
-            } else if (ScreenObj[key].screenType === 4) {
-                favName = Screens_values_Play_data[3];
-            } else if (Screens_values_Play_data[1]) {
-                favName = Main_A_includes_B(Screens_values_Play_data[1], STR_USER_HOSTED_BY)
-                    ? Screens_values_Play_data[1].split(STR_USER_HOSTED_BY)[0]
-                    : Screens_values_Play_data[1];
-            }
+            var favName = Screens_FavoriteDisplayName(key);
 
             Main_textContent('dialog_thumb_opt_val_9', favName ? favName : STR_EMPTY);
             Main_textContent('dialog_thumb_opt_setting_name_9', STR_FAVORITE_CHANNEL);
@@ -44172,27 +44303,26 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         }
     }
 
+    //Row ids stay stable for the handlers; this is the on-screen order. Favorite (9) sits under
+    //Follow (2) so the two channel-relationship actions read together
+    var Screens_ThumbOptionOrder = [-1, 0, 1, 2, 9, 3, 4, 5, 6, 7, 8];
+
     function Screens_ThumbOptionDialogKeyUpDown(key, current, adder) {
-        Screens_ThumbOptionPosY += adder;
+        var order = Screens_ThumbOptionOrder,
+            index = order.indexOf(current),
+            elemt;
 
-        if (Screens_ThumbOptionPosY < -1) {
-            Screens_ThumbOptionPosY = current;
-            return;
+        //Past either end stay on the current row; hidden rows are skipped
+        while (true) {
+            index += adder;
+
+            if (index < 0 || index >= order.length) return;
+
+            elemt = Main_getElementById('dialog_thumb_opt_setting_' + order[index]);
+            if (elemt && !Main_A_includes_B(elemt.className, 'hideimp')) break;
         }
 
-        //Past the last row stay on the current one: the last row (Favorite) can be hidden, so
-        //clamping onto it would select an option with no focus on it
-        if (Screens_ThumbOptionPosY > Screens_ThumbOptionTotalPosition) {
-            Screens_ThumbOptionPosY = current;
-            return;
-        }
-
-        var elemt = Main_getElementById('dialog_thumb_opt_setting_' + Screens_ThumbOptionPosY);
-        if (!elemt || Main_A_includes_B(elemt.className, 'hideimp')) {
-            Screens_ThumbOptionDialogKeyUpDown(key, current, adder);
-            return;
-        }
-
+        Screens_ThumbOptionPosY = order[index];
         Screens_histRemoveFocus(current, 'thumb_opt');
         Screens_ThumbOptionAddFocus(Screens_ThumbOptionPosY);
     }
@@ -44404,37 +44534,69 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         );
     }
 
+    //Shared by the card Options panel, the channel page and the player menu. Returns true when the
+    //channel is a favorite after the call
+    function Screens_FavoriteToggle(channelId, channelName) {
+        var favorites;
+
+        Screens_FavoritesSetDefaultObj();
+        channelId = channelId.toString();
+        favorites = Main_values_History_data[AddUser_UsernameArray[0].id].favorites;
+
+        if (favorites[channelId]) {
+            delete favorites[channelId];
+        } else {
+            favorites[channelId] = {};
+            favorites[channelId].date = new Date().getTime();
+            favorites[channelId].data = [];
+            favorites[channelId].data[1] = channelId;
+
+            if (channelName) {
+                favorites[channelId].data[3] = channelName;
+            }
+        }
+
+        Main_setHistoryItem();
+
+        return !!favorites[channelId];
+    }
+
+    //The confirmation names the channel and says where the favorite shows, so the toggle is not silent
+    function Screens_FavoriteMessage(isFavorite, displayName) {
+        return (isFavorite ? STR_FAVORITE_ADDED : STR_FAVORITE_REMOVED).replace('%x', displayName ? displayName : STR_CHANNEL).trim();
+    }
+
+    //Display name of the channel a card belongs to: hosted streams show the host's channel first
+    function Screens_FavoriteDisplayName(key) {
+        if (ScreenObj[key].screenType === 2) {
+            return Screens_values_Play_data[4];
+        } else if (ScreenObj[key].screenType === 4) {
+            return Screens_values_Play_data[3];
+        } else if (Screens_values_Play_data[1]) {
+            return Main_A_includes_B(Screens_values_Play_data[1], STR_USER_HOSTED_BY)
+                ? Screens_values_Play_data[1].split(STR_USER_HOSTED_BY)[0]
+                : Screens_values_Play_data[1];
+        }
+
+        return '';
+    }
+
     function Screens_FavoriteChannel(key) {
         if (!AddUser_IsUserSet()) {
             Main_showWarningDialog(STR_FAVORITE_NO_USER, 2000);
             return;
         }
 
-        var channelId = Screens_BlockChannelGetId(key),
-            channelName = Screens_BlockChannelGetName(key);
+        var channelId = Screens_BlockChannelGetId(key);
 
         if (!channelId) {
             Main_showWarningDialog(STR_BLOCK_NO_CHANNEL, 2000);
             return;
         }
 
-        Screens_FavoritesSetDefaultObj();
-        channelId = channelId.toString();
+        var isFavorite = Screens_FavoriteToggle(channelId, Screens_BlockChannelGetName(key));
 
-        if (Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId]) {
-            delete Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId];
-        } else {
-            Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId] = {};
-            Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].date = new Date().getTime();
-            Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data = [];
-            Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data[1] = channelId;
-
-            if (channelName) {
-                Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data[3] = channelName;
-            }
-        }
-
-        Main_setHistoryItem();
+        Main_showWarningDialog(Screens_FavoriteMessage(isFavorite, Screens_FavoriteDisplayName(key)), 2500);
 
         //Live now re-sorts favorites to the top, other screens just flip the star of the focused card
         if (ScreenObj[key].screen === Main_UserLive) {
@@ -58559,6 +58721,26 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         UserLiveFeed_loadDataSuccessEnd(response);
     }
 
+    //Stable partition: favorites first, each part keeps the chosen feed sort
+    function UserLiveFeedobj_FavoritesFirst(response) {
+        if (!AddUser_UserIsSet()) return response;
+
+        var favorites = [],
+            others = [],
+            i = 0,
+            len = response.length,
+            stream;
+
+        for (i; i < len; i++) {
+            stream = response[i];
+
+            if (stream && stream.stream && stream.stream.broadcaster && Screens_isFavorite(stream.stream.broadcaster.id)) favorites.push(stream);
+            else others.push(stream);
+        }
+
+        return favorites.length ? favorites.concat(others) : response;
+    }
+
     function UserLiveFeed_loadDataSuccessEnd(response) {
         //Main_Log('UserLiveFeedobj_loadDataSuccess');
 
@@ -58609,6 +58791,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                     });
                 }
             }
+
+            //Favorites lead the player's followed strip and the side panel, same as Live now
+            response = UserLiveFeedobj_FavoritesFirst(response);
 
             for (i; i < response_items; i++) {
                 stream = response[i];

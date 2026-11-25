@@ -2127,6 +2127,8 @@ var Play_controlsPreviewVolume = temp_controls_pos++;
 var Play_controlsPreviewMainVolume = temp_controls_pos++;
 var Play_controlsContentLang = temp_controls_pos++;
 var Play_controlsControls = temp_controls_pos++;
+//Appended last so the existing control positions do not move; the drawer order comes from PlayerUI_Groups
+var Play_controlsFavorite = temp_controls_pos++;
 
 var Play_controlsDefault = Play_controlsChat;
 var Play_PanelCounter = Play_controlsDefault;
@@ -2365,6 +2367,75 @@ function Play_MakeControls() {
         }
     };
 
+    Play_controls[Play_controlsFavorite] = {
+        //favorite channel, next to Follow in the Content drawer
+        ShowInLive: true,
+        ShowInVod: true,
+        ShowInClip: true,
+        ShowInPP: false,
+        ShowInMulti: false,
+        ShowInChat: false,
+        ShowInAudio: false,
+        ShowInAudioPP: false,
+        ShowInAudioMulti: false,
+        ShowInPreview: false,
+        ShowInStay: false,
+        icons: 'star',
+        offsetY: -5,
+        string: STR_FAVORITE,
+        values: '',
+        defaultValue: null,
+        //Same channel source as Follow: the live stream's broadcaster, else the selected channel
+        channel: function () {
+            if (Play_isOn && Play_data.data && Play_data.data.length) {
+                return {id: Play_data.data[14], name: Play_data.data[6], display: Play_data.data[1]};
+            }
+
+            return {
+                id: Main_values.Main_selectedChannel_id,
+                name: Main_values.Main_selectedChannel,
+                display: Main_values.Main_selectedChannelDisplayname
+            };
+        },
+        enterKey: function () {
+            if (!AddUser_IsUserSet()) {
+                Play_showWarningMiddleDialog(STR_FAVORITE_NO_USER, 3000);
+                return;
+            }
+
+            var channel = this.channel();
+
+            if (!channel.id) {
+                Play_showWarningMiddleDialog(STR_BLOCK_NO_CHANNEL, 3000);
+                return;
+            }
+
+            var isFavorite = Screens_FavoriteToggle(channel.id, channel.name);
+
+            Play_showWarningMiddleDialog(Screens_FavoriteMessage(isFavorite, channel.display), 3000);
+            this.setLabel();
+        },
+        setLabel: function () {
+            if (!this.doc_title) return;
+
+            var channel = this.channel(),
+                isFavorite = Screens_isFavorite(channel.id);
+
+            Main_textContentWithEle(
+                this.doc_title,
+                (isFavorite ? STR_FAVORITED : STR_FAVORITE) + (AddUser_UserIsSet() && channel.display ? ' - ' + channel.display : '')
+            );
+            Main_innerHTML(
+                'controls_button_icon_holder_' + this.position,
+                '<i id="controls_button_icon_' +
+                    this.position +
+                    '" class="pause_button3d icon-star" style="color: #' +
+                    (isFavorite ? Main_ColorBadgeFavorite : 'FFFFFF') +
+                    ';" ></i>'
+            );
+        }
+    };
+
     Play_controls[Play_controlsSpeed] = {
         //speed
         ShowInLive: true,
@@ -2521,7 +2592,7 @@ function Play_MakeControls() {
         defaultValue: null,
         enterKey: function () {
             if (!AddUser_IsUserSet()) {
-                Play_showWarningMiddleDialog(STR_FAVORITE_NO_USER, 3000);
+                Play_showWarningMiddleDialog(STR_SAVE_POSITION_NO_USER, 3000);
                 return;
             }
 

@@ -976,7 +976,13 @@ function en_USLang() {
     STR_BLOCK_NO_CHANNEL = "Can't get the channel for this";
     STR_FAVORITE_CHANNEL = 'Favorite channel';
     STR_UNFAVORITE_CHANNEL = 'Unfavorite channel';
-    STR_FAVORITE_NO_USER = 'Add a user first before being able to favorite';
+    STR_FAVORITE_NO_USER = 'Sign in to favorite channels';
+    STR_FAVORITE = 'Favorite';
+    STR_FAVORITED = 'Favorited';
+    STR_SIGN_IN_TO_FAVORITE = 'Sign in to favorite';
+    STR_FAVORITE_ADDED = '%x pinned to the top of Following › Live now';
+    STR_FAVORITE_REMOVED = '%x removed from favorites';
+    STR_SAVE_POSITION_NO_USER = 'Sign in to save positions';
     STR_SAVED = 'Saved';
     STR_SAVE_POSITION = 'Save position';
     STR_SAVE_POSITION_SUMMARY = 'Resume this stream later from Library › Saved';
