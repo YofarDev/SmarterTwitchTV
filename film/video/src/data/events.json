@@ -1,0 +1,275 @@
+{
+ "browse": {
+  "events": [
+   {
+    "ms": 0,
+    "type": "runStart"
+   },
+   {
+    "ms": 1923,
+    "type": "browse"
+   },
+   {
+    "ms": 4423,
+    "type": "glideStart"
+   },
+   {
+    "ms": 5433,
+    "type": "focus"
+   },
+   {
+    "ms": 6095,
+    "type": "focus"
+   },
+   {
+    "ms": 6751,
+    "type": "focus"
+   },
+   {
+    "ms": 7655,
+    "type": "focus"
+   },
+   {
+    "ms": 8309,
+    "type": "focus"
+   },
+   {
+    "ms": 9213,
+    "type": "focus"
+   },
+   {
+    "ms": 9868,
+    "type": "focus"
+   },
+   {
+    "ms": 10768,
+    "type": "settle"
+   },
+   {
+    "ms": 13269,
+    "type": "end"
+   }
+  ],
+  "duration": 13.533333,
+  "audio": []
+ },
+ "nav": {
+  "events": [
+   {
+    "ms": 0,
+    "type": "runStart"
+   },
+   {
+    "ms": 1951,
+    "type": "browse"
+   },
+   {
+    "ms": 5268,
+    "type": "railOpen"
+   },
+   {
+    "ms": 6205,
+    "type": "railMove"
+   },
+   {
+    "ms": 6676,
+    "type": "railMove"
+   },
+   {
+    "ms": 7133,
+    "type": "railMove"
+   },
+   {
+    "ms": 7595,
+    "type": "railMove"
+   },
+   {
+    "ms": 8250,
+    "type": "railClose"
+   },
+   {
+    "ms": 9158,
+    "type": "tabsFocus"
+   },
+   {
+    "ms": 9871,
+    "type": "tabMove"
+   },
+   {
+    "ms": 10244,
+    "type": "tab"
+   },
+   {
+    "ms": 11958,
+    "type": "tabsFocus"
+   },
+   {
+    "ms": 12364,
+    "type": "tabMove"
+   },
+   {
+    "ms": 12725,
+    "type": "tab"
+   },
+   {
+    "ms": 14461,
+    "type": "focus"
+   },
+   {
+    "ms": 15176,
+    "type": "focus"
+   },
+   {
+    "ms": 16023,
+    "type": "focus"
+   },
+   {
+    "ms": 17024,
+    "type": "settle"
+   },
+   {
+    "ms": 19525,
+    "type": "end"
+   }
+  ],
+  "duration": 19.766667,
+  "audio": []
+ },
+ "search": {
+  "events": [
+   {
+    "ms": 0,
+    "type": "runStart"
+   },
+   {
+    "ms": 1933,
+    "type": "browse"
+   },
+   {
+    "ms": 5046,
+    "type": "railOpen"
+   },
+   {
+    "ms": 5853,
+    "type": "railMove"
+   },
+   {
+    "ms": 6316,
+    "type": "searchOpen"
+   },
+   {
+    "ms": 7617,
+    "type": "typeStart",
+    "text": "minecraft"
+   },
+   {
+    "ms": 8908,
+    "type": "typeEnd"
+   },
+   {
+    "ms": 9614,
+    "type": "typeChoice"
+   },
+   {
+    "ms": 10117,
+    "type": "typeMove"
+   },
+   {
+    "ms": 10469,
+    "type": "typeMove"
+   },
+   {
+    "ms": 10921,
+    "type": "results"
+   },
+   {
+    "ms": 12926,
+    "type": "focus"
+   },
+   {
+    "ms": 13683,
+    "type": "focus"
+   },
+   {
+    "ms": 14444,
+    "type": "focus"
+   },
+   {
+    "ms": 15445,
+    "type": "settle"
+   },
+   {
+    "ms": 17945,
+    "type": "end"
+   }
+  ],
+  "duration": 18.016667,
+  "audio": []
+ },
+ "theme": {
+  "events": [
+   {
+    "ms": 1,
+    "type": "runStart"
+   },
+   {
+    "ms": 1961,
+    "type": "browse"
+   },
+   {
+    "ms": 5079,
+    "type": "railOpen"
+   },
+   {
+    "ms": 6758,
+    "type": "settings"
+   },
+   {
+    "ms": 8997,
+    "type": "uiOptions"
+   },
+   {
+    "ms": 9939,
+    "type": "colorDialog"
+   },
+   {
+    "ms": 11142,
+    "type": "style"
+   },
+   {
+    "ms": 11746,
+    "type": "styleWhite"
+   },
+   {
+    "ms": 13003,
+    "type": "themeApplied"
+   },
+   {
+    "ms": 14817,
+    "type": "browseLight"
+   },
+   {
+    "ms": 16023,
+    "type": "focus"
+   },
+   {
+    "ms": 16676,
+    "type": "focus"
+   },
+   {
+    "ms": 17334,
+    "type": "focus"
+   },
+   {
+    "ms": 18335,
+    "type": "settle"
+   },
+   {
+    "ms": 20836,
+    "type": "end"
+   }
+  ],
+  "duration": 21.016667,
+  "audio": []
+ }
+}

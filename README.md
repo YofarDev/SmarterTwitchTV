@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="apk/app/src/main/res/mipmap-nodpi/app_icon.png">
+<img src="apk/app/src/main/res/mipmap-nodpi/app_icon.png" alt="Smarter Purple TV logo" width="320">
 
 # Smarter Purple TV
 
@@ -16,8 +16,6 @@ Smarter Purple TV (SPTV) is [SmartTwitchTV](https://github.com/fgl27/SmartTwitch
 
 <img src="docs/ui-redesign-screenshots/production-browse-tabs-1080.png" alt="Smarter Purple TV Browse screen with selected and focused tabs" width="720">
 
-<a href="docs/ui-redesign-screenshots/production-browse-tabs-720.png">View the 720p Browse capture</a>
-
 </div>
 
 ## Features
@@ -25,6 +23,8 @@ Smarter Purple TV (SPTV) is [SmartTwitchTV](https://github.com/fgl27/SmartTwitch
 - **Built for TV.** Navigate every screen with the directional remote, OK and Back.
 - **Browse Twitch.** Live streams, categories, VODs, clips, search, Following and Library.
 - **Watch your way.** Picture-in-picture, multistream, chat and optional Twitch login.
+- **Favorite channels.** Hold OK on a live card and pick Favorite channel: favorites stay at the top of Following › Live now and get a gold star on every live grid.
+- **Save for later.** Press Save position in the player menu to keep your place in a live stream, then resume its VOD from that point in Library › Saved.
 - **Better chat.** Native Twitch emotes plus BTTV, FrankerFaceZ and 7TV emotes.
 - **Fork improvements.** Stitched-ad filtering without a proxy, automatic follow raids and a purple-first interface.
 - **Chat on your phone.** Show a QR code on the TV and keep chatting from your phone. See the [phone-chat guide](docs/phone-chat-setup.md).

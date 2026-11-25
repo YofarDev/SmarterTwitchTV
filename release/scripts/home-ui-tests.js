@@ -8,10 +8,10 @@ const fs = require('fs'),
 const built = process.argv.includes('--built');
 
 const wanted =
-    /^(Main_formatCompactViewers|Main_formatCompactScaled|Main_GetCompactViewerStrings|Main_GetViewerStrings|Main_formatLiveDuration|Main_formatNumber|Main_Slice|Screens_AriaEscape|Screens_createCellLive|Screens_ActionsButtonHtml|Screens_ScreenIds|Screens_GetObjId|Screens_ObjNotNull|Screens_GetObj|Screens_IsDivFocused|Screens_IsInUse|Screens_UpdateSince|ScreensObj_LiveCellArray|ScreensObj_ThumbInfoUpdate)$/;
+    /^(Main_formatCompactViewers|Main_formatCompactScaled|Main_GetCompactViewerStrings|Main_GetViewerStrings|Main_formatLiveDuration|Main_formatNumber|Main_Slice|Screens_AriaEscape|Screens_createCellLive|Screens_ActionsButtonHtml|Screens_ScreenIds|Screens_GetObjId|Screens_ObjNotNull|Screens_GetObj|Screens_IsDivFocused|Screens_IsInUse|Screens_UpdateSince|ScreensObj_LiveCellArray|ScreensObj_ThumbInfoUpdate|Navigation_UpdateDetails|Navigation_DetailData)$/;
 const sources = built
     ? ['release/githubio/js/main_uncompressed.js']
-    : ['app/specific/Main.js', 'app/specific/Screens.js', 'app/specific/ScreensObj.js'];
+    : ['app/specific/Main.js', 'app/specific/Screens.js', 'app/specific/ScreensObj.js', 'app/specific/Navigation.js'];
 const definitions = [];
 for (const file of sources) {
     UglifyJS.parse(fs.readFileSync(file, 'utf8')).walk(
@@ -37,6 +37,23 @@ const elementClass = {};
 const scene1Classes = new Set(['navigation-enabled', 'navigation-live']);
 let detailsHidden = true;
 let hintWrites = 0;
+//Globals the extracted presentation functions reference but that are not part of `wanted`
+s.Main_ColorBadgeLive = 'd92626';
+s.Main_ColorBadgeVod = '00843a';
+s.Main_ColorBadgeClip = 'c2410c';
+s.Main_ColorIndicatorVod = '00a94b';
+s.Main_ColorIndicatorHosting = 'FED000';
+s.Main_ColorBadgeFavorite = 'FED000';
+//The favorite star markup depends on the per-user favorites store, not part of this fixture
+s.Screens_isFavorite = () => false;
+s.Main_VideoSize = '320x180';
+s.Main_randomImg = '';
+s.twemoji = {parse: text => text};
+s.Main_ReplaceLargeFont = text => text;
+s.Main_videoCreatedAtWithHM = () => '';
+s.Play_timeMs = () => 0;
+//Navigation_DetailData consults the settings screen visibility
+s.Settings_isVisible = () => false;
 s.Main_getElementById = id => ({id});
 s.Main_textContent = (id, value) => {
     writes.text[id] = value;
@@ -112,6 +129,12 @@ s.STR_UI = {
 s.ScreenObj = {};
 s.Main_values = {Main_Go: null, Search_data: ''};
 s.Screens_UpdateSinceId = undefined; // the var declaration lives in Screens.js; the stub captures instead
+//Screens_createCellLive renders translated strings (STR_LIVE, STR_UI...), so the real
+//language definitions load before the extracted production functions: default.js holds the
+//shared base strings, en_USLang() assigns the rest
+vm.runInContext(fs.readFileSync('app/languages/default.js', 'utf8'), s);
+vm.runInContext(fs.readFileSync('app/languages/en_US.js', 'utf8'), s);
+vm.runInContext('en_USLang()', s);
 vm.runInContext(definitions.join('\n'), s);
 
 /* Compact duration: minutes and hours only, no seconds, never a stale 0m.
@@ -216,14 +239,14 @@ s.Navigation_Region = '';
 s.Navigation_Onboarding = false;
 s.Navigation_UpdateDetails(key);
 check(writes.text['navigation-detail-title'] === 'A title', 'focused live card fills the title');
-check(writes.text['navigation-detail-name'] === 'Streamer · 21,500 viewers', 'detail keeps the full, refreshed viewer count');
+check(writes.text['navigation-detail-name-text'] === 'Streamer · 21,500 viewers', 'detail keeps the full, refreshed viewer count');
 check(writes.text['navigation-detail-category'] === 'A game', 'detail fills the category');
 check(!detailsHidden && scene1Classes.has('navigation-detail'), 'detail band visible with the shell state class');
 
 s.ScreenObj[key].DataObj['0_0'].image = true;
 s.Navigation_UpdateDetails(key);
 check(writes.text['navigation-detail-title'] === '', 'placeholder cell clears all detail fields');
-check(writes.text['navigation-detail-name'] === '' && writes.text['navigation-detail-category'] === '', 'no stale category or name');
+check(writes.text['navigation-detail-name-text'] === '' && writes.text['navigation-detail-category'] === '', 'no stale category or name');
 check(detailsHidden && !scene1Classes.has('navigation-detail'), 'placeholder hides the band and frees the grid');
 delete s.ScreenObj[key].DataObj['0_0'].image;
 
@@ -330,7 +353,7 @@ for (const name of [
 
 /* Shell geometry contract: the source CSS owns the compact band and the space changes. */
 const shell = fs.readFileSync('app/index.html', 'utf8');
-check(/\.navigation-details\s*{[^}]*top:\s*82%/.test(shell), 'detail band starts at 82%');
+check(/\.navigation-details\s*{[^}]*top:\s*80%/.test(shell), 'detail band starts at 80%');
 check(/\.navigation-live #screens_holder\s*{[^}]*height:\s*68%/.test(shell), 'live grid keeps the full browsing height');
 check(/\.navigation-live.navigation-detail #screens_holder\s*{\s*height:\s*56%/.test(shell), 'detail-visible grid sits at 56%');
 check(/\.navigation-enabled #clock_holder\s*{[^}]*display:\s*none/.test(shell), 'browsing shell hides the clock');

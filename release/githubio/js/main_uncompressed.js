@@ -810,6 +810,15 @@
         STR_BLOCK_GAME,
         STR_BLOCK_NO_USER,
         STR_BLOCK_NO_CHANNEL,
+        STR_FAVORITE_CHANNEL,
+        STR_UNFAVORITE_CHANNEL,
+        STR_FAVORITE_NO_USER,
+        STR_SAVED,
+        STR_SAVE_POSITION,
+        STR_SAVE_POSITION_SUMMARY,
+        STR_SAVED_POSITION_CONFIRM,
+        STR_SAVED_VOD_NOT_YET,
+        STR_HISTORY_SAVED_DIS,
         STR_BLOCK_OVERWRITE,
         STR_BLOCK_SORT_DATE,
         STR_BLOCK_SORT_NAME,
@@ -2426,6 +2435,15 @@
         STR_BLOCK_GAME = 'Block game';
         STR_BLOCK_NO_USER = 'Add a user first before being able to block';
         STR_BLOCK_NO_CHANNEL = "Can't get the channel for this";
+        STR_FAVORITE_CHANNEL = 'Favorite channel';
+        STR_UNFAVORITE_CHANNEL = 'Unfavorite channel';
+        STR_FAVORITE_NO_USER = 'Add a user first before being able to favorite';
+        STR_SAVED = 'Saved';
+        STR_SAVE_POSITION = 'Save position';
+        STR_SAVE_POSITION_SUMMARY = 'Save the current live position to resume this stream later from History - Saved';
+        STR_SAVED_POSITION_CONFIRM = 'Position saved, resume later from History - Saved';
+        STR_SAVED_VOD_NOT_YET = 'The VOD of this stream is not available yet, try again later';
+        STR_HISTORY_SAVED_DIS = 'Enable saved stream list';
         STR_BLOCK_OVERWRITE = 'Show blocked';
         STR_BLOCK_SORT_DATE = 'Sorted by blocked date';
         STR_BLOCK_SORT_NAME = 'Sorted by name A to Z';
@@ -7144,6 +7162,7 @@
             account: 'Обліковий запис',
             switchAccount: 'Змінити обліковий запис',
             liveNow: 'Зараз в ефірі',
+            recommended: 'Рекомендації',
             categories: 'Категорії',
             noAccount: 'Без облікового запису',
             welcomeTitle: 'Ваші канали разом',
@@ -7249,7 +7268,7 @@
         STR_REFRESH_PROBLEM_ENTER = 'Помилка підключення або немає контенту. Натисніть ОК для оновлення.';
         STR_REFRESH_PROBLEM_ENTER_LANG =
             'Помилка підключення або немає контенту цією мовою. Змініть мову контенту (утримуйте вліво) або натисніть ОК для оновлення';
-        STR_NO = 'Немає';
+        STR_NO = 'Ні';
         STR_FOR_THIS = 'для цього';
         STR_PLAYER_PROBLEM = 'Помилка підключення, неможливо завантажити контент, вихід ...';
         STR_VODS = 'VOD-записи';
@@ -7376,8 +7395,8 @@
         STR_KEY_BAD = 'Перевірка ключа не вдалася, потрібно додати новий';
         STR_OAUTH_WRONG = 'Ви намагаєтеся додати ключ для ';
         STR_OAUTH_WRONG2 = 'але цей ключ належить ';
-        STR_FOLLOWING = 'Стежите';
-        STR_FOLLOW = 'Не стежите';
+        STR_FOLLOWING = 'Підписані';
+        STR_FOLLOW = 'Не підписані';
         STR_IS_SUB_NOOAUTH = 'і ви не додали авторизаційний ключ, тому застосунок не може перевірити ваш статус підписки.';
         STR_IS_SUB_NOT_SUB = 'і ви не підписані на цей канал';
         STR_IS_SUB_IS_SUB = 'Ви підписані на цей канал, але сталася невідома помилка, що заважає відтворенню.';
@@ -7914,6 +7933,9 @@
         STR_RAID_FOLLOW_SUMMARY =
             'Коли стрімер, якого ви дивитеся, робить рейд на інший канал, плеєр перемикається на канал, куди відбувся рейд. Працює в режимі одного прямого ефіру та потребує входу в обліковий запис.';
         STR_RAID_AUTO = 'Перемикати автоматично';
+        STR_RECOMMENDED_LIVE = 'Рекомендовані канали в ефірі';
+        STR_RECOMMENDED_LIVE_SUMMARY =
+            'Відображає прямі ефіри, які Twitch рекомендує вам (канали на яких ви ще не підписані) у вкладці Підписки та в рядку прямих ефірів у плеєрі. Потрібен вхід в обліковий запис.';
         STR_RAID_SWITCHING = ' робить рейд, перемикання на ';
         STR_POINTS_OPT = 'Бали каналу та дропи';
         STR_POINTS_WATCH = 'Заробляти бали каналу за час перегляду';
@@ -8346,6 +8368,12 @@
     var KEY_MEDIA_NEXT = 176;
     var KEY_MEDIA_PREVIOUS = 177;
 
+    //Remote channel rocker: the apk dispatchKeyEvent override calls
+    //javascript:smartTwitchTV.Play_ChannelStep() for these, and the live player also handles
+    //the raw 166/167 keydown as a fallback (browsers, webviews that deliver them natively)
+    var KEY_CHANNEL_UP = 166;
+    var KEY_CHANNEL_DOWN = 167;
+
     var KEY_MEDIA_FAST_FORWARD = 228;
     var KEY_MEDIA_REWIND = 227;
 
@@ -8582,11 +8610,29 @@
     //Spacing for release maker not trow errors from jshint
     var version = {
         VersionBase: '3.0',
-        publishVersionCode: 404, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
-        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/404/SmarterPurpleTV_3_0_404.apk',
-        WebVersion: 'November 23 2026',
-        WebTag: 803, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+        publishVersionCode: 405, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
+        ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/405/SmarterPurpleTV_3_0_405.apk',
+        WebVersion: 'November 25 2026',
+        WebTag: 805, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
         changelog: [
+            {
+                title: 'November 25 2026 (Web 805)',
+                changes: [
+                    'New: favorite channels — Hold OK on a live channel card and pick Favorite channel: favorites always sit on top of the Live now list and wear a star next to the channel name on every live grid; favoriting from Live now re-sorts the list right away (#48)',
+                    "New: save a live stream position to watch it later as a VOD — the player menu gains a Save position button, and the Library (History) destination gains a Saved tab listing every saved stream; opening one resumes the broadcast's VOD exactly where you left it (or says the VOD is not available yet), and the entry keeps following the live edge while you keep watching (#48)"
+                ]
+            },
+            {
+                title: 'November 24 2026 (Web 804 / APK 405)',
+                changes: [
+                    'APK: the CH+/CH- keys on the remote change channels like a TV tuner — they open the followed-live strip, step through it with live previews, and tune the focused channel once the presses settle; holding the key sweeps',
+                    'APK: ad breaks fenced only by the SCTE-35 CUE-OUT/CUE-IN markers (some edge nodes serve them without the stitched-ad range) are now stripped and escaped like the stitched ones, on both the APK filter and the web pre-playback probe',
+                    'New: stream opens get a master playlist cache — opening a channel again within 90 seconds (channel surfing, feed previews, quality restore after a 360p ad escape) skips the playback token request and starts from the cached playlist, and focusing a feed card with previews off resolves its stream in the background so pressing OK is instant',
+                    'Improvement: chat emotes download smaller images (2x instead of 3x/4x for the main source; high-res versions are still fetched on high-density screens through srcset), cutting chat bandwidth on busy channels',
+                    'APK: the app ships a baseline profile, so after an update the player code starts pre-compiled instead of warming up during the first stream',
+                    'Needs APK 405, older APKs keep the previous behaviour'
+                ]
+            },
             {
                 title: 'November 23 2026 (Web 803)',
                 changes: [
@@ -14459,7 +14505,9 @@
 
     function ChatLive_bttv_entry(emote) {
         var srcset = ChatLive_bttv_srcset(emote.id),
-            url = ChatLive_Base_BTTV_url + emote.id + '/3x';
+            //Main src is the preload fallback for browsers without srcset support; chat renders
+            //emotes at ~1.75em so 2x is plenty and saves bandwidth over 3x (srcset keeps all sizes)
+            url = ChatLive_Base_BTTV_url + emote.id + '/2x';
 
         return {
             code: emote.code,
@@ -14490,7 +14538,7 @@
 
         var base = ChatLive_Base_BTTV_url + emote.id + '/static/';
 
-        return emoteTemplate(base + '3x.webp', base + '1x.webp 1x,' + base + '2x.webp 2x,' + base + '3x.webp 3x');
+        return emoteTemplate(base + '2x.webp', base + '1x.webp 1x,' + base + '2x.webp 2x,' + base + '3x.webp 3x');
     }
 
     function ChatLive_loadCheersChannel(chat_number, id) {
@@ -14813,7 +14861,8 @@
         if (emoticon.urls[2] && typeof emoticon.urls[2] !== 'string') return null;
 
         var srcset = ChatLive_ffz_srcset(emoticon.urls),
-            url = emoticon.urls[4] || emoticon.urls[2] || emoticon.urls[1];
+            //Main src prefers 2x (chat renders at ~1.75em), srcset keeps every size for DPR scaling
+            url = emoticon.urls[2] || emoticon.urls[1];
 
         return {
             code: emoticon.name,
@@ -14934,8 +14983,9 @@
         }
 
         // emote url is made up of host.url and the image file names (1x.webp, 2x.webp, etc)
+        //Main src prefers 2x (chat renders at ~1.75em), '4x' keeps the biggest file for the picker
         var baseEmoteUrl = emote.host.url,
-            url = ChatLive_seven_tv_getEmoteUrl(baseEmoteUrl, emoteUrls[emoteUrls.length - 1]),
+            url = ChatLive_seven_tv_getEmoteUrl(baseEmoteUrl, ChatLive_seven_tv_size(emoteUrls, '2x')),
             srcset = ChatLive_seven_tv_srcset(baseEmoteUrl, emoteUrls),
             chat_div = emoteTemplate(url, srcset);
 
@@ -14946,9 +14996,19 @@
             chat_div_static: emote.animated ? ChatLive_seven_tv_static(baseEmoteUrl, emoteUrls) : null,
             chat_div_zero: emote.flags === 256 ? chat_div.replace('emoticon', 'emoticon zero-width-emote') : null,
 
-            '4x': url,
+            '4x': ChatLive_seven_tv_getEmoteUrl(baseEmoteUrl, emoteUrls[emoteUrls.length - 1]),
             srcset: srcset
         };
+    }
+
+    //The file of [files] whose name starts with [size] ("2x" of 2x.webp), falling back to the
+    //largest (the 7TV host serves 1x/2x/4x but a set can list fewer)
+    function ChatLive_seven_tv_size(files, size) {
+        for (var i = 0; i < files.length; i++) {
+            if (Main_startsWith(files[i].name, size)) return files[i];
+        }
+
+        return files[files.length - 1];
     }
 
     function ChatLive_seven_tv_getEmoteUrl(emoteBaseUrl, emote) {
@@ -14993,7 +15053,10 @@
 
         if (!stills.length) return null;
 
-        return emoteTemplate(ChatLive_seven_tv_getEmoteUrl(emoteUrl, stills[stills.length - 1]), ChatLive_seven_tv_srcset(emoteUrl, stills));
+        return emoteTemplate(
+            ChatLive_seven_tv_getEmoteUrl(emoteUrl, ChatLive_seven_tv_size(stills, '2x')),
+            ChatLive_seven_tv_srcset(emoteUrl, stills)
+        );
     }
 
     //Live emote updates, live chat only (VOD chat also runs ChatLive_SetOptions). 7TV announces each change of a
@@ -19007,6 +19070,9 @@
     var Main_ColorIndicatorVod = '00a94b',
         Main_ColorIndicatorHosting = 'FED000';
 
+    //Favorite channel star: the hosting gold, a mark next to the channel name
+    var Main_ColorBadgeFavorite = 'FED000';
+
     var Main_cursorYAddFocus = -1;
 
     var Main_Search = 0;
@@ -19037,8 +19103,9 @@
     var Main_Blocked = 25;
     var Main_SearchVod = 26;
     var Main_UserRecommended = 27;
+    var Main_HistorySaved = 28;
 
-    var Main_History = [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip];
+    var Main_History = [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip, Main_HistorySaved];
 
     var Main_GoBefore = '';
     var Main_values = {
@@ -19218,6 +19285,7 @@
                         PlayHLS_PlayListUrlResult: PlayHLS_PlayListUrlResult,
                         PlayHLS_AdProbeResult: PlayHLS_AdProbeResult,
                         Play_AdBlockReload: Play_AdBlockReload,
+                        Play_ChannelStep: Play_ChannelStep,
                         Play_AdHoldChanged: Play_AdHoldChanged,
                         AddCode_AppTokenResult: AddCode_AppTokenResult,
                         Play_UpdateDurationDiv: Play_UpdateDurationDiv,
@@ -19615,6 +19683,7 @@
         Main_textContent('dialog_thumb_opt_setting_name_6', STR_HISTORY_LIVE_DIS);
         Main_textContent('dialog_thumb_opt_setting_name_7', STR_CONTENT_LANG);
         Main_textContent('dialog_thumb_opt_setting_name_8', STR_GO_TO);
+        Main_textContent('dialog_thumb_opt_setting_name_9', STR_FAVORITE_CHANNEL);
 
         Main_innerHTML('dialog_multi_help_text', STR_CONTROLS_MULTI);
 
@@ -20749,6 +20818,74 @@
         Play_StopStay();
     }
 
+    var Main_OPenSavedVodEntry;
+
+    //Issue #48: open a saved live position as its broadcast's VOD, resuming from the saved point.
+    //The entry keeps the live history shape so Main_OPenAsVod reads the offset from date - created_at
+    function Main_OPenSavedVod(entry) {
+        if (!entry || !entry.data || !entry.data[7]) {
+            Main_OPenSavedVodRestoreKeys();
+            return;
+        }
+
+        Main_values_Play_data = entry.data;
+        Play_data.data = Main_values_Play_data;
+
+        var isHosting = Main_A_includes_B(Play_data.data[1], STR_USER_HOSTED_BY);
+        Main_values.Play_isHost = isHosting;
+
+        if (isHosting) {
+            Play_data.DisplayNameHost = Play_data.data[1];
+            Play_data.data[1] = Play_data.data[15];
+        }
+
+        if (Play_PreviewId) UserLiveFeed_Hide();
+
+        if (entry.vodid) {
+            Main_OPenAsVod(entry);
+            return;
+        }
+
+        //The VOD id is not known yet, resolve it against the channel's latest archive
+        //(it usually publishes a few minutes after the stream started)
+        Main_OPenSavedVodEntry = entry;
+
+        BaseXmlHttpGet(
+            Main_helix_api + 'videos?first=1&user_id=' + entry.data[14] + '&type=archive&sort=time',
+            Main_OPenSavedVodEnd,
+            Main_OPenSavedVodFail,
+            null,
+            null,
+            true
+        );
+    }
+
+    function Main_OPenSavedVodEnd(response) {
+        var entry = Main_OPenSavedVodEntry;
+
+        response = JSON.parse(response);
+
+        if (response.data && response.data.length && response.data[0].stream_id.toString() === entry.id.toString()) {
+            entry.vodid = response.data[0].id;
+            Main_setHistoryItem();
+
+            Main_OPenAsVod(entry);
+        } else {
+            Main_OPenSavedVodFail();
+        }
+    }
+
+    function Main_OPenSavedVodFail() {
+        Main_showWarningDialog(STR_SAVED_VOD_NOT_YET, 3000);
+        Main_OPenSavedVodRestoreKeys();
+    }
+
+    //Screens_OpenSavedVod removed the Saved screen's key handler before opening, nothing
+    //opened so give it back or the remote stays dead on the Saved list
+    function Main_OPenSavedVodRestoreKeys() {
+        Main_addEventListener('keydown', ScreenObj[Main_HistorySaved].key_fun);
+    }
+
     function Main_openStream() {
         Main_hideScene1DocAndCallBack(function () {
             Main_showScene2Doc();
@@ -21477,6 +21614,129 @@
         return -1;
     }
 
+    function Main_SavedSetDefaultObj() {
+        if (!Main_values_History_data[AddUser_UsernameArray[0].id].saved) {
+            Main_values_History_data[AddUser_UsernameArray[0].id].saved = [];
+        }
+    }
+
+    //Issue #48: save the current live position, entries keep the live history shape so
+    //Main_OPenAsVod resumes the broadcast's VOD from date - created_at
+    function Main_saved_Add(Data) {
+        if (!AddUser_IsUserSet() || !Data || !Data[7] || ScreenObj[Main_HistorySaved].histPosX[1]) return;
+
+        Main_SavedSetDefaultObj();
+
+        var saved = Main_values_History_data[AddUser_UsernameArray[0].id].saved,
+            entry = Main_history_GetById('saved', Data[7]),
+            createdAt = new Date(Data[12]).getTime(),
+            now = new Date().getTime();
+
+        //created_at is the anchor of the resume offset, without it there is nothing to save
+        if (!createdAt || now <= createdAt) return;
+
+        if (entry) {
+            entry.data = Main_Slice(Data);
+            entry.date = now;
+            entry.game = Data[3];
+            entry.views = Data[13];
+            if (!entry.vodid && Play_RewindId[Data[7]]) entry.vodid = Play_RewindId[Data[7]];
+        } else {
+            //Limit size to 200, drop the oldest like Main_Set_history
+            if (saved.length > 199) {
+                saved.sort(function (a, b) {
+                    return a.date < b.date ? -1 : 1;
+                });
+                saved.shift();
+            }
+
+            saved.push({
+                data: Main_Slice(Data),
+                date: now,
+                name: Data[6] ? Data[6].toLowerCase() : '',
+                game: Data[3],
+                id: Data[7],
+                views: Data[13],
+                created_at: createdAt,
+                watched: 0,
+                vodid: Play_RewindId[Data[7]],
+                forceVod: true
+            });
+        }
+
+        Main_setHistoryItem();
+    }
+
+    //While watching (or leaving) the stream keep the saved position at the live edge, so the
+    //entry resumes where the user left and not where they pressed save. Updates existing
+    //entries only, it never creates one
+    function Main_saved_UpdateLive(Data) {
+        if (!AddUser_IsUserSet() || !Data || !Data[7] || !Main_values_History_data[AddUser_UsernameArray[0].id].saved) return;
+
+        var entry = Main_history_GetById('saved', Data[7]),
+            createdAt = new Date(Data[12]).getTime(),
+            now = new Date().getTime();
+
+        if (entry && createdAt && now > createdAt) {
+            entry.date = now;
+            entry.data = Main_Slice(Data);
+            Main_setHistoryItem();
+        }
+    }
+
+    //The VOD of a saved broadcast became known (the player learns it while watching), backfill
+    //it so the saved list opens without resolving
+    function Main_saved_UpdateVod(BroadcastID, vodId) {
+        if (!AddUser_IsUserSet() || !Main_values_History_data[AddUser_UsernameArray[0].id].saved) return;
+
+        var entry = Main_history_GetById('saved', BroadcastID);
+
+        if (entry && !entry.vodid) {
+            entry.vodid = vodId;
+            Main_setHistoryItem();
+        }
+    }
+
+    //Watching the VOD of a saved entry: keep its resume point in sync and drop it once nearly
+    //finished, the same 300 seconds rule PlayVod_UpdateHistory uses for the VOD history
+    function Main_saved_UpdateVodProgress(vodId, time) {
+        if (!AddUser_IsUserSet() || !Main_values_History_data[AddUser_UsernameArray[0].id].saved) return;
+
+        var saved = Main_values_History_data[AddUser_UsernameArray[0].id].saved,
+            i = 0,
+            len = saved.length,
+            entry,
+            duration,
+            changed = false;
+
+        vodId = vodId.toString();
+
+        for (i; i < len; i++) {
+            entry = saved[i];
+            if (!entry || !entry.vodid || entry.vodid.toString() !== vodId) continue;
+
+            duration = Main_saved_VodDuration(vodId);
+
+            if (duration && time > 0 && duration - 300 < time) {
+                saved.splice(i, 1);
+                i--;
+                len--;
+                changed = true;
+            } else if (time > 0) {
+                entry.date = new Date(entry.data[12]).getTime() + time * 1000;
+                changed = true;
+            }
+        }
+
+        if (changed) Main_setHistoryItem();
+    }
+
+    function Main_saved_VodDuration(vodId) {
+        var index = Main_history_Exist('vod', vodId);
+
+        return index > -1 ? Main_values_History_data[AddUser_UsernameArray[0].id].vod[index].data[11] : 0;
+    }
+
     function Main_history_UpdateLiveVod(id, vod, vodimg) {
         if (!AddUser_IsUserSet() || ScreenObj[Main_HistoryLive].histPosX[1]) return;
 
@@ -21512,6 +21772,7 @@
             //If this is live that becomes a VOD update the until to avoid confusion if playing it from live history
             if (isVod) {
                 Main_history_UpdateLiveVodDate(time, ArrayPos.data[7]);
+                Main_saved_UpdateVodProgress(ArrayPos.data[7], time);
             }
 
             Main_setHistoryItem();
@@ -22749,7 +23010,7 @@
             {id: 'following', screens: Navigation_FollowingScreens(), account: true},
             {id: 'browse', screens: [Main_Live, Main_Featured, Main_games, Main_Vod, Main_Clip]},
             {id: 'search', screens: [Main_Search, Main_SearchLive, Main_SearchChannels, Main_SearchGames, Main_SearchVod]},
-            {id: 'library', screens: [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip], account: true},
+            {id: 'library', screens: [Main_HistoryLive, Main_HistoryVod, Main_HistoryClip, Main_HistorySaved], account: true},
             {id: 'account', screens: [Main_Users, Main_addUser, Main_Blocked]},
             {id: 'settings', screens: []},
             {id: 'exit', screens: []}
@@ -22892,7 +23153,7 @@
                 ? [STR_UI.liveNow, STR_UI.recommended, STR_VIDEOS, STR_CHANNELS, STR_UI.categories]
                 : [STR_UI.liveNow, STR_VIDEOS, STR_CHANNELS, STR_UI.categories];
         if (destination === 'browse') return [STR_LIVE, STR_FEATURED, STR_UI.categories, STR_VIDEOS, STR_CLIPS];
-        if (destination === 'library') return [STR_LIVE, STR_VIDEOS, STR_CLIPS];
+        if (destination === 'library') return [STR_LIVE, STR_VIDEOS, STR_CLIPS, STR_SAVED];
         if (destination === 'search')
             // With results in the session the form tab is Edit search, keeping the visible path to correct a query.
             return [
@@ -26151,6 +26412,9 @@
             Play_UpdateMainStreamDiv();
 
             Main_Set_history('live', Play_data.data, !Play_isPlaying());
+
+            //Keep a saved entry of this stream at the live edge while watching
+            if (!Play_MultiEnable && !Play_data.isHost) Main_saved_UpdateLive(Play_data.data);
         }
     }
 
@@ -26199,6 +26463,7 @@
             if (firstVod.stream_id.toString() === BroadcastID.toString()) {
                 Main_history_UpdateLiveVod(BroadcastID, firstVod.id, null);
                 Play_RewindId[BroadcastID] = firstVod.id;
+                Main_saved_UpdateVod(BroadcastID, firstVod.id);
             }
         }
     }
@@ -26968,6 +27233,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         }
 
         if (Play_isOn) {
+            //The user left the stream, a saved entry resumes from here
+            if (Play_data.data && Play_data.data.length && !Play_data.isHost) Main_saved_UpdateLive(Play_data.data);
+
             Play_PreshutdownStream(true);
             PlayRaid_Close();
             Main_values.Play_WasPlaying = 0;
@@ -31142,12 +31410,22 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         //console.log('Play_handleKeyDown', e.keyCode);
 
         if (!Play_isOn || !Main_isScene2DocVisible()) {
+            Play_ChannelStepCancelSettle();
             return;
         }
+
+        //Any other key while a channel-flip settle is pending cancels the auto-tune
+        if (e.keyCode !== KEY_CHANNEL_UP && e.keyCode !== KEY_CHANNEL_DOWN) Play_ChannelStepCancelSettle();
 
         Play_screeOn();
 
         switch (e.keyCode) {
+            case KEY_CHANNEL_UP:
+            case KEY_CHANNEL_DOWN:
+                //The rocker cases also serve browsers/webviews that deliver 166/167 natively;
+                //on the apk the dispatchKeyEvent override calls Play_ChannelStep directly
+                Play_ChannelStep(e.keyCode === KEY_CHANNEL_UP ? 1 : -1);
+                break;
             case KEY_LEFT:
                 if (Play_isPanelShowing()) {
                     if (PlayVod_PanelY === 2) Play_BottomLeftRigt(1, -1);
@@ -31440,6 +31718,59 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 break;
         }
     }
+    //The remote channel rocker (CH+/CH-, KEYCODE_CHANNEL_UP/DOWN 166/167): opens the live feed
+    //strip and steps the focus, then auto-tunes the focused channel once the presses settle (the
+    //same semantics as puretv's PendingFlip: hold to sweep, release to tune). Steps go through the
+    //feed so every stop gets its preview player and the OK flow (quality selection, history) is
+    //the exact one a manual channel change already uses
+    var Play_ChannelStepSettleId;
+    var Play_ChannelStepSettleMs = 400;
+    function Play_ChannelStep(Adder) {
+        //The apk bridge can call this on any screen; only a live stream (not VOD, clip, the end
+        //dialog, multi view, the corner player or the options panel — Up navigates the panel,
+        //the rocker must not open the feed over it) can channel flip
+        if (
+            !Play_isOn ||
+            PlayVod_isOn ||
+            PlayClip_isOn ||
+            Play_MultiEnable ||
+            PlayExtra_PicturePicture ||
+            Play_isEndDialogVisible() ||
+            Play_isPanelShowing() ||
+            !Main_IsOn_OSInterface
+        ) {
+            return;
+        }
+
+        Play_ChannelStepCancelSettle();
+
+        if (!UserLiveFeed_isPreviewShowing()) {
+            UserLiveFeed_ResetFeedPosX();
+            UserLiveFeed_ShowFeed();
+            return;
+        }
+
+        if (UserLiveFeed_KeyRightLeft(Adder)) {
+            Play_ChannelStepSettleId = Main_setTimeout(Play_ChannelStepSettle, Play_ChannelStepSettleMs, Play_ChannelStepSettleId);
+        }
+    }
+
+    function Play_ChannelStepCancelSettle() {
+        Main_clearTimeout(Play_ChannelStepSettleId);
+        Play_ChannelStepSettleId = null;
+    }
+
+    //Tune the focused channel by injecting an OK press through the key bridge, so the feed's own
+    //Enter path (with all its guards, the preview player reuse and the keyup handoff) runs
+    //unchanged; skipped when the user already moved on (feed hidden, other key pressed)
+    function Play_ChannelStepSettle() {
+        Play_ChannelStepSettleId = null;
+
+        if (!Play_isOn || Play_isEndDialogVisible() || !UserLiveFeed_isPreviewShowing()) return;
+
+        OSInterface_keyEvent(4, 0);
+        OSInterface_keyEvent(4, 1);
+    }
 
     var Play_controls = {};
     var Play_controlsSize;
@@ -31455,6 +31786,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var Play_controlsSpeed = temp_controls_pos++;
     var Play_controlsExternal = temp_controls_pos++;
     var Play_controlsRewind = temp_controls_pos++;
+    var Play_controlsSave = temp_controls_pos++;
     var Play_controlsQuality = temp_controls_pos++;
     var Play_controlsQualityMini = temp_controls_pos++;
     var Play_controlsQualityMulti = temp_controls_pos++;
@@ -31869,6 +32201,43 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             },
             setLabel: function () {
                 Main_textContent('controls_text_summary_' + this.position, STR_OPEN_REWIND_SUMMARY);
+            }
+        };
+
+        Play_controls[Play_controlsSave] = {
+            //save the live position to resume as VOD
+            ShowInLive: true,
+            ShowInVod: false,
+            ShowInClip: false,
+            ShowInPP: false,
+            ShowInMulti: false,
+            ShowInChat: false,
+            ShowInAudio: false,
+            ShowInAudioPP: false,
+            ShowInAudioMulti: false,
+            ShowInPreview: false,
+            ShowInStay: false,
+            icons: 'history',
+            offsetY: -2,
+            string: STR_SAVE_POSITION,
+            values: null,
+            defaultValue: null,
+            enterKey: function () {
+                if (!AddUser_IsUserSet()) {
+                    Play_showWarningMiddleDialog(STR_FAVORITE_NO_USER, 3000);
+                    return;
+                }
+
+                if (!Play_data.data || !Play_data.data[7]) {
+                    Play_showWarningMiddleDialog(STR_BLOCK_NO_CHANNEL, 3000);
+                    return;
+                }
+
+                Main_saved_Add(Play_data.data);
+                Play_showWarningMiddleDialog(STR_SAVED_POSITION_CONFIRM, 3000);
+            },
+            setLabel: function () {
+                Main_textContent('controls_text_summary_' + this.position, STR_SAVE_POSITION_SUMMARY);
             }
         };
 
@@ -34686,6 +35055,124 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     var proxy_fail_counter = 0;
     var proxy_fail_counter_checker = 0;
 
+    //Master playlist cache: what PlayHLS_PlayListUrl fetched per channel|playerType, so a repeat
+    //open (channel surfing, the feed preview, a quality restore reload) skips the GQL token mint
+    //and the usher fetch and starts playback from the cached master within the TTL. Entries also
+    //record failures (a stale token 403s) with a short backoff so a failing channel does not re-mint
+    //on every retry. Keyed 'login|playerType', insertion ordered so the oldest evicts first.
+    var PlayHLS_CacheTtl = 90000;
+    var PlayHLS_CacheFailBackoff = 15000;
+    var PlayHLS_CacheMax = 32;
+    var PlayHLS_MasterCache = {};
+    var PlayHLS_MasterCacheFail = {};
+    //playerType used by the token request of an in-flight load, keyed by its CheckId_y so the
+    //result can be cached under the right type (cleared when it grows past the cache cap)
+    var PlayHLS_PlayerTypeByCheck = {};
+    //Resolve-only prewarm (PlayHLS_Prewarm): per-channel gate so sweeping focus across the feed
+    //does not mint a token per card; an entry is prewarmed at most once per interval
+    var PlayHLS_PrewarmInterval = 45000;
+    var PlayHLS_PrewarmLast = {};
+    var PlayHLS_PrewarmId = 0;
+
+    function PlayHLS_CacheKey(Channel_or_VOD_Id, playerType) {
+        return (Channel_or_VOD_Id + '|' + playerType).toLowerCase();
+    }
+
+    //A fresh cached master for [Channel_or_VOD_Id] at [playerType], or null; also honors the
+    //failure backoff (a failed fetch is remembered so retries wait instead of re-minting)
+    function PlayHLS_CacheGet(Channel_or_VOD_Id, playerType, now) {
+        var key = PlayHLS_CacheKey(Channel_or_VOD_Id, playerType);
+        var failedAt = PlayHLS_MasterCacheFail[key];
+
+        if (failedAt !== undefined) {
+            if (now - failedAt < PlayHLS_CacheFailBackoff) return null;
+            delete PlayHLS_MasterCacheFail[key];
+        }
+
+        var entry = PlayHLS_MasterCache[key];
+
+        if (!entry) return null;
+
+        if (now - entry.at >= PlayHLS_CacheTtl) {
+            delete PlayHLS_MasterCache[key];
+            return null;
+        }
+
+        return entry;
+    }
+
+    function PlayHLS_CachePut(Channel_or_VOD_Id, playerType, url, responseText, now) {
+        var key = PlayHLS_CacheKey(Channel_or_VOD_Id, playerType);
+        var existing = PlayHLS_MasterCache[key];
+
+        //An identical master re-put (a cache hit re-enters the result handler) keeps its original
+        //fetch time, only new content resets the TTL — otherwise repeated opens would keep a
+        //stale master alive forever
+        if (existing && existing.url === url && existing.responseText === responseText) return;
+
+        delete PlayHLS_MasterCacheFail[key];
+        PlayHLS_MasterCache[key] = {url: url, responseText: responseText, at: now};
+
+        //Oldest entries (first keys) evict first; the active channel's entry is the newest
+        var keys = Object.keys(PlayHLS_MasterCache);
+        while (keys.length > PlayHLS_CacheMax) {
+            delete PlayHLS_MasterCache[keys.shift()];
+            keys = Object.keys(PlayHLS_MasterCache);
+        }
+    }
+
+    function PlayHLS_CacheFail(Channel_or_VOD_Id, playerType, now) {
+        PlayHLS_MasterCacheFail[PlayHLS_CacheKey(Channel_or_VOD_Id, playerType)] = now;
+    }
+
+    //Resolve a channel's stream in the background (token mint + master fetch) so pressing OK a
+    //moment later starts playback from the cache. Called with intent only (feed focus dwell),
+    //gated per channel so a focus sweep costs at most one resolve per interval
+    function PlayHLS_Prewarm(Channel_or_VOD_Id) {
+        if (!Main_IsOn_OSInterface || !Channel_or_VOD_Id) return;
+
+        var now = new Date().getTime();
+        var key = (Channel_or_VOD_Id + '').toLowerCase();
+        var last = PlayHLS_PrewarmLast[key];
+
+        if (last !== undefined && now - last < PlayHLS_PrewarmInterval) return;
+
+        PlayHLS_PrewarmLast[key] = now;
+
+        //One entry per channel ever focused; a long session would grow it forever, so evict
+        //the oldest (same cap style as the master cache, harmless: an evicted channel can just
+        //prewarm again sooner than the interval)
+        var prewarmKeys = Object.keys(PlayHLS_PrewarmLast);
+        while (prewarmKeys.length > PlayHLS_CacheMax) {
+            delete PlayHLS_PrewarmLast[prewarmKeys.shift()];
+            prewarmKeys = Object.keys(PlayHLS_PrewarmLast);
+        }
+
+        //Prewarm ids walk negative so they can never collide with the playback load ids
+        //(timestamps) or the feed check ids the callbacks compare against; they also mark the
+        //request as a prewarm for PlayHLS_PlayListUrlResult (see PlayHLS_IsPrewarmCheck)
+        PlayHLS_PrewarmId--;
+        PlayHLS_GetPlayListAsync(true, Channel_or_VOD_Id, PlayHLS_PrewarmId, PlayHLS_PrewarmId, PlayHLS_PrewarmResult);
+    }
+
+    function PlayHLS_PrewarmResult(result) {
+        //The master cache write happens in PlayHLS_PlayListUrlResult for every live fetch,
+        //this only has to note failures (already recorded there) and stay quiet
+        if (!result) PlayHLS_AdLog('prewarm failed');
+    }
+
+    //The player type a token request template asks for ("site", "embed", ...)
+    function PlayHLS_PlayerTypeOfToken(tokenTemplate) {
+        return tokenTemplate.replace(/^.*"playerType":"(\w+)".*$/, '$1');
+    }
+
+    //Whether a result belongs to a prewarm resolve (its check id walks negative). Prewarms never
+    //run the ad probe or the player type ladder: they only fill the cache, the open flow
+    //re-validates whatever is cached when it actually plays the channel
+    function PlayHLS_IsPrewarmCheck(CheckId_y) {
+        return typeof CheckId_y === 'number' && CheckId_y < 0;
+    }
+
     //VOD
     var Play_vod_token_prop = 'videoPlaybackAccessToken';
     var Play_vod_token =
@@ -34705,9 +35192,68 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
         if (use_proxy && isLive && !proxy_has_token) {
             PlayHLS_PlayListUrl(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, null, null, true);
+        } else if (isLive && !use_proxy && PlayHLS_AdRetryToken) {
+            //An ad escape round: the round's player type may have a cached master (probed clean
+            //within the TTL) that serves it without a new token mint; on a miss the token is
+            //minted as before
+            if (
+                PlayHLS_MasterCacheGetSynth(
+                    Channel_or_VOD_Id,
+                    CheckId_y,
+                    CheckId_x,
+                    callBackSuccess.name,
+                    PlayHLS_PlayerTypeOfToken(PlayHLS_AdRetryToken)
+                )
+            ) {
+                //Served from the cache: consume the round's token override so a later normal
+                //load mints the default type again (GetToken consumes it on the mint path)
+                PlayHLS_AdRetryToken = null;
+                return;
+            }
+
+            PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, use_proxy, useUserAuth);
+        } else if (
+            isLive &&
+            !use_proxy &&
+            //Every other live load can start from the cached master and skip the token mint
+            //entirely; the synthesized result re-enters PlayHLS_PlayListUrlResult so the ad
+            //probe chain and every downstream guard run exactly as on a fresh fetch
+            PlayHLS_MasterCacheGetSynth(Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name)
+        ) {
+            return;
         } else {
             PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess.name, use_proxy, useUserAuth);
         }
+    }
+
+    //Cache hit as a PlayHLS_PlayListUrlResult-shaped request, true when served; CheckId_x may be
+    //null (Play_loadData passes null), the parseInt in the result handler turns that into NaN
+    //just like the Java bridge does for the same call. playerType defaults to 'site' (normal
+    //opens) and is the escape round's type on the retry path
+    function PlayHLS_MasterCacheGetSynth(Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, playerType) {
+        var type = playerType || 'site';
+        var cached = PlayHLS_CacheGet(Channel_or_VOD_Id, type, new Date().getTime());
+
+        if (!cached) return false;
+
+        //So the result handler's cache write lands back under the serving type (the identical
+        //content guard there keeps the original fetch time)
+        PlayHLS_PlayerTypeByCheck[CheckId_y] = type;
+
+        PlayHLS_AdLog('master cache hit for ' + Channel_or_VOD_Id);
+
+        PlayHLS_PlayListUrlResult(
+            JSON.stringify({status: 200, url: cached.url, responseText: cached.responseText, checkResult: CheckId_y}),
+            CheckId_y,
+            '1',
+            '0',
+            Channel_or_VOD_Id,
+            '0',
+            CheckId_x === null ? null : String(CheckId_x),
+            callBackSuccess
+        );
+
+        return true;
     }
 
     //Same headers HttpGetSetUserHeader builds for the logged user, built on demand so a retry
@@ -34720,10 +35266,25 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     function PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, useProxy, useUserAuth) {
+        var tokenTemplate = isLive ? PlayHLS_AdRetryToken || Play_live_token : Play_vod_token;
+        var playerType = PlayHLS_PlayerTypeOfToken(tokenTemplate);
+
+        //Remember the type for the result handler's cache write; the map is bounded because the
+        //ids are unbounded (timestamps, feed positions, prewarm ids)
+        if (isLive) {
+            PlayHLS_PlayerTypeByCheck[CheckId_y] = playerType;
+
+            var checkKeys = Object.keys(PlayHLS_PlayerTypeByCheck);
+            while (checkKeys.length > PlayHLS_CacheMax * 2) {
+                delete PlayHLS_PlayerTypeByCheck[checkKeys.shift()];
+                checkKeys = Object.keys(PlayHLS_PlayerTypeByCheck);
+            }
+        }
+
         OSInterface_XmlHttpGetFull(
             PlayClip_BaseUrl, //String urlString
             DefaultHttpGetTimeout, //int timeout
-            (isLive ? PlayHLS_AdRetryToken || Play_live_token : Play_vod_token).replace('%x', Channel_or_VOD_Id), // String postMessage
+            tokenTemplate.replace('%x', Channel_or_VOD_Id), // String postMessage
             'POST', //String Method
             useUserAuth && AddUser_UserHasToken() ? PlayHLS_UserAuthHeaders() : Play_Headers, //String JsonHeadersArray
             'PlayHLS_GetTokenResult', //String callback
@@ -34882,6 +35443,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             response = JSON.parse(result);
 
         if (response.status !== 200) {
+            //The cached session is gone (stream ended, token expired), drop the channel's entries
+            //and remember the failure so the next minutes' opens re-mint instead of hitting cache
+            if (isLive && !useProxy && (response.status === 403 || response.status === 404 || response.status === 410)) {
+                PlayHLS_CacheFail(Channel_or_VOD_Id, PlayHLS_PlayerTypeByCheck[CheckId_y] || 'site', new Date().getTime());
+            }
+
             //in case we fail using proxy restart the process without using proxy
             if (isLive && useProxy && PlayHLS_CheckProxyResultFail(response.responseText)) {
                 PlayHLS_GetToken(isLive, Channel_or_VOD_Id, CheckId_y, CheckId_x, callBackSuccess, false);
@@ -34899,12 +35466,29 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 responseText: response.responseText,
                 checkResult: response.checkResult
             });
-        } else if (isLive && !useProxy && PlayHLS_AdFilterOn()) {
-            //Before starting playback check that the stream is not serving a preroll; when it is,
-            //a token with an alternate player type often gets an ad free playlist for the same
-            //stream (the retry happens before playback, never mid stream)
-            if (PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, callBackSuccess)) {
-                return;
+        } else {
+            if (isLive && !useProxy && Channel_or_VOD_Id) {
+                //Cache every live master under the player type that minted it, so repeat opens
+                //and ladder rounds can skip the token mint within the TTL
+                PlayHLS_CachePut(
+                    Channel_or_VOD_Id,
+                    PlayHLS_PlayerTypeByCheck[CheckId_y] || 'site',
+                    response.url,
+                    response.responseText,
+                    new Date().getTime()
+                );
+            }
+
+            if (isLive && !useProxy && PlayHLS_AdFilterOn() && !PlayHLS_IsPrewarmCheck(CheckId_y)) {
+                //Before starting playback check that the stream is not serving a preroll; when it is,
+                //a token with an alternate player type often gets an ad free playlist for the same
+                //stream (the retry happens before playback, never mid stream). A prewarm resolve
+                //never probes or ladders — it only fills the cache, the open flow re-validates
+                //when it plays, and a ladder here would also schedule the quality restore reload
+                //of whatever is playing on the prewarm's behalf
+                if (PlayHLS_AdCheckOrRetry(result, checkResult, check_1, check_3, check_5, callBackSuccess)) {
+                    return;
+                }
             }
         }
 
@@ -35003,11 +35587,15 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         try {
             var response = JSON.parse(result);
 
+            //'#EXT-X-CUE-OUT' is the SCTE-35 bracket some edge nodes emit without the
+            //'stitched' DATERANGE, so a pure-SCTE pod must still count as ads
             status = response.status;
             hasAds =
                 live &&
                 status === 200 &&
-                (Main_A_includes_B(response.responseText, 'stitched') || Main_A_includes_B(response.responseText, 'Amazon|'));
+                (Main_A_includes_B(response.responseText, 'stitched') ||
+                    Main_A_includes_B(response.responseText, 'Amazon|') ||
+                    Main_A_includes_B(response.responseText, '#EXT-X-CUE-OUT'));
         } catch (error) {
             hasAds = false;
         }
@@ -35063,6 +35651,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         //the 360p one), those often get playlists without the current ad stitched in
         var playerType = state.attempt === 1 ? 'embed' : state.attempt === 2 ? 'popout' : 'autoplay';
         PlayHLS_AdLog('retrying with the ' + playerType + ' player type');
+
+        //The round's type may already hold a cached master (probed clean within the TTL): serve
+        //it and the probe below re-validates its variants, skipping only the token mint. A miss
+        //mints the round's fresh session as before. callBackSuccess is the callback name string
+        //at this depth, the synth takes it as-is
+        if (PlayHLS_MasterCacheGetSynth(check_3, checkResult, parseInt(check_5), callBackSuccess, playerType)) return;
+
         PlayHLS_AdRetryToken = Play_live_token.replace('"playerType":"site"', '"playerType":"' + playerType + '"');
         PlayHLS_GetToken(true, check_3, checkResult, parseInt(check_5), callBackSuccess, false);
     }
@@ -38918,6 +39513,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 Play_controlsSpeed,
                 Play_controlsExternal,
                 Play_controlsRewind,
+                Play_controlsSave,
                 Play_controlsScreeOff,
                 Play_controlsLowLatency,
                 Play_controlsChapters
@@ -39644,6 +40240,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         ScreensObj_HistoryLive();
         ScreensObj_HistoryVod();
         ScreensObj_HistoryClip();
+        ScreensObj_HistorySaved();
 
         //Blocked screen
         ScreensObj_Blocked();
@@ -39793,6 +40390,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 Main_GoBefore === Main_HistoryLive ||
                 Main_GoBefore === Main_HistoryVod ||
                 Main_GoBefore === Main_HistoryClip ||
+                Main_GoBefore === Main_HistorySaved ||
                 Main_GoBefore === Main_Blocked)
         ) {
             Main_GoBefore = Main_Live;
@@ -39994,6 +40592,32 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             Main_CounterDialogRst();
         }
         Screens_loadDataRequestStart(key);
+    }
+
+    //A late page moved favorites into already rendered rows: reset the render state like
+    //Screens_StartLoad does on a reload (keeping the pagination cursor and data), the caller
+    //then reruns Screens_loadDataSuccess and the navigation restore path refocuses the window
+    function Screens_RebuildRows(key) {
+        Navigation_Capture(key);
+        ScreenObj[key].navigationRestorePending = true;
+
+        Main_empty(ScreenObj[key].table);
+        ScreenObj[key].DataObj = {};
+        ScreenObj[key].Cells = [];
+        ScreenObj[key].tempHtml = [];
+        ScreenObj[key].idObject = {};
+        ScreenObj[key].itemsCount = 0;
+        ScreenObj[key].row_id = 0;
+        ScreenObj[key].currY = 0;
+        ScreenObj[key].column_id = 0;
+        ScreenObj[key].data_cursor = 0;
+        ScreenObj[key].TopRowCreated = false;
+        ScreenObj[key].BannerCreated = false;
+        ScreenObj[key].skippedCellLoadMore = false;
+        ScreenObj[key].emptyContent = true;
+        ScreenObj[key].status = false;
+        ScreenObj[key].isRefreshing = true;
+        Screens_Some_Screen_Is_Refreshing = true;
     }
 
     function Screens_loadDataRequestStart(key) {
@@ -40599,6 +41223,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (!valuesArray[1]) valuesArray[1] = valuesArray[6];
 
         var ishosting = valuesArray[16],
+            isFavorite = Screens_isFavorite(valuesArray[14]),
             image = force_VOD ? Extra_vodimg : valuesArray[0].replace('{width}x{height}', Main_VideoSize) + Main_randomImg;
 
         ScreenObj[key].DataObj[id] = valuesArray;
@@ -40650,6 +41275,12 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             STR_LIVE +
             '</span>' +
             valuesArray[1] +
+            //The star is always present so the options toggle can flip it without a re-render
+            '<i class="icon-star stream_fav_icon strokedeline' +
+            (isFavorite ? '' : ' hideimp') +
+            '" style="color: #' +
+            Main_ColorBadgeFavorite +
+            ';" aria-hidden="true"></i>' +
             '</div><div class="stream_info_live" style="width:' +
             (ishosting ? 0 : 33) +
             '%; float: right; text-align: right; display: inline-block;">' +
@@ -40864,7 +41495,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         if (Settings_Obj_default('auto_refresh_screen') && Settings_Obj_default('auto_refresh_background')) {
             var i = 0,
                 run = 1,
-                len = Main_HistoryClip + 1,
+                len = Main_HistorySaved + 1,
                 date = new Date().getTime(),
                 UserIsSet = AddUser_UserIsSet();
 
@@ -42623,8 +43254,14 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             Main_values_History_data[AddUser_UsernameArray[0].id].deleted = {
                 live: {},
                 vod: {},
-                clip: {}
+                clip: {},
+                saved: {}
             };
+        }
+
+        //saved came later, existing stored history lacks the key
+        if (!Main_values_History_data[AddUser_UsernameArray[0].id].deleted.saved) {
+            Main_values_History_data[AddUser_UsernameArray[0].id].deleted.saved = {};
         }
     }
 
@@ -42912,6 +43549,9 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             Screens_ThumbOptionShowSpecial();
             Screens_ThumbOptionHideSpecial();
 
+            //Banner and preview rows have no channel to favorite
+            Main_AddClass('dialog_thumb_opt_setting_9', 'hideimp');
+
             if (ScreenObj[key].histPosXName) {
                 ScreenObj[key].setTODialog(true);
             }
@@ -42976,7 +43616,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
     var Screens_ThumbOptionSpecialDefPos = 6;
     var Screens_ThumbOptionSpecialDefPosElse = 7;
-    var Screens_ThumbOptionTotalPosition = 8;
+    var Screens_ThumbOptionTotalPosition = 9;
 
     function Screens_ThumbOptionStringSet(key) {
         Screens_ThumbUpdateGameInfoName = null;
@@ -43041,6 +43681,32 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             Screens_ThumbOptionLanguagesTitles[Screens_ThumbOptionPosXArrays[Screens_ThumbOptionSpecialDefPosElse]]
         );
         Main_textContent(Screens_ThumbGotoValue, Screens_ThumbOptionScreens[0]);
+
+        //Favorite row: game cells have no channel, the label reflects the current state
+        if (ScreenObj[key].screenType === 3) {
+            Main_AddClass('dialog_thumb_opt_setting_9', 'hideimp');
+        } else {
+            Main_RemoveClass('dialog_thumb_opt_setting_9', 'hideimp');
+
+            var favName = '';
+
+            if (ScreenObj[key].screenType === 2) {
+                favName = Screens_values_Play_data[4];
+            } else if (ScreenObj[key].screenType === 4) {
+                favName = Screens_values_Play_data[3];
+            } else if (Screens_values_Play_data[1]) {
+                favName = Main_A_includes_B(Screens_values_Play_data[1], STR_USER_HOSTED_BY)
+                    ? Screens_values_Play_data[1].split(STR_USER_HOSTED_BY)[0]
+                    : Screens_values_Play_data[1];
+            }
+
+            Main_textContent('dialog_thumb_opt_val_9', favName ? favName : STR_EMPTY);
+            Main_textContent('dialog_thumb_opt_setting_name_9', STR_FAVORITE_CHANNEL);
+
+            if (AddUser_IsUserSet() && Screens_isFavorite(Screens_BlockChannelGetId(key))) {
+                Main_textContent('dialog_thumb_opt_setting_name_9', STR_UNFAVORITE_CHANNEL);
+            }
+        }
 
         //Check if is blocked to allow reverting
         Main_textContent('dialog_thumb_opt_setting_name_3', STR_BLOCK_CHANNEL);
@@ -43223,8 +43889,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             return;
         }
 
+        //Past the last row stay on the current one: the last row (Favorite) can be hidden, so
+        //clamping onto it would select an option with no focus on it
         if (Screens_ThumbOptionPosY > Screens_ThumbOptionTotalPosition) {
-            Screens_ThumbOptionPosY = Screens_ThumbOptionTotalPosition;
+            Screens_ThumbOptionPosY = current;
             return;
         }
 
@@ -43300,7 +43968,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             } else if (Screens_ThumbOptionPosY === 5) {
                 Screens_SetBlockOverwrite(key);
             } else if (Screens_ThumbOptionPosY === 6) {
-                if (!ScreenObj[key].screenType) {
+                if (ScreenObj[key].screen === Main_HistorySaved) {
+                    ScreenObj[Main_HistorySaved].histPosX[1] = Screens_ThumbOptionPosXArrays[Screens_ThumbOptionPosY];
+                    Main_setItem(ScreenObj[Main_HistorySaved].histPosXName, JSON.stringify(ScreenObj[Main_HistorySaved].histPosX));
+                } else if (!ScreenObj[key].screenType) {
                     var index =
                         ScreenObj[key].screen === Main_HistoryLive && AddUser_UserIsSet()
                             ? Main_history_Exist('live', Screens_values_Play_data[7])
@@ -43326,6 +43997,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                 Screens_SetLang(key);
             } else if (Screens_ThumbOptionPosY === 8) {
                 Screens_OpenScreen();
+            } else if (Screens_ThumbOptionPosY === 9) {
+                Screens_FavoriteChannel(key);
             }
         } else Screens_LoadPreview(key);
 
@@ -43423,6 +44096,85 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         }
 
         return channelName;
+    }
+
+    function Screens_FavoritesSetDefaultObj() {
+        if (!Main_values_History_data[AddUser_UsernameArray[0].id].favorites) {
+            Main_values_History_data[AddUser_UsernameArray[0].id].favorites = {};
+        }
+    }
+
+    function Screens_isFavorite(channelId) {
+        return (
+            AddUser_UserIsSet() &&
+            !!channelId &&
+            !!Main_values_History_data[AddUser_UsernameArray[0].id].favorites &&
+            !!Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId]
+        );
+    }
+
+    function Screens_FavoriteChannel(key) {
+        if (!AddUser_IsUserSet()) {
+            Main_showWarningDialog(STR_FAVORITE_NO_USER, 2000);
+            return;
+        }
+
+        var channelId = Screens_BlockChannelGetId(key),
+            channelName = Screens_BlockChannelGetName(key);
+
+        if (!channelId) {
+            Main_showWarningDialog(STR_BLOCK_NO_CHANNEL, 2000);
+            return;
+        }
+
+        Screens_FavoritesSetDefaultObj();
+        channelId = channelId.toString();
+
+        if (Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId]) {
+            delete Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId];
+        } else {
+            Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId] = {};
+            Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].date = new Date().getTime();
+            Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data = [];
+            Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data[1] = channelId;
+
+            if (channelName) {
+                Main_values_History_data[AddUser_UsernameArray[0].id].favorites[channelId].data[3] = channelName;
+            }
+        }
+
+        Main_setHistoryItem();
+
+        //Live now re-sorts favorites to the top, other screens just flip the star of the focused card
+        if (ScreenObj[key].screen === Main_UserLive) {
+            Main_ReloadScreen();
+        } else {
+            Screens_FavoriteUpdateBadge(key);
+        }
+    }
+
+    function Screens_FavoriteUpdateBadge(key) {
+        var div = Main_getElementById(ScreenObj[key].ids[2] + ScreenObj[key].posY + '_' + ScreenObj[key].posX),
+            icon = div ? div.querySelector('.stream_fav_icon') : null;
+
+        if (icon) {
+            if (Screens_isFavorite(Screens_BlockChannelGetId(key))) {
+                Main_RemoveClassWithEle(icon, 'hideimp');
+            } else {
+                Main_AddClassWithEle(icon, 'hideimp');
+            }
+        }
+    }
+
+    function Screens_OpenSavedVod(key) {
+        var id = ScreenObj[key].posY + '_' + ScreenObj[key].posX;
+
+        if (Main_ThumbOpenIsNull(id, ScreenObj[key].ids[0])) return;
+
+        Main_clearAllPlayerEvents();
+        Main_removeEventListener('keydown', ScreenObj[key].key_fun);
+
+        Main_OPenSavedVod(Main_history_GetById('saved', Screens_GetObj(key)[7]));
     }
 
     function Screens_BlockChannelUpdateInfo(id) {
@@ -43925,7 +44677,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             Screens_NoYes,
             Screens_YesNo,
             Screens_ThumbOptionLanguagesTitles,
-            Screens_ThumbOptionScreens
+            Screens_ThumbOptionScreens,
+            ''
         ];
 
         var historyType = Screens_ThumbOptionStringGetHistory(key);
@@ -43939,7 +44692,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             historyType = Main_getItemJson(ScreenObj[Main_HistoryVod].histPosXName, [0, 0, 0])[1];
         }
 
-        Screens_ThumbOptionPosXArrays = [0, 0, 0, 0, 0, Main_values.OverwriteBlock, historyType, Settings_Obj_default('content_lang'), 0];
+        Screens_ThumbOptionPosXArrays = [0, 0, 0, 0, 0, Main_values.OverwriteBlock, historyType, Settings_Obj_default('content_lang'), 0, 0];
 
         Screens_ThumbOptionGOTO = [
             Main_Live,
@@ -45236,7 +45989,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             set_url: noop_fun,
             history_concatenate: function () {
                 this.streamerID = {};
-                this.data = AddUser_UserIsSet() ? JSON.parse(JSON.stringify(Main_values_History_data[AddUser_UsernameArray[0].id][this.Type])) : [];
+                //saved may not exist on history restored from an older version
+                this.data = AddUser_UserIsSet()
+                    ? JSON.parse(JSON.stringify(Main_values_History_data[AddUser_UsernameArray[0].id][this.Type] || []))
+                    : [];
 
                 Main_History_Sort(this.data, this.sortingValues[this.histPosX[0]][0], this.sortingValues[this.histPosX[0]][1]);
                 this.dataEnded = true;
@@ -45898,6 +46654,42 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         };
     }
 
+    //Stable favorites-first ordering for the followed live list: favorites pin to the top and
+    //everything else keeps the API order (viewer count). Decorate-sort because old TV WebViews
+    //have no guaranteed-stable Array.prototype.sort. Returns true when a favorite from an
+    //unrendered position moved into the rendered prefix, so rows must be rebuilt
+    function ScreensObj_SortFavoritesFirst(data, rendered) {
+        var i = 0,
+            len = data.length,
+            decorated = [],
+            anyFavorite = false,
+            entry,
+            rebuild = false;
+
+        if (!len) return false;
+
+        for (i; i < len; i++) {
+            entry = {index: i, cell: data[i], fav: Screens_isFavorite(data[i].user_id)};
+            if (entry.fav) anyFavorite = true;
+            decorated.push(entry);
+        }
+
+        if (!anyFavorite) return false;
+
+        decorated.sort(function (a, b) {
+            if (a.fav !== b.fav) return a.fav ? -1 : 1;
+            return a.index < b.index ? -1 : 1;
+        });
+
+        for (i = 0; i < len; i++) {
+            entry = decorated[i];
+            if (entry.fav && rendered > 0 && entry.index >= rendered && i < rendered) rebuild = true;
+            data[i] = entry.cell;
+        }
+
+        return rebuild;
+    }
+
     function ScreensObj_InitUserLive() {
         var key = Main_UserLive;
 
@@ -45935,6 +46727,15 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         );
 
         ScreenObj[key] = Screens_assign(ScreenObj[key], Base_Live_obj);
+
+        //Favorites always on top of the Live now list (issue #48)
+        ScreenObj[key].loadDataSuccess = function () {
+            if (this.data && AddUser_UserIsSet() && ScreensObj_SortFavoritesFirst(this.data, this.data_cursor)) {
+                Screens_RebuildRows(this.screen);
+            }
+
+            Screens_loadDataSuccess(this.screen);
+        };
 
         ScreenObj[key].Set_Scroll();
     }
@@ -46803,12 +47604,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                         this.column_id++;
                     }
                 },
-                SwitchesIcons: ['movie-play', 'movie', 'settings'],
+                SwitchesIcons: ['movie-play', 'movie', 'history', 'settings'],
                 addSwitches: function () {
                     ScreensObj_addSwitches(
                         [
                             STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_VIDEOS,
                             STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_CLIPS,
+                            STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_SAVED,
                             STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_LIVE + STR_SPACE_HTML + STR_SETTINGS
                         ],
                         this.screen
@@ -46831,6 +47633,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                     Main_SwitchScreen();
                 } else if (this.posX === 1) {
                     Main_values.Main_Go = Main_HistoryClip;
+                    this.history_exit();
+                    Main_SwitchScreen();
+                } else if (this.posX === 2) {
+                    Main_values.Main_Go = Main_HistorySaved;
                     this.history_exit();
                     Main_SwitchScreen();
                 } else Screens_histStart(this.screen, click);
@@ -46895,6 +47701,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                             Main_values.Main_Go = Main_HistoryClip;
                             this.history_exit();
                             Main_SwitchScreen();
+                        } else if (this.posX === 2) {
+                            Main_values.Main_Go = Main_HistorySaved;
+                            this.history_exit();
+                            Main_SwitchScreen();
                         } else Screens_histStart(this.screen, click);
                     } else this.OpenVodStart();
                 },
@@ -46910,12 +47720,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                         this.column_id++;
                     }
                 },
-                SwitchesIcons: ['play', 'movie', 'settings'],
+                SwitchesIcons: ['play', 'movie', 'history', 'settings'],
                 addSwitches: function () {
                     ScreensObj_addSwitches(
                         [
                             STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_LIVE,
                             STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_CLIPS,
+                            STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_SAVED,
                             STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_VIDEOS + STR_SPACE_HTML + STR_SETTINGS
                         ],
                         this.screen
@@ -46984,6 +47795,10 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                             Main_values.Main_Go = Main_HistoryVod;
                             this.history_exit();
                             Main_SwitchScreen();
+                        } else if (this.posX === 2) {
+                            Main_values.Main_Go = Main_HistorySaved;
+                            this.history_exit();
+                            Main_SwitchScreen();
                         } else Screens_histStart(this.screen, click);
                     } else {
                         this.OpenClip();
@@ -47001,13 +47816,118 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
                         this.column_id++;
                     }
                 },
-                SwitchesIcons: ['play', 'movie-play', 'settings'],
+                SwitchesIcons: ['play', 'movie-play', 'history', 'settings'],
                 addSwitches: function () {
                     ScreensObj_addSwitches(
                         [
                             STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_LIVE,
                             STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_VIDEOS,
+                            STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_SAVED,
                             STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_CLIPS + STR_SPACE_HTML + STR_SETTINGS
+                        ],
+                        this.screen
+                    );
+                }
+            },
+            Base_obj
+        );
+
+        ScreenObj[key] = Screens_assign(ScreenObj[key], Base_History_obj);
+        ScreenObj[key].Upsorting();
+        ScreenObj[key].Set_Scroll();
+    }
+
+    function ScreensObj_HistorySaved() {
+        var key = Main_HistorySaved;
+
+        ScreenObj[key] = Screens_assign(
+            {
+                Type: 'saved',
+                ids: Screens_ScreenIds('HistorySaved', key),
+                ScreenName: 'HistorySaved',
+                table: 'stream_table_historysaved',
+                screen: key,
+                img_404: IMG_404_VIDEO,
+                histPosXName: 'HistorySaved_histPosX',
+                screenType: 0,
+                histPosX: Main_getItemJson('HistorySaved_histPosX', [0, 0, 0, 0]),
+                sethistDialog: function () {
+                    Main_textContent('dialog_hist_setting_name_1', STR_HISTORY_SAVED_DIS);
+                    Main_innerHTML('dialog_hist_text', STR_SAVED + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_SETTINGS);
+                    this.sethistMainDialog();
+                },
+                setTODialog: function (skipShowDelete) {
+                    if (!skipShowDelete) {
+                        Main_RemoveClass('dialog_thumb_opt_setting_-1', 'hideimp');
+                    }
+                    Main_textContent(Screens_ThumbFollowHistory, STR_HISTORY_SAVED_DIS);
+                },
+                history_Type: function () {
+                    return STR_SAVED;
+                },
+                label_init: function () {
+                    Main_values.HistoryPos = 3;
+                    ScreensObj_TopLableUserInit(this.screen);
+                    ScreensObj_SetTopLable(
+                        STR_USER,
+                        STR_HISTORY + STR_SPACE_HTML + STR_SAVED + STR_SPACE_HTML + '(' + this.sorting[this.histPosX[0]] + ')'
+                    );
+                },
+                key_play: function (click) {
+                    if (this.is_a_Banner()) return;
+
+                    if (this.posY === -1) {
+                        if (this.posX === 0) {
+                            Main_values.Main_Go = Main_HistoryLive;
+                            this.history_exit();
+                            Main_SwitchScreen();
+                        } else if (this.posX === 1) {
+                            Main_values.Main_Go = Main_HistoryVod;
+                            this.history_exit();
+                            Main_SwitchScreen();
+                        } else if (this.posX === 2) {
+                            Main_values.Main_Go = Main_HistoryClip;
+                            this.history_exit();
+                            Main_SwitchScreen();
+                        } else Screens_histStart(this.screen, click);
+                    } else {
+                        if (this.itemsCount) {
+                            Main_RemoveClass(this.ids[1] + this.posY + '_' + this.posX, 'opacity_zero');
+                            Screens_OpenSavedVod(this.screen);
+                        }
+                    }
+                },
+                addCell: function (cell) {
+                    //cell.data[14] check here to a bug that introduce emtpy values, see HistoryLive
+                    if (!this.idObject[cell.data[7]] && cell.data[14] && cell.data[14] !== '') {
+                        this.itemsCount++;
+                        this.idObject[cell.data[7]] = 1;
+
+                        //Always a VOD cell: the entry reopens the broadcast's VOD at the saved
+                        //position, the live thumb keeps working a while after the stream ended
+                        this.tempHtml.push(
+                            Screens_createCellLive(
+                                this.row_id + '_' + this.column_id,
+                                this.ids,
+                                cell.data,
+                                this.screen,
+                                cell.date,
+                                cell.data[0] ? cell.data[0].replace('{width}x{height}', Main_VideoSize) + Main_randomImg : null,
+                                true
+                            )
+                        );
+
+                        this.column_id++;
+                    }
+                },
+                SwitchesIcons: ['play', 'movie-play', 'movie', 'settings'],
+                addSwitches: function () {
+                    ScreensObj_addSwitches(
+                        [
+                            STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_LIVE,
+                            STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_VIDEOS,
+                            STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_CLIPS,
+                            STR_SPACE_HTML + STR_SPACE_HTML + STR_HISTORY + STR_SPACE_HTML + STR_SAVED + STR_SPACE_HTML + STR_SETTINGS
                         ],
                         this.screen
                     );
@@ -53829,7 +54749,8 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         3, //Main_AGameClip 24
         9, //Main_AGameClip 25
         1, // Main_SearchVod 26
-        3 // Main_UserRecommended 27
+        3, // Main_UserRecommended 27
+        8 // Main_HistorySaved 28
     ];
 
     function Sidepannel_UnSetTopOpacity() {
@@ -55041,12 +55962,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
     }
 
     var UserLiveFeed_LoadPreviewId;
+    var UserLiveFeed_PrewarmId;
     function UserLiveFeed_CheckIfIsLiveStart(pos) {
+        var feedShowing =
+            !Main_isStopped && UserLiveFeed_isPreviewShowing() && pos === UserLiveFeed_FeedPosX && (!Play_isEndDialogVisible() || !Play_EndFocus);
+
         if (
-            !Main_isStopped &&
-            UserLiveFeed_isPreviewShowing() &&
-            pos === UserLiveFeed_FeedPosX &&
-            (!Play_isEndDialogVisible() || !Play_EndFocus) &&
+            feedShowing &&
             Settings_Obj_default('show_feed_player') &&
             UserLiveFeed_obj[UserLiveFeed_FeedPosX].checkPreview &&
             (!Play_MultiEnable || !Settings_Obj_default('disable_feed_player_multi')) &&
@@ -55076,6 +55998,24 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
                     OSInterface_SetFeedPosition(UserLiveFeed_CheckIfIsLiveGetPos(UserLiveFeed_FeedPosY[UserLiveFeed_FeedPosX]));
                 }
+            }
+        } else if (feedShowing && UserLiveFeed_obj[pos].checkPreview && pos < UserLiveFeedobj_UserVodPos) {
+            //The preview player is off (setting, max instances) or blocked: resolve the focused
+            //channel's stream in the background only, so pressing OK starts from the master cache
+            //instead of minting a token on the keypress. Same dwell as the preview so a D-pad
+            //sweep across the row resolves at most one channel
+            var prewarmObj = Play_CheckLiveThumb(false, true);
+
+            if (prewarmObj && prewarmObj[6]) {
+                var channelLogin = prewarmObj[6];
+
+                UserLiveFeed_PrewarmId = Main_setTimeout(
+                    function () {
+                        PlayHLS_Prewarm(channelLogin);
+                    },
+                    DefaultPreviewDelay + Settings_PreviewDelay[Settings_Obj_default('show_feed_player_delay')],
+                    UserLiveFeed_PrewarmId
+                );
             }
         }
     }
@@ -55463,7 +56403,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
             var NextPos = UserLiveFeed_FeedPosY[UserLiveFeed_FeedPosX] + Adder;
 
             if (NextPos > UserLiveFeed_GetSize(UserLiveFeed_FeedPosX) - 1 || NextPos < 0) {
-                return;
+                return false;
             }
 
             UserLiveFeed_FeedRemoveFocus(UserLiveFeed_FeedPosX);
@@ -55474,7 +56414,13 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
 
             Main_values.UserLiveFeed_LastPositionId[UserLiveFeed_FeedPosX] =
                 UserLiveFeed_DataObj[UserLiveFeed_FeedPosX][UserLiveFeed_FeedPosY[UserLiveFeed_FeedPosX]][14];
+
+            //True so the channel rocker (Play_ChannelStep) knows the focus really moved and the
+            //auto-tune settle is worth arming
+            return true;
         }
+
+        return false;
     }
 
     function UserLiveFeed_KeyUpDown(Adder) {
@@ -61815,6 +62761,7 @@ https://video-weaver.sao03.hls.ttvnw.net/v1/playlist/C.m3u8 09:36:20.90
         PlayHLS_PlayListUrlResult: PlayHLS_PlayListUrlResult,
         PlayHLS_AdProbeResult: PlayHLS_AdProbeResult,
         Play_AdBlockReload: Play_AdBlockReload,
+        Play_ChannelStep: Play_ChannelStep,
         Play_AdHoldChanged: Play_AdHoldChanged,
         AddCode_AppTokenResult: AddCode_AppTokenResult,
         Play_UpdateDurationDiv: Play_UpdateDurationDiv,

@@ -897,7 +897,9 @@ function ChatLive_loadEmotesbttvChannel(data, chat_number) {
 
 function ChatLive_bttv_entry(emote) {
     var srcset = ChatLive_bttv_srcset(emote.id),
-        url = ChatLive_Base_BTTV_url + emote.id + '/3x';
+        //Main src is the preload fallback for browsers without srcset support; chat renders
+        //emotes at ~1.75em so 2x is plenty and saves bandwidth over 3x (srcset keeps all sizes)
+        url = ChatLive_Base_BTTV_url + emote.id + '/2x';
 
     return {
         code: emote.code,
@@ -928,7 +930,7 @@ function ChatLive_bttv_static(emote) {
 
     var base = ChatLive_Base_BTTV_url + emote.id + '/static/';
 
-    return emoteTemplate(base + '3x.webp', base + '1x.webp 1x,' + base + '2x.webp 2x,' + base + '3x.webp 3x');
+    return emoteTemplate(base + '2x.webp', base + '1x.webp 1x,' + base + '2x.webp 2x,' + base + '3x.webp 3x');
 }
 
 function ChatLive_loadCheersChannel(chat_number, id) {
@@ -1251,7 +1253,8 @@ function ChatLive_ffz_entry(emoticon) {
     if (emoticon.urls[2] && typeof emoticon.urls[2] !== 'string') return null;
 
     var srcset = ChatLive_ffz_srcset(emoticon.urls),
-        url = emoticon.urls[4] || emoticon.urls[2] || emoticon.urls[1];
+        //Main src prefers 2x (chat renders at ~1.75em), srcset keeps every size for DPR scaling
+        url = emoticon.urls[2] || emoticon.urls[1];
 
     return {
         code: emoticon.name,
@@ -1372,8 +1375,9 @@ function ChatLive_seven_tv_entry(seven_tv_emote) {
     }
 
     // emote url is made up of host.url and the image file names (1x.webp, 2x.webp, etc)
+    //Main src prefers 2x (chat renders at ~1.75em), '4x' keeps the biggest file for the picker
     var baseEmoteUrl = emote.host.url,
-        url = ChatLive_seven_tv_getEmoteUrl(baseEmoteUrl, emoteUrls[emoteUrls.length - 1]),
+        url = ChatLive_seven_tv_getEmoteUrl(baseEmoteUrl, ChatLive_seven_tv_size(emoteUrls, '2x')),
         srcset = ChatLive_seven_tv_srcset(baseEmoteUrl, emoteUrls),
         chat_div = emoteTemplate(url, srcset);
 
@@ -1384,9 +1388,19 @@ function ChatLive_seven_tv_entry(seven_tv_emote) {
         chat_div_static: emote.animated ? ChatLive_seven_tv_static(baseEmoteUrl, emoteUrls) : null,
         chat_div_zero: emote.flags === 256 ? chat_div.replace('emoticon', 'emoticon zero-width-emote') : null,
 
-        '4x': url,
+        '4x': ChatLive_seven_tv_getEmoteUrl(baseEmoteUrl, emoteUrls[emoteUrls.length - 1]),
         srcset: srcset
     };
+}
+
+//The file of [files] whose name starts with [size] ("2x" of 2x.webp), falling back to the
+//largest (the 7TV host serves 1x/2x/4x but a set can list fewer)
+function ChatLive_seven_tv_size(files, size) {
+    for (var i = 0; i < files.length; i++) {
+        if (Main_startsWith(files[i].name, size)) return files[i];
+    }
+
+    return files[files.length - 1];
 }
 
 function ChatLive_seven_tv_getEmoteUrl(emoteBaseUrl, emote) {
@@ -1431,7 +1445,7 @@ function ChatLive_seven_tv_static(emoteUrl, files) {
 
     if (!stills.length) return null;
 
-    return emoteTemplate(ChatLive_seven_tv_getEmoteUrl(emoteUrl, stills[stills.length - 1]), ChatLive_seven_tv_srcset(emoteUrl, stills));
+    return emoteTemplate(ChatLive_seven_tv_getEmoteUrl(emoteUrl, ChatLive_seven_tv_size(stills, '2x')), ChatLive_seven_tv_srcset(emoteUrl, stills));
 }
 
 //Live emote updates, live chat only (VOD chat also runs ChatLive_SetOptions). 7TV announces each change of a

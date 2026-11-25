@@ -194,6 +194,23 @@ public final class AdPlaylistFilterTest {
         check(!AdPlaylistFilter.isAdHoldActive(holdPath) && holdChanges[0] == 4, "a clean playlist also releases a hold, both notified");
         AdPlaylistFilter.setAdHoldListener(null);
 
+        //A pure SCTE-35 bracket pod (CUE-OUT/CUE-IN without any stitched DATERANGE) is stripped
+        //like a stitched pod, not passed through as clean; its own url so the LIVE_SEGMENTS
+        //state of the freeze tests above stays untouched
+        String cueUrl = "https://euw12.playlist.ttvnw.net/v1/playlist/cuevariant.m3u8";
+        String cueAds = LIVE_HEADER +
+            segments("live_0") +
+            "#EXT-X-CUE-OUT:30\n" +
+            segments("ad_0", "ad_1") +
+            "#EXT-X-CUE-IN\n" +
+            segments("live_1", "live_2");
+        r = filter(cueUrl, cueAds);
+        String cueFiltered = s(r);
+        check(r != null, "pure CUE-OUT pod is filtered");
+        check(!hasAdSegment(cueFiltered) && !cueFiltered.contains("ad_0"), "CUE-OUT pod segments removed");
+        check(!cueFiltered.contains("#EXT-X-CUE-OUT") && !cueFiltered.contains("#EXT-X-CUE-IN"), "CUE bracket tags dropped");
+        check(cueFiltered.contains("live_0") && cueFiltered.contains("live_1"), "live content around the pod kept");
+
         System.out.println("AdPlaylistFilter checks passed: " + checks);
     }
 }

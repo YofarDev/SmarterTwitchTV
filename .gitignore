@@ -49,3 +49,16 @@ apk/.kotlin/
 .claude/
 .impeccable/
 graphify-out/
+
+#OS noise, only ignored here for portability (other machines have no global ignore)
+.DS_Store
+
+#Stale legacy files removed from the repo, kept out so old local copies never come back
+extrapageindex.min.html
+apk.local.properties
+release/githubio/version/javaversion
+release/githubio/version/webversion
+screenshot/
+
+#Signed/aligned release test builds, never committed
+apk/sptv-*.apk

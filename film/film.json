@@ -1,0 +1,70 @@
+{
+  "app": "smarter-purple-tv",
+  "repoRoot": "..",
+  "contentSize": [
+    1920,
+    1080
+  ],
+  "recordSize": [
+    1920,
+    1080
+  ],
+  "displayOrigin": [
+    0,
+    0
+  ],
+  "clipAspect": [
+    16,
+    9
+  ],
+  "grabPxr": 0.25,
+  "bpm": 96,
+  "musicStyle": "storybook",
+  "seed": 7,
+  "sectionDb": {
+    "cold": -5,
+    "title": 0,
+    "finale": -1.5
+  },
+  "keepEvents": [
+    "runStart",
+    "browse",
+    "glideStart",
+    "focus",
+    "railOpen",
+    "railMove",
+    "railClose",
+    "tabsFocus",
+    "tabMove",
+    "tab",
+    "searchOpen",
+    "typeStart",
+    "typeEnd",
+    "typeChoice",
+    "typeMove",
+    "results",
+    "settings",
+    "uiOptions",
+    "colorDialog",
+    "style",
+    "styleWhite",
+    "themeApplied",
+    "browseLight",
+    "settle",
+    "end"
+  ],
+  "capture": {
+    "backend": "web-headless",
+    "note": "no screen recorder: the harness writes <cap>/<tag>.mp4 + .recstart from Chrome's screencast; then pipeline/sync.py + qa/check_take.py",
+    "harness": [
+      "node",
+      "{repo}/film/harness/capture.mjs",
+      "--run",
+      "{run}",
+      "--out",
+      "{out}",
+      "--video",
+      "{out}.mp4"
+    ]
+  }
+}

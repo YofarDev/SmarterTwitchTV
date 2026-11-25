@@ -87,9 +87,9 @@ s.ChatLive_loadEmotesbttvChannel(
 );
 const dance = s.extraEmotes[0].Dance,
     still = s.extraEmotes[0].Still;
-check(dance.chat_div.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/3x') !== -1, 'bttv: animated template unchanged');
+check(dance.chat_div.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/2x"') !== -1 && dance.chat_div.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/3x 3x') !== -1, 'bttv: animated template src 2x with 3x kept in the srcset');
 check(
-    dance.chat_div_static.indexOf('/emote/aaaaaaaaaaaaaaaaaaaaaaaa/static/3x.webp') !== -1 &&
+    dance.chat_div_static.indexOf('/emote/aaaaaaaaaaaaaaaaaaaaaaaa/static/2x.webp') !== -1 &&
         dance.chat_div_static.indexOf('/static/1x.webp 1x,') !== -1 &&
         dance.chat_div_static.indexOf('/static/2x.webp 2x,') !== -1,
     'bttv: animated emote gets the /static/ webp image and srcset'
@@ -153,16 +153,17 @@ s.ChatLive_loadCheersChannelSuccess(
 //Tokenizer and Twitch emote URLs follow the option
 const line = () => s.extraMessageTokenize('hi Dance Still Wiggle Cheer100', 0, 100);
 let html = line();
-check(html.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/3x"') !== -1 && html.indexOf('/static/') === -1, 'on: animated emotes and cheers stay animated');
+check(html.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/2x"') !== -1 && html.indexOf('/static/') === -1, 'on: animated emotes and cheers stay animated');
+check(html.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/3x"') === -1, 'on: the main src is 2x, 3x only exists in the srcset');
 check(s.emoteURL('25').indexOf('/emoticons/v2/25/default/dark/2.0') !== -1, 'on: twitch emotes use the default (animated) format');
 
 s.ChatLive_AnimatedEmotes = false;
 html = line();
 check(
-    html.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/static/3x.webp') !== -1 && html.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/3x"') === -1,
+    html.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/static/2x.webp') !== -1 && html.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/2x"') === -1,
     'off: bttv animated emote shows its still image'
 );
-check(html.indexOf('/bbbbbbbbbbbbbbbbbbbbbbbb/3x"') !== -1, 'off: static emotes are unchanged');
+check(html.indexOf('/bbbbbbbbbbbbbbbbbbbbbbbb/2x"') !== -1, 'off: static emotes are unchanged');
 check(
     html.indexOf('zero-width-container') !== -1 && html.indexOf('zero-width-emote" alt="" srcset="https://cdn.7tv.app/emote/w/1x_static.webp') !== -1,
     'off: zero-width 7tv emote uses its still image'
@@ -187,16 +188,16 @@ line();
 s.emoteURL('25');
 check(s.__images.length === stills.length, 'off: a still already being checked is not checked again');
 
-const danceStill = 'https://cdn.betterttv.net/emote/aaaaaaaaaaaaaaaaaaaaaaaa/static/3x.webp';
+const danceStill = 'https://cdn.betterttv.net/emote/aaaaaaaaaaaaaaaaaaaaaaaa/static/2x.webp';
 loadStill('/aaaaaaaaaaaaaaaaaaaaaaaa/static/', 0);
 check(
     s.__rules.length === 1 &&
-        s.__rules[0] === '.emoticon[src="' + danceStill + '"] {content: url("https://cdn.betterttv.net/emote/aaaaaaaaaaaaaaaaaaaaaaaa/3x");}',
+        s.__rules[0] === '.emoticon[src="' + danceStill + '"] {content: url("https://cdn.betterttv.net/emote/aaaaaaaaaaaaaaaaaaaaaaaa/2x");}',
     'blank still: a CSS rule shows the animation on lines already built with it'
 );
 html = line();
 check(
-    html.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/3x"') !== -1 && html.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/static/') === -1,
+    html.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/2x"') !== -1 && html.indexOf('/aaaaaaaaaaaaaaaaaaaaaaaa/static/') === -1,
     'blank still: new lines use the animated emote'
 );
 
@@ -379,7 +380,53 @@ const warmed = w => w.__images.filter(i => !i.crossOrigin);
     o.ChatLive_EmoteWarmParallel = 3;
     o.ChatLive_AnimatedEmotes = false;
     o.Chat_loadEmotesbttvGlobal([{id: 'e'.repeat(24), code: 'Spin', animated: true}]);
-    check(warmed(o).length === 1 && warmed(o)[0].src.indexOf('/static/3x.webp') !== -1, 'warm: animated emotes off fetches the still image');
+    check(warmed(o).length === 1 && warmed(o)[0].src.indexOf('/static/2x.webp') !== -1, 'warm: animated emotes off fetches the still image');
+}
+
+//Main src size preference: chat renders emotes at ~1.75em, so the fallback src (no srcset
+//support) loads 2x for every provider while the srcset keeps every size
+{
+    const bttv = s.ChatLive_bttv_entry({id: 'bttvid', code: 'Code', animated: false});
+    check(bttv.chat_div.indexOf('/bttvid/2x"') !== -1, 'bttv: main src is 2x');
+    check(bttv.srcset.indexOf('/bttvid/3x 3x') !== -1, 'bttv: srcset keeps 3x');
+    const bttvAnimated = s.ChatLive_bttv_static({id: 'bttvid', code: 'Code', animated: true});
+    check(bttvAnimated.indexOf('static/2x.webp"') !== -1, 'bttv: animated still main src is 2x_static');
+
+    const ffz = s.ChatLive_ffz_entry({name: 'FFZ', id: 5, urls: {1: 'https://ffz/1.png', 2: 'https://ffz/2.png', 4: 'https://ffz/4.png'}});
+    check(ffz.chat_div.indexOf('/ffz/2.png"') !== -1, 'ffz: main src prefers 2x over 4x');
+    check(ffz.srcset.indexOf('/ffz/4.png 4x') !== -1, 'ffz: srcset keeps 4x');
+    const ffzNo2x = s.ChatLive_ffz_entry({name: 'FFZ', id: 6, urls: {1: 'https://ffz/1.png'}});
+    check(ffzNo2x.chat_div.indexOf('/ffz/1.png"') !== -1, 'ffz: falls back to 1x when no 2x exists');
+
+    const sevenTv = s.ChatLive_seven_tv_entry({
+        name: 'Seven',
+        data: {
+            name: 'Seven',
+            id: 'sid',
+            animated: true,
+            flags: 0,
+            host: {
+                url: '//cdn.7tv.app/emote/s',
+                files: [
+                    {name: '1x.webp', format: 'WEBP', static_name: '1x_static.webp'},
+                    {name: '2x.webp', format: 'WEBP', static_name: '2x_static.webp'},
+                    {name: '4x.webp', format: 'WEBP', static_name: '4x_static.webp'}
+                ]
+            }
+        }
+    });
+    check(sevenTv.chat_div.indexOf('/s/2x.webp"') !== -1, '7tv: main src is 2x');
+    check(sevenTv['4x'].indexOf('/s/4x.webp') !== -1, '7tv: the picker keeps the biggest file');
+    check(sevenTv.chat_div_static.indexOf('/s/2x_static.webp"') !== -1, '7tv: animated still main src is 2x_static');
+    const sevenTvNo2x = s.ChatLive_seven_tv_entry({
+        name: 'Tiny',
+        data: {
+            name: 'Tiny',
+            id: 'tid',
+            host: {url: '//cdn.7tv.app/emote/t', files: [{name: '1x.webp', format: 'WEBP'}, {name: '4x.webp', format: 'WEBP'}]}
+        }
+    });
+    check(sevenTvNo2x.chat_div.indexOf('/t/4x.webp"') !== -1, '7tv: falls back to the biggest when no 2x exists');
 }
 
 console.log(checks + ' emote checks passed');

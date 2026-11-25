@@ -44,6 +44,12 @@ var KEY_KEYBOARD_SPACE = 32;
 var KEY_MEDIA_NEXT = 176;
 var KEY_MEDIA_PREVIOUS = 177;
 
+//Remote channel rocker: the apk dispatchKeyEvent override calls
+//javascript:smartTwitchTV.Play_ChannelStep() for these, and the live player also handles
+//the raw 166/167 keydown as a fallback (browsers, webviews that deliver them natively)
+var KEY_CHANNEL_UP = 166;
+var KEY_CHANNEL_DOWN = 167;
+
 var KEY_MEDIA_FAST_FORWARD = 228;
 var KEY_MEDIA_REWIND = 227;
 

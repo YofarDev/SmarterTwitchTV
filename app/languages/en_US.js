@@ -973,6 +973,15 @@ function en_USLang() {
     STR_BLOCK_GAME = 'Block game';
     STR_BLOCK_NO_USER = 'Add a user first before being able to block';
     STR_BLOCK_NO_CHANNEL = "Can't get the channel for this";
+    STR_FAVORITE_CHANNEL = 'Favorite channel';
+    STR_UNFAVORITE_CHANNEL = 'Unfavorite channel';
+    STR_FAVORITE_NO_USER = 'Add a user first before being able to favorite';
+    STR_SAVED = 'Saved';
+    STR_SAVE_POSITION = 'Save position';
+    STR_SAVE_POSITION_SUMMARY = 'Save the current live position to resume this stream later from History - Saved';
+    STR_SAVED_POSITION_CONFIRM = 'Position saved, resume later from History - Saved';
+    STR_SAVED_VOD_NOT_YET = "The VOD of this stream is not available yet, try again later";
+    STR_HISTORY_SAVED_DIS = 'Enable saved stream list';
     STR_BLOCK_OVERWRITE = 'Show blocked';
     STR_BLOCK_SORT_DATE = 'Sorted by blocked date';
     STR_BLOCK_SORT_NAME = 'Sorted by name A to Z';

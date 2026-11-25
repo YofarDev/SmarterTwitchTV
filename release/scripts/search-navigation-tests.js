@@ -9,7 +9,7 @@ vm.createContext(sandbox);
 const ids = fs
     .readFileSync('app/specific/Main.js', 'utf8')
     .match(/^var Main_[A-Za-z_]+ = \d+;/gm)
-    .slice(0, 28)
+    .slice(0, 29)
     .join('\n');
 // Recommended (ScreensObj.js) is off here; Navigation reads it lazily
 sandbox.ScreensObj_RecommendedEnabled = () => false;

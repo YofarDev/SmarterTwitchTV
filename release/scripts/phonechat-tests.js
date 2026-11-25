@@ -218,7 +218,10 @@ function loadSandbox(overrides) {
         STR_PHONE_CHAT_OPEN: 'Chat on phone',
         STR_PHONE_CHAT_INSTRUCTION: 'Scan',
         STR_PHONE_CHAT_RESCAN: 'Rescan',
-        STR_PHONE_CHAT_CLOSE: 'Close'
+        STR_PHONE_CHAT_CLOSE: 'Close',
+        //Play_ChannelStepCancelSettle (channel rocker) runs on every key handled below
+        Main_clearTimeout: () => {},
+        Main_setTimeout: () => 0
     });
     vm.runInContext(fs.readFileSync(path.join(root, 'app/general/TVKeyValue.js'), 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync(path.join(root, 'app/specific/PhoneChat.js'), 'utf8'), sandbox);

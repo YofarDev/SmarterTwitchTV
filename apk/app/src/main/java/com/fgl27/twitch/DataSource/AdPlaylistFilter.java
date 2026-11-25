@@ -37,7 +37,10 @@ import com.google.common.io.ByteStreams;
  * Removes server side ad insertion (SSAI) entries from Twitch live media playlists before the
  * player parses them. Twitch stitches ads directly into the *.ttvnw.net media playlists; the
  * playlist is filtered on every refresh so the player only ever sees the stream's own segments,
- * resuming at the live edge once the ad window is over.
+ * resuming at the live edge once the ad window is over. The window is fenced either by the
+ * SSAI DATERANGE pair (twitch-stitched-ad / X-TV-TWITCH-STREAM-SOURCE="live") or by the
+ * SCTE-35 brackets (#EXT-X-SCTE35-OUT/-IN and #EXT-X-CUE-OUT/-IN, the latter emitted by some
+ * edge nodes without any DATERANGE), and both fencing styles are handled.
  *
  * When the whole playlist window turns into ad content the filter freezes the picture instead:
  * it serves a playlist that repeats the last live segment seen for that stream, so the player
@@ -66,6 +69,12 @@ public final class AdPlaylistFilter {
     //Ad segments are titled "Amazon" or "Amazon|<creative id>"
     private static final String MARKER_AD_TITLE = "Amazon";
     private static final String LIVE_SEGMENT_TITLE = "live";
+    //SCTE-35 bracket format some edge nodes emit without a twitch-stitched-ad DATERANGE;
+    //treated as the same ad region so a pure-SCTE pod is stripped, not passed through
+    private static final String TAG_SCTE35_OUT = "#EXT-X-SCTE35-OUT";
+    private static final String TAG_SCTE35_IN = "#EXT-X-SCTE35-IN";
+    private static final String TAG_CUE_OUT = "#EXT-X-CUE-OUT";
+    private static final String TAG_CUE_IN = "#EXT-X-CUE-IN";
 
     public static volatile boolean enabled = true;
 
@@ -332,9 +341,19 @@ public final class AdPlaylistFilter {
             String line = lines[i].trim();
 
             // SCTE-35 markers delimit an ad insertion window, the SSAI DATERANGE marks a
-            // twitch-stitched-ad region; both only exist to describe ads, so they are dropped
-            if (line.startsWith("#EXT-X-SCTE35-OUT") || line.startsWith("#EXT-X-SCTE35-IN")) {
-                inAdRegion = line.startsWith("#EXT-X-SCTE35-OUT");
+            // twitch-stitched-ad region; both only exist to describe ads, so they are dropped.
+            // CUE-OUT/CUE-IN is the other SCTE bracket some edge nodes emit instead of the
+            // DATERANGE pair, so it opens/closes the same ad region
+            if (line.startsWith(TAG_SCTE35_OUT) || line.startsWith(TAG_SCTE35_IN)) {
+                inAdRegion = line.startsWith(TAG_SCTE35_OUT);
+                continue;
+            }
+
+            if (line.startsWith(TAG_CUE_OUT)) {
+                inAdRegion = true;
+                continue;
+            } else if (line.startsWith(TAG_CUE_IN)) {
+                inAdRegion = false;
                 continue;
             }
 

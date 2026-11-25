@@ -583,6 +583,9 @@ function Play_updateStreamInfoEnd(response) {
         Play_UpdateMainStreamDiv();
 
         Main_Set_history('live', Play_data.data, !Play_isPlaying());
+
+        //Keep a saved entry of this stream at the live edge while watching
+        if (!Play_MultiEnable && !Play_data.isHost) Main_saved_UpdateLive(Play_data.data);
     }
 }
 
@@ -629,6 +632,7 @@ function Play_updateVodInfoSuccess(response, BroadcastID) {
         if (firstVod.stream_id.toString() === BroadcastID.toString()) {
             Main_history_UpdateLiveVod(BroadcastID, firstVod.id, null);
             Play_RewindId[BroadcastID] = firstVod.id;
+            Main_saved_UpdateVod(BroadcastID, firstVod.id);
         }
     }
 }
@@ -1397,6 +1401,9 @@ function Play_shutdownStream() {
     }
 
     if (Play_isOn) {
+        //The user left the stream, a saved entry resumes from here
+        if (Play_data.data && Play_data.data.length && !Play_data.isHost) Main_saved_UpdateLive(Play_data.data);
+
         Play_PreshutdownStream(true);
         PlayRaid_Close();
         Main_values.Play_WasPlaying = 0;

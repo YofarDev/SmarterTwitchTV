@@ -1706,12 +1706,22 @@ function Play_handleKeyDown(e) {
     //console.log('Play_handleKeyDown', e.keyCode);
 
     if (!Play_isOn || !Main_isScene2DocVisible()) {
+        Play_ChannelStepCancelSettle();
         return;
     }
+
+    //Any other key while a channel-flip settle is pending cancels the auto-tune
+    if (e.keyCode !== KEY_CHANNEL_UP && e.keyCode !== KEY_CHANNEL_DOWN) Play_ChannelStepCancelSettle();
 
     Play_screeOn();
 
     switch (e.keyCode) {
+        case KEY_CHANNEL_UP:
+        case KEY_CHANNEL_DOWN:
+            //The rocker cases also serve browsers/webviews that deliver 166/167 natively;
+            //on the apk the dispatchKeyEvent override calls Play_ChannelStep directly
+            Play_ChannelStep(e.keyCode === KEY_CHANNEL_UP ? 1 : -1);
+            break;
         case KEY_LEFT:
             if (Play_isPanelShowing()) {
                 if (PlayVod_PanelY === 2) Play_BottomLeftRigt(1, -1);
@@ -2004,6 +2014,60 @@ function Play_handleKeyDown(e) {
             break;
     }
 }
+//The remote channel rocker (CH+/CH-, KEYCODE_CHANNEL_UP/DOWN 166/167): opens the live feed
+//strip and steps the focus, then auto-tunes the focused channel once the presses settle (the
+//same semantics as puretv's PendingFlip: hold to sweep, release to tune). Steps go through the
+//feed so every stop gets its preview player and the OK flow (quality selection, history) is
+//the exact one a manual channel change already uses
+var Play_ChannelStepSettleId;
+var Play_ChannelStepSettleMs = 400;
+function Play_ChannelStep(Adder) {
+    //The apk bridge can call this on any screen; only a live stream (not VOD, clip, the end
+    //dialog, multi view, the corner player or the options panel — Up navigates the panel,
+    //the rocker must not open the feed over it) can channel flip
+    if (
+        !Play_isOn ||
+        PlayVod_isOn ||
+        PlayClip_isOn ||
+        Play_MultiEnable ||
+        PlayExtra_PicturePicture ||
+        Play_isEndDialogVisible() ||
+        Play_isPanelShowing() ||
+        !Main_IsOn_OSInterface
+    ) {
+        return;
+    }
+
+    Play_ChannelStepCancelSettle();
+
+    if (!UserLiveFeed_isPreviewShowing()) {
+        UserLiveFeed_ResetFeedPosX();
+        UserLiveFeed_ShowFeed();
+        return;
+    }
+
+    if (UserLiveFeed_KeyRightLeft(Adder)) {
+        Play_ChannelStepSettleId = Main_setTimeout(Play_ChannelStepSettle, Play_ChannelStepSettleMs, Play_ChannelStepSettleId);
+    }
+}
+
+function Play_ChannelStepCancelSettle() {
+    Main_clearTimeout(Play_ChannelStepSettleId);
+    Play_ChannelStepSettleId = null;
+}
+
+//Tune the focused channel by injecting an OK press through the key bridge, so the feed's own
+//Enter path (with all its guards, the preview player reuse and the keyup handoff) runs
+//unchanged; skipped when the user already moved on (feed hidden, other key pressed)
+function Play_ChannelStepSettle() {
+    Play_ChannelStepSettleId = null;
+
+    if (!Play_isOn || Play_isEndDialogVisible() || !UserLiveFeed_isPreviewShowing()) return;
+
+    OSInterface_keyEvent(4, 0);
+    OSInterface_keyEvent(4, 1);
+}
+
 
 var Play_controls = {};
 var Play_controlsSize;
@@ -2019,6 +2083,7 @@ var Play_controlsFollow = temp_controls_pos++;
 var Play_controlsSpeed = temp_controls_pos++;
 var Play_controlsExternal = temp_controls_pos++;
 var Play_controlsRewind = temp_controls_pos++;
+var Play_controlsSave = temp_controls_pos++;
 var Play_controlsQuality = temp_controls_pos++;
 var Play_controlsQualityMini = temp_controls_pos++;
 var Play_controlsQualityMulti = temp_controls_pos++;
@@ -2433,6 +2498,43 @@ function Play_MakeControls() {
         },
         setLabel: function () {
             Main_textContent('controls_text_summary_' + this.position, STR_OPEN_REWIND_SUMMARY);
+        }
+    };
+
+    Play_controls[Play_controlsSave] = {
+        //save the live position to resume as VOD
+        ShowInLive: true,
+        ShowInVod: false,
+        ShowInClip: false,
+        ShowInPP: false,
+        ShowInMulti: false,
+        ShowInChat: false,
+        ShowInAudio: false,
+        ShowInAudioPP: false,
+        ShowInAudioMulti: false,
+        ShowInPreview: false,
+        ShowInStay: false,
+        icons: 'history',
+        offsetY: -2,
+        string: STR_SAVE_POSITION,
+        values: null,
+        defaultValue: null,
+        enterKey: function () {
+            if (!AddUser_IsUserSet()) {
+                Play_showWarningMiddleDialog(STR_FAVORITE_NO_USER, 3000);
+                return;
+            }
+
+            if (!Play_data.data || !Play_data.data[7]) {
+                Play_showWarningMiddleDialog(STR_BLOCK_NO_CHANNEL, 3000);
+                return;
+            }
+
+            Main_saved_Add(Play_data.data);
+            Play_showWarningMiddleDialog(STR_SAVED_POSITION_CONFIRM, 3000);
+        },
+        setLabel: function () {
+            Main_textContent('controls_text_summary_' + this.position, STR_SAVE_POSITION_SUMMARY);
         }
     };
 

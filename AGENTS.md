@@ -21,8 +21,9 @@ Twitch client for Android TV / Smart TVs. This is YofarDev's fork of fgl27/Smart
 
 ```bash
 npm install                        # dev deps: jshint, uglify-js, prettier, html-minifier, crass, shelljs
-node release/scripts/maker.js jsh  # lint only, JSHint over all app JS (fast pre-check)
-node release/scripts/maker.js      # full build: lint, minify JS/HTML/CSS into release/, regenerate version.json + apk/Changelog_Up.md
+npm run lint                       # lint only, JSHint over all app JS (= maker.js jsh, fast pre-check)
+npm run build                      # full build: lint, minify JS/HTML/CSS into release/, regenerate version.json + apk/Changelog_Up.md + apk/Changelog.md APK sections
+npm test                           # all CI-runnable test harnesses (list in release/scripts/run-web-tests.js)
 ```
 
 Focused fixture harnesses (not complete end-to-end coverage):
@@ -40,6 +41,7 @@ node release/scripts/vod-chat-sync-tests.js      # VOD chat paging and stream-do
 node release/scripts/ad-filter-tests.js          # ad playlist filter (JDK 8+) and web ad probe chain
 node release/scripts/request-dispatcher-tests.js # production dispatcher, JDK 8+ (--release 8)
 node release/scripts/phonechat-server-tests.js   # local server integration, JDK 17+ and Android SDK 35
+node release/scripts/check-version-consistency.js # publishVersionCode/ApkUrl lockstep between version.js and versions.gradle
 ```
 
 Device and browser verification is also required (below). After a full build, commit the regenerated `release/` files (history shows commits like "up main files").
@@ -66,8 +68,9 @@ Requires Android Studio with the `apk/` folder open **and** a clone of https://g
 - All `app/` JS is concatenated (in order: languages, general, specific, thirdparty) into one global scope wrapped by `release/api.js`, with no modules/imports; globals like `Android`, `smartTwitchTV`, `Twitch` are expected (predefined in JSHint). Load order between files matters.
 - Target old TV WebViews: avoid modern JS syntax; the minifier is configured to not introduce arrow functions for this reason. JSHint enforces `===`, no unused/undefined vars.
 - Version bumps (see comments in `app/general/version.js`):
-  - APK release: `+1` on `publishVersionCode` (both `app/general/version.js` and `apk/versions.gradle`), update `ApkUrl`, add a `changelog` entry, and mirror the entry in `apk/Changelog.md`.
+  - APK release: `+1` on `publishVersionCode` (both `app/general/version.js` and `apk/versions.gradle`), update `ApkUrl`, add a `changelog` entry titled `(Web N / APK M)`. The full build regenerates the APK sections of `apk/Changelog.md` from `version.js` — do not hand-edit those sections; `release/scripts/check-version-consistency.js` (run by CI) fails when `publishVersionCode`/`ApkUrl` drift apart.
   - Web-only change: `+1` on `WebTag`, update `WebVersion` date, add changelog entry, run the full build so `version.json` updates.
+- CI: `.github/workflows/ci.yml` runs lint + all runnable harnesses + a debug APK build on every push/PR (release.yml still handles publishing). New harnesses only need to be added to `release/scripts/run-web-tests.js`.
 
 ## Style
 
