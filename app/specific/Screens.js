@@ -2534,8 +2534,10 @@ function Screens_handleKeyDown(key, event) {
         Navigation_Open(ScreenObj[key].key_fun, 'tabs');
         return;
     }
+    // Grid edge only: the switch row (posY -1) has no DataObj cells and wraps in Screens_KeyLeftRight (#50).
     if (
         event.keyCode === KEY_RIGHT &&
+        ScreenObj[key].posY > -1 &&
         (ScreenObj[key].posX === ScreenObj[key].ColumnsCount - 1 ||
             (ScreenObj[key].dataEnded && !ScreenObj[key].DataObj[ScreenObj[key].posY + '_' + (ScreenObj[key].posX + 1)]))
     )

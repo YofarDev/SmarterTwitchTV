@@ -43,6 +43,7 @@ var TESTS = [
     'search-navigation',
     'settings-dialog',
     'side-panel',
+    'switch-row',
     'ui-focus',
     'update',
     'vod-animated-thumb',

@@ -23,9 +23,15 @@ var version = {
     VersionBase: '3.0',
     publishVersionCode: 405, //Always update (+1 to current value) Main_version_java after update publishVersionCode or a major update of the apk is released
     ApkUrl: 'https://github.com/YofarDev/SmarterPurpleTV/releases/download/405/SmarterPurpleTV_3_0_405.apk',
-    WebVersion: 'November 25 2026',
-    WebTag: 807, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
+    WebVersion: 'November 26 2026',
+    WebTag: 808, //Always update (+1 to current value) Main_version_web after update Main_minversion or a major update of the web part of the app
     changelog: [
+        {
+            title: 'November 26 2026 (Web 808)',
+            changes: [
+                'Fix: on a channel Videos screen, Right now moves from the VODs/highlights switch to the sort switch even when the channel has only a few videos (#50)'
+            ]
+        },
         {
             title: 'November 25 2026 (Web 807)',
             changes: [
